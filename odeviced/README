@@ -1,0 +1,10 @@
+Sudharshan <Sup3rkiddo> S
+
+odeviced is a deviced daemon written in vala which uses dbus and gmodule to
+offer a framework that offers highly dynamic loading of arbitrary device plugins.
+
+For more, refer the docs present in docs/ 
+
+Requires vala 0.3.2
+-------------------
+Depends on GIO, GLib, GModule and DBus

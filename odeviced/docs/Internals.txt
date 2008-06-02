@@ -1,0 +1,16 @@
+odeviced consists of two important parts
+
+1.) A device daemon giving a dbus service to user space
+    applications with support for plugins
+2.) Modules that define various callback routines
+
+
+-----------
+Modules
+
+* provide vala support
+-----------
+
+Issues
+------
+Execute callbacks in separate threads? [Nope. Callbacks are small anyway]
