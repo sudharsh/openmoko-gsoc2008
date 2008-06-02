@@ -133,7 +133,7 @@ static void wifi_plugin_class_init (WifiPluginClass * klass) {
 { (GCallback) _dbus_wifi_plugin_control, g_cclosure_user_marshal_BOOLEAN__STRING_BOOLEAN_POINTER_POINTER, 73 },
 }
 ;
-	static const DBusGObjectInfo wifi_plugin_dbus_object_info = { 0, wifi_plugin_dbus_methods, 2, "org.freesmartphone.Device.plugins.wifi\0is_on\0S\0iface\0I\0s\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.plugins.wifi\0control\0S\0iface\0I\0s\0enable\0I\0b\0result\0O\0F\0N\0b\0\0", "", "" };
+	static const DBusGObjectInfo wifi_plugin_dbus_object_info = { 0, wifi_plugin_dbus_methods, 2, "org.freesmartphone.Device.Plugins.Wifi\0is_on\0S\0iface\0I\0s\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Plugins.Wifi\0control\0S\0iface\0I\0s\0enable\0I\0b\0result\0O\0F\0N\0b\0\0", "", "" };
 	dbus_g_object_type_install_info (TYPE_WIFI_PLUGIN, &wifi_plugin_dbus_object_info);
 }
 

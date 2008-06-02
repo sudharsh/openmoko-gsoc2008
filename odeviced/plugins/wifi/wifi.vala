@@ -25,7 +25,7 @@
 using GLib;
 
 
-[DBus (name = "org.freesmartphone.Device.plugins.wifi") ]
+[DBus (name = "org.freesmartphone.Device.Plugins.Wifi") ]
 public class WifiPlugin: Object {
 	public bool is_on(string iface) {
 		return true;
@@ -40,7 +40,7 @@ public int init() {
 	try {
 		DBus.Connection conn = DBus.Bus.get(DBus.BusType.SYSTEM);
 		WifiPlugin wifiobj = new WifiPlugin();
-		conn.register_object ("/org/freesmartphone/Device/plugins/wifi", wifiobj);
+		conn.register_object ("/org/freesmartphone/Device/Plugins/Wifi", wifiobj);
 		
 		
 	}
