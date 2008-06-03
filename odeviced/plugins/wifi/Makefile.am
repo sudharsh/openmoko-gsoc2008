@@ -11,14 +11,14 @@ AM_CPPFLAGS = \
 pkgdir                 = $(libdir)/odeviced/plugins
 
 
-pkg_LTLIBRARIES    	= libwifi.la
-libwifi_la_SOURCES	= wifi.c \
+pkg_LTLIBRARIES    	= wifi.la
+wifi_la_SOURCES	= 	wifi.c \
 			wifi.h
 
-libwifi_la_LIBADD = \
+wifi_la_LIBADD = \
 	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
 	$(GMODULE_LIBS)
 
-libwifi_la_LDFLAGS      = -module -avoid-version
-libwifi_la_DEPENDENCIES = $(top_builddir)/config.h
+wifi_la_LDFLAGS      = -module -avoid-version
+wifi_la_DEPENDENCIES = $(top_builddir)/config.h

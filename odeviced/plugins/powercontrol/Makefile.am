@@ -13,14 +13,14 @@ AM_CPPFLAGS = \
 pkgdir                 = $(libdir)/odeviced/plugins
 
 
-pkg_LTLIBRARIES        = libpowercontrol.la
-libpowercontrol_la_SOURCES  = powercontrol.c
+pkg_LTLIBRARIES        = powercontrol.la
+powercontrol_la_SOURCES  = powercontrol.c
 
-libpowercontrol_la_LIBADD = \
+powercontrol_la_LIBADD = \
 	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
 	$(GMODULE_LIBS)
 
 
-libpowercontrol_la_LDFLAGS      = -module -avoid-version
-libpowercontrol_la_DEPENDENCIES = $(top_builddir)/config.h
+powercontrol_la_LDFLAGS      = -module -avoid-version
+powercontrol_la_DEPENDENCIES = $(top_builddir)/config.h
