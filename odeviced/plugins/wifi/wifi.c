@@ -168,7 +168,7 @@ G_MODULE_EXPORT gboolean wifi_init (ODevicedPlugin *plugin) {
 			goto __catch0_g_error;
 		}
 		wifiobj = wifi_plugin_new ();
-		plugin->dbus_object_path = "/org/freesmartphone/Device/Plugins/Wifi";
+		plugin->dbus_object_path = g_strdup( "/org/freesmartphone/Device/Plugins/Wifi");
 		odeviced_helpers_register_dbus_object (plugin, G_OBJECT(wifiobj));
 	}
 	goto __finally0;
