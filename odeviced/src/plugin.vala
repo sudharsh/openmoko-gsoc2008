@@ -59,7 +59,7 @@ namespace ODeviced {
 		public bool register(DBus.Connection _conn) {
 					
 			this.conn = _conn;
-			this.library = Module.open(this.path, ModuleFlags.BIND_LOCAL);
+			this.library = Module.open(this.path, ModuleFlags.BIND_MASK);
 				
 			if(this.library == null) {
 				critical("plugin.library null!");
@@ -76,21 +76,8 @@ namespace ODeviced {
 			return func(this);
 									
 		}
-
 		
-		public bool unregister() {
-			var _symbol = null;
-			if(!this.library.symbol(name + "_close", out _symbol)) {
-				critical("Couldn't close the plugin");
-				return false;
-			}
-			
-			PluginFunc func = (PluginFunc)_symbol;
-			return func(this);
-
-		}
-
-		
+	
 	}
 
 

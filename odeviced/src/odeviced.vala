@@ -37,7 +37,6 @@ namespace ODeviced {
 
 				print("Starting ODeviced Server....\n");
 				var service = new Service(conn);
-				conn.register_object ("/org/freesmartphone/Device", service);
 			
 				if(!GLib.Module.supported()) {
 					critical("Modules are not supported in the current system");

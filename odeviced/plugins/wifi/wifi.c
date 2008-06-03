@@ -168,8 +168,10 @@ G_MODULE_EXPORT gboolean wifi_init (ODevicedPlugin *plugin) {
 			goto __catch0_g_error;
 		}
 		wifiobj = wifi_plugin_new ();
-		plugin->dbus_object_path = g_strdup( "/org/freesmartphone/Device/Plugins/Wifi");
-		odeviced_helpers_register_dbus_object (plugin, G_OBJECT(wifiobj));
+		if(wifiobj) {
+			plugin->dbus_object_path = g_strdup( "/org/freesmartphone/Device/Plugins/Wifi");
+			odeviced_helpers_register_dbus_object (plugin, G_OBJECT(wifiobj));
+		}
 	}
 	goto __finally0;
 	__catch0_g_error:
@@ -185,12 +187,6 @@ G_MODULE_EXPORT gboolean wifi_init (ODevicedPlugin *plugin) {
 	;
 
 	return TRUE;
-}
-
-
-G_MODULE_EXPORT gboolean wifi_close (ODevicedPlugin *plugin) {
-	//plugin->conn = dbus_g_connection_unref(plugin->conn);
-       	return TRUE;
 }
 
 

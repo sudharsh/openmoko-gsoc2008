@@ -19,23 +19,23 @@ using GLib;
 
 namespace ODeviced {	
 
-	[DBus (name = "org.freesmartphone.Device")]
 	public class Service: Object {
 
 		MainLoop loop = new MainLoop (null, false);		
 		public HashTable<string, Plugin> loadedTable = new HashTable<string, Plugin>((HashFunc)str_hash, (EqualFunc)str_equal);
-
+		
 		private string dev_name = new string();		
 		private KeyFile conf_file = new KeyFile();
+		private string plugins_location = new string();
 		
 		public static DBus.Connection conn {
 			get;
 			set construct;
 		}
-
+		
 		
 		construct {
-
+			
 			Idle.add(this.idle);
 			string[] plugins;
 			Timeout.add_seconds(50, this.timeout);
@@ -44,10 +44,11 @@ namespace ODeviced {
 			try {
 				/* Hard coded, change later */
 				conf_file.load_from_file("/etc/odeviced.conf", KeyFileFlags.NONE);
-				if (conf_file.has_group("odeviced"))
+				if (conf_file.has_group("odeviced")) {
 					this.dev_name = conf_file.get_string("odeviced", "device_name");
-				plugins = conf_file.get_string_list("odeviced", "autoload");
-				load_multiple(plugins);
+					this.plugins_location = conf_file.get_string("odeviced", "plugins_path");
+				}
+				probe_plugins(this.plugins_location);
 			}
 			catch (Error error) {
 				print( "Oops %s\n", error.message);
@@ -59,27 +60,19 @@ namespace ODeviced {
 		public Service(DBus.Connection conn) {
 			this.conn = conn;
 		}
-			
-
+		
+		
 		public bool load(string plugin_name) {
-
-			var plugin_path = Module.build_path("/usr/lib/odeviced/plugins", plugin_name);
-			File _file = File.new_for_path(plugin_path);
-
-			debug("No of plugins loaded: %d", this.loadedTable.size());
-
-			message("Trying to load %s", plugin_name);
-			if(!_file.query_exists(null)) {
-				critical("Module file %s, not found", plugin_path);
-				return false;
-			}
+			
+			var plugin_path = this.plugins_location + "/" + plugin_name + ".so";								
+			debug("No of plugins already loaded: %d", this.loadedTable.size());
 			
 			/* Check the hash table if the plugin exists */
 			if(this.is_loaded(plugin_name)) {
 				message("Plugin already loaded");
 				return true;
 			}
-
+			
 			/* Get dependencies of the plugin and try to load them */
 			if(conf_file.has_group(plugin_name) && conf_file.has_key(plugin_name, "depends")) {
 				string[] _deps = conf_file.get_string_list(plugin_name, "depends");
@@ -87,12 +80,12 @@ namespace ODeviced {
 				load_multiple(_deps);
 				print("\tDone handling dependencies\n", plugin_name);
 			}			
-		
+			
 			Plugin plugin = new ODeviced.Plugin(plugin_name, plugin_path);
-						
+			
 			if(plugin.register(this.conn)) {
 				/* This throws up an error in valac atm
-				plugin.depends = _deps; */
+				   plugin.depends = _deps; */
 				this.loadedTable.insert(plugin_name, plugin);
 				message("Successfully loaded %s\n", plugin_name);
 				return true;
@@ -101,73 +94,55 @@ namespace ODeviced {
 			return false;	
 			
 		}
-
-
-		public bool unload(string plugin_name) {
-			
-			message("Trying to unload %s", plugin_name);
-			if(!is_loaded(plugin_name)) {
-				message("Plugin %s already unloaded\n", plugin_name);
-				return true;
-			}
-
-			Plugin plugin = this.loadedTable.lookup(plugin_name);
-			
-			if(plugin.unregister()) {
-				plugin.unref();
-				this.loadedTable.remove(plugin_name);
-				message("Plugin %s unloaded\n", plugin_name);
-				return true;
-			}
-
-			message("Plugin couldn't be unloaded\n");
-			return false;
-
-		}
-			
-
+		
+		
 		private void load_multiple(string[] plugins) {
 			
 			foreach (string plugin in plugins) {
-				if(this.is_loaded(plugin)) {
-					print("\tDependency %s already loaded\n", plugin);
-					continue;
-				}
-				else
-					load(plugin);
-			       
+					if(this.is_loaded(plugin)) {
+						print("\tDependency %s already loaded\n", plugin);
+						continue;
+					}
+					else
+						load(plugin);
+					
 			}
- 		      
+			
 		}
- 
-
-		public string get_device_name() {
-			return this.dev_name;
-		}
-
-		 
+		
+		
 		public bool is_loaded(string plugin_name) {
-
+			
 			if(this.loadedTable.lookup(plugin_name)==null) 
 				return false;
 			return true;
-
-		}
-
-		/*
-		public void get_loaded_plugins() {
-			var _res = this.loadedTable.get_keys();
-			foreach (string _loaded in _res)
-				print("%s", _loaded);
 			
 		}
-		*/
 		
+
+		private void probe_plugins(string plugins_path) {
+				
+			message("Probing plugins at %s\n", plugins_path);
+			
+			string[] _temp;
+			var dir = Dir.open(plugins_path, 0);
+			string plugin = dir.read_name();
+			
+			while (plugin!=null) {
+				if(plugin.has_suffix(".so")) {
+					_temp = plugin.split(".", 0);
+					message("Probing " + _temp[0]);
+					load(_temp[0]);
+				}
+				plugin = dir.read_name();
+			}
+		}
+
 		
 		private bool timeout() {
-			//log("", LogLevelFLags.LEVEL_INFO, "Timeout");
-			message("timeout");
-			return true;
+				//log("", LogLevelFLags.LEVEL_INFO, "Timeout");
+				message("timeout");
+				return true;
 		}
 
 
@@ -178,13 +153,11 @@ namespace ODeviced {
 		}
 
 			
-		[DBus (visible="false")]
 		public void run() {
 			loop.run();
+			
 		}
-
-				
+		
 	}
 
-       
 }
