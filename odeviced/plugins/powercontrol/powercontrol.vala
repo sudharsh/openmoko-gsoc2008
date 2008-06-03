@@ -33,9 +33,11 @@ public class GenericPowerControl: GLib.Object {
 		return true;
 	}
 
-	public void set_power(bool control) {
-		;
+	public void set_power(bool power) {
+		print("hi");
+		
 	}
 
 }
-	
+
+

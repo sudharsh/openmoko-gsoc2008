@@ -28,9 +28,9 @@ namespace ODeviced {
 		public string[] depends;
 		
 		public static DBus.Connection conn;
+		public string dbus_object_path;
 		public GLib.Object plugin_instance;
-		public Type plugin_type;
-
+		
 		delegate bool PluginFunc(Plugin plugin);
 		
 		public string path {
@@ -53,7 +53,7 @@ namespace ODeviced {
 				
 		construct {
 			Rand rand = new Rand();
-			this.handle = rand.int_range(10, 99);			
+			this.handle = rand.int_range(10, 99);
 		}
 
 		public bool register(DBus.Connection _conn) {

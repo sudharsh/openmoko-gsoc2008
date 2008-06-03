@@ -24,9 +24,10 @@ namespace ODeviced {
 
 		MainLoop loop = new MainLoop (null, false);		
 		public HashTable<string, Plugin> loadedTable = new HashTable<string, Plugin>((HashFunc)str_hash, (EqualFunc)str_equal);
+
 		private string dev_name = new string();		
 		private KeyFile conf_file = new KeyFile();
-
+		
 		public static DBus.Connection conn {
 			get;
 			set construct;
@@ -153,11 +154,15 @@ namespace ODeviced {
 
 		}
 
-		/* Not implemented in vala yet
-		public weak List get_loaded_plugins() {
-			return this.loaded;
+		/*
+		public void get_loaded_plugins() {
+			var _res = this.loadedTable.get_keys();
+			foreach (string _loaded in _res)
+				print("%s", _loaded);
+			
 		}
 		*/
+		
 		
 		private bool timeout() {
 			//log("", LogLevelFLags.LEVEL_INFO, "Timeout");
