@@ -23,7 +23,7 @@ using DBus;
 
 namespace ODeviced {
 	
-	public class Helpers: GLib.Object {
+	namespace Helpers {
 		
 		public static void register_dbus_object(Plugin plugin, GLib.Object obj) {
 			plugin.conn.register_object ("/org/freesmartphone/Device/plugins/" + plugin.name, obj);
