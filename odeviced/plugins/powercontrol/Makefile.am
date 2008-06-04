@@ -11,7 +11,8 @@ AM_CPPFLAGS = \
 
 
 pkgdir                 = $(libdir)/odeviced/plugins
-
+powercontrolconfdir    = $(datadir)/odeviced/plugins
+powercontrolconf_DATA      = powercontrol.conf
 
 pkg_LTLIBRARIES        = powercontrol.la
 powercontrol_la_SOURCES  = powercontrol.c

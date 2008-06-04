@@ -8,12 +8,13 @@ AM_CPPFLAGS = \
 	-include $(CONFIG_HEADER) \
 	-ggdb
 
-pkgdir                 = $(libdir)/odeviced/plugins
+pkgdir		= $(libdir)/odeviced/plugins
+wificonfdir	= $(datadir)/odeviced/plugins
+wificonf_DATA   = wifi.conf	
 
-
-pkg_LTLIBRARIES    	= wifi.la
-wifi_la_SOURCES	= 	wifi.c \
-			wifi.h
+pkg_LTLIBRARIES	= wifi.la
+wifi_la_SOURCES	= wifi.c \
+		  wifi.h
 
 wifi_la_LIBADD = \
 	$(GLIB_LIBS) \
