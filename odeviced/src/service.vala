@@ -48,7 +48,13 @@ namespace ODeviced {
 					this.dev_name = conf_file.get_string("odeviced", "device_name");
 					this.plugins_location = conf_file.get_string("odeviced", "plugins_path");
 				}
-				probe_plugins(this.plugins_location);
+
+				if (conf_file.has_key("odeviced", "enable")) {
+					var plugins = conf_file.get_string_list("odeviced", "enable");
+					load_multiple(plugins);
+				}
+				else	
+					probe_plugins(this.plugins_location);
 			}
 			catch (Error error) {
 				print( "Oops %s\n", error.message);
