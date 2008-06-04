@@ -26,6 +26,7 @@ namespace ODeviced {
 		public Type type;
 		public int handle;
 		public string[] depends;
+		public string conf;
 		
 		public static DBus.Connection conn;
 		public string dbus_object_path;
@@ -54,6 +55,7 @@ namespace ODeviced {
 		construct {
 			Rand rand = new Rand();
 			this.handle = rand.int_range(10, 99);
+			this.conf   = "/usr/share/odeviced/plugins/" + this.name + ".conf";
 		}
 
 		public bool register(DBus.Connection _conn) {
