@@ -1,21 +1,32 @@
 For writing plugins refer the example ones present in plugins/
 
+There are two types of configurations files which odeviced reads at
+startup. 
+
+* The global configuration located at /etc/odeviced.conf
+* Plugin specific configuration at /usr/share/odeviced/plugins/<foo>.conf
+
+
 1.) Ensure that the shared module exports the init symbol of the form
-<your_plugin_name>_init(ODevicedPlugin *plugin).
+    <your_plugin_name>_init(ODevicedPlugin *plugin).
     For example, for the "wifi" plugin it would be
     wifi_init(ODevicedPlugin *plugin) {.......}
 
-2.) If the plugin provides a DBus interface, the connection instance could
-    be taken from, plugin->conn. It is suggested to keep the object path
-    at /org/freesmartphone/Device/plugins/<your_plugin>. 
+2.) If the plugin provides a DBus interface, odeviced_helpers_register_dbus_object()
+    can be used to register the dbus object that pertains to the plugin interface.
 
-3.) If plugin is to be loaded at odeviced startup, append the plugin name to
-    autoload in [odeviced] group. For example
+    In the plugin configuration file, define the path as follows
+    
+    [wifi]
+    dbus_object_path=/org/freesmartphone/Device/Plugins/Wifi 
+
+3.) If a plugin is to be loaded at odeviced startup, append the plugin name to
+    "enable" of [odeviced] group in the global configuration file. For example
 
     [odeviced]
-    autoload = powercontrol,wifi
+    enable = powercontrol,wifi
 
-4.) Dependencies for the plugins can be set in the configuration file
+4.) Dependencies for the plugins can be set in the plugin configuration file
     using the "depends" key.
 
     [battery]
@@ -23,7 +34,5 @@ For writing plugins refer the example ones present in plugins/
 
     Multiple dependencies can be separated using ','.
     
-5.) Filenames for the plugins should have "lib" prepended and should reside
-    in /usr/share/odeviced/plugins
 
 WARNING: Docs may change drastically as the code evolves :D
