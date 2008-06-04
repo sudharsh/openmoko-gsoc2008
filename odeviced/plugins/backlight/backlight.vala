@@ -30,6 +30,15 @@ using DBus;
 public class BacklightPlugin: GLib.Object {
 	
 	private int max_brightness;
+	private string max_brightness_node;
+	
+	construct {
+		GLib.KeyFile _file = new GLib.KeyFile();
+		_file.load_from_file("/usr/share/odeviced/plugins/backlight.conf", GLib.KeyFileFlags.NONE);
+		this.max_brightness_node = _file.get_string("backlight", "max_brightness_node");
+		
+	}
+		
 
 	public int get_max_brightness() {
 		return 1;

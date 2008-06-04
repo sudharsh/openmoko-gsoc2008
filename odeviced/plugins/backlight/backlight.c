@@ -20,6 +20,8 @@
  */
 
 #include "backlight.h"
+#include <stdlib.h>
+#include <string.h>
 #include <dbus/dbus-glib.h>
 
 
@@ -27,12 +29,14 @@
 
 struct _BacklightPluginPrivate {
 	gint max_brightness;
+	char* max_brightness_node;
 };
 
 #define BACKLIGHT_PLUGIN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_BACKLIGHT_PLUGIN, BacklightPluginPrivate))
 enum  {
 	BACKLIGHT_PLUGIN_DUMMY_PROPERTY
 };
+static GObject * backlight_plugin_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties);
 static gpointer backlight_plugin_parent_class = NULL;
 static gboolean _dbus_backlight_plugin_get_max_brightness (BacklightPlugin* self, gint* result, GError** error);
 static gboolean _dbus_backlight_plugin_set_brightness (BacklightPlugin* self, gboolean* result, GError** error);
@@ -43,7 +47,7 @@ static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure
 
 gint backlight_plugin_get_max_brightness (BacklightPlugin* self) {
 	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), 0);
-	return 1;
+	return self->priv->max_brightness;
 }
 
 
@@ -64,6 +68,45 @@ BacklightPlugin* backlight_plugin_new (void) {
 }
 
 
+static GObject * backlight_plugin_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties) {
+	GObject * obj;
+	BacklightPluginClass * klass;
+	GObjectClass * parent_class;
+	BacklightPlugin * self;
+	GError * inner_error;
+	FILE *max_node;
+	klass = BACKLIGHT_PLUGIN_CLASS (g_type_class_peek (TYPE_BACKLIGHT_PLUGIN));
+	parent_class = G_OBJECT_CLASS (g_type_class_peek_parent (klass));
+	obj = parent_class->constructor (type, n_construct_properties, construct_properties);
+	self = BACKLIGHT_PLUGIN (obj);
+	inner_error = NULL;
+	{
+		GKeyFile* _file;
+		char* _tmp0;
+		_file = g_key_file_new ();
+		g_key_file_load_from_file (_file, "/usr/share/odeviced/plugins/backlight.conf", G_KEY_FILE_NONE, &inner_error);
+		if (inner_error != NULL) {
+			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
+			g_clear_error (&inner_error);
+		}
+		_tmp0 = NULL;
+		self->priv->max_brightness_node = (_tmp0 = g_key_file_get_string (_file, "backlight", "max_brightness_node", &inner_error), (self->priv->max_brightness_node = (g_free (self->priv->max_brightness_node), NULL)), _tmp0);
+		if (inner_error != NULL) {
+			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
+			g_clear_error (&inner_error);
+		}
+		
+		/**************************************************/
+		max_node = fopen((char *)self->priv->max_brightness_node, "r");
+		fscanf(max_node, "%d", &self->priv->max_brightness);
+		fclose(max_node);
+		
+		(_file == NULL ? NULL : (_file = (g_key_file_free (_file), NULL)));
+	}
+	return obj;
+}
+
+
 static gboolean _dbus_backlight_plugin_get_max_brightness (BacklightPlugin* self, gint* result, GError** error) {
 	*result = backlight_plugin_get_max_brightness (self);
 	return !error || !*error;
@@ -79,6 +122,7 @@ static gboolean _dbus_backlight_plugin_set_brightness (BacklightPlugin* self, gb
 static void backlight_plugin_class_init (BacklightPluginClass * klass) {
 	backlight_plugin_parent_class = g_type_class_peek_parent (klass);
 	g_type_class_add_private (klass, sizeof (BacklightPluginPrivate));
+	G_OBJECT_CLASS (klass)->constructor = backlight_plugin_constructor;
 	G_OBJECT_CLASS (klass)->dispose = backlight_plugin_dispose;
 	static const DBusGMethodInfo backlight_plugin_dbus_methods[] = {
 { (GCallback) _dbus_backlight_plugin_get_max_brightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 0 },
@@ -98,6 +142,7 @@ static void backlight_plugin_instance_init (BacklightPlugin * self) {
 static void backlight_plugin_dispose (GObject * obj) {
 	BacklightPlugin * self;
 	self = BACKLIGHT_PLUGIN (obj);
+	self->priv->max_brightness_node = (g_free (self->priv->max_brightness_node), NULL);
 	G_OBJECT_CLASS (backlight_plugin_parent_class)->dispose (obj);
 }
 
@@ -111,6 +156,14 @@ GType backlight_plugin_get_type (void) {
 	return backlight_plugin_type_id;
 }
 
+
+
+G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
+	BacklightPlugin *backlightobj;
+	backlightobj = backlight_plugin_new();
+	odeviced_helpers_register_dbus_object (plugin, G_OBJECT(backlightobj));
+	return TRUE;
+}
 
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
