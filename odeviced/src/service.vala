@@ -70,7 +70,8 @@ namespace ODeviced {
 		
 		public bool load(string plugin_name) {
 			
-			var plugin_path = this.plugins_location + "/" + plugin_name + ".so";								
+			var plugin_path = this.plugins_location + "/" + plugin_name + ".so";
+			
 			debug("No of plugins already loaded: %d", this.loadedTable.size());
 			
 			/* Check the hash table if the plugin exists */
@@ -79,14 +80,22 @@ namespace ODeviced {
 				return true;
 			}
 			
-			/* Get dependencies of the plugin and try to load them */
-			if(conf_file.has_group(plugin_name) && conf_file.has_key(plugin_name, "depends")) {
-				string[] _deps = conf_file.get_string_list(plugin_name, "depends");
-				print("\t%s has dependencies\n", plugin_name);
-				load_multiple(_deps);
-				print("\tDone handling dependencies\n", plugin_name);
+			KeyFile _plugin_conf = new KeyFile();
+			try {
+				_plugin_conf.load_from_file("/usr/share/odeviced/plugins/" + plugin_name + ".conf");
+				
+				/* Get dependencies of the plugin and try to load them */
+				if(_plugin_conf.has_group(plugin_name) && _plugin_conf.has_key(plugin_name, "depends")) {
+					string[] _deps = conf_file.get_string_list(plugin_name, "depends");
+					print("\t%s has dependencies\n", plugin_name);
+					load_multiple(_deps);
+					print("\tDone handling dependencies\n", plugin_name);
+				}
 			}			
-			
+			catch (GLib.Error error) {
+				warning("No configuration file for %s", plugin_name);
+			}
+
 			Plugin plugin = new ODeviced.Plugin(plugin_name, plugin_path);
 			
 			if(plugin.register(this.conn)) {

@@ -33,7 +33,7 @@ namespace ODeviced {
 				if(plugin_conf.has_group(plugin.name)) {
 					plugin.dbus_object_path = plugin_conf.get_string(plugin.name, "dbus_object_path");				
 					plugin.conn.register_object (plugin.dbus_object_path, interface_obj);
-					plugin.plugin_instance = obj;
+					plugin.plugin_instance = interface_obj;
 				}
 				else 
 					critical("Malformed plugin configuration file");
