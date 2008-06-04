@@ -82,7 +82,7 @@ namespace ODeviced {
 			
 			KeyFile _plugin_conf = new KeyFile();
 			try {
-				_plugin_conf.load_from_file("/usr/share/odeviced/plugins/" + plugin_name + ".conf");
+				_plugin_conf.load_from_file("/usr/share/odeviced/plugins/" + plugin_name + ".conf", KeyFileFlags.NONE);
 				
 				/* Get dependencies of the plugin and try to load them */
 				if(_plugin_conf.has_group(plugin_name) && _plugin_conf.has_key(plugin_name, "depends")) {

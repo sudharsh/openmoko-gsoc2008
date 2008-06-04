@@ -26,7 +26,7 @@ namespace ODeviced {
 	namespace Helpers {
 		
 		public static void register_dbus_object(Plugin plugin, GLib.Object interface_obj) {
-			KeyFile plugin_conf;
+			KeyFile plugin_conf = new KeyFile();
 			plugin_conf.set_list_separator(',');
 			try {
 				plugin_conf.load_from_file("/usr/share/odeviced/plugins/" + plugin.name + ".conf", KeyFileFlags.NONE);
