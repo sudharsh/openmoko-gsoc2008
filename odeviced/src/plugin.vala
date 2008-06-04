@@ -66,6 +66,8 @@ namespace ODeviced {
 				return false;
 			}
 			
+			this.library.make_resident();
+			
 			var _symbol = null;
 			if(!this.library.symbol(name + "_init", out _symbol)) {
 				critical("Malformed odeviced plugin");			
