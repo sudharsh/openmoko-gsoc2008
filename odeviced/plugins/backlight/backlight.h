@@ -58,7 +58,7 @@ struct _BacklightPluginClass {
 
 
 gint backlight_plugin_get_max_brightness (BacklightPlugin* self);
-gboolean backlight_plugin_set_brightness (BacklightPlugin* self);
+gboolean backlight_plugin_set_brightness (BacklightPlugin* self, gint brightness);
 BacklightPlugin* backlight_plugin_new (void);
 GType backlight_plugin_get_type (void);
 
