@@ -67,10 +67,8 @@ DISTCLEANFILES = \
 	$(NULL)
 
 CLEANFILES = \
-	src/service.c \
-	src/service.h \
-	src/odeviced.c \
-	src/odeviced.h \
+	src/*.c \
+	src/*.h \
 	src/*.stamp \
 	$(NULL)
 

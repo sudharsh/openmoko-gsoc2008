@@ -59,4 +59,5 @@ Makefile
 plugins/Makefile
 plugins/powercontrol/Makefile
 plugins/wifi/Makefile
+plugins/backlight/Makefile
 ])
