@@ -44,6 +44,10 @@ namespace ODeviced {
 
 		}
 
+		public static string get_device () {
+			return ODeviced.Service.dev_name;
+		}
+
 	}
 
 }

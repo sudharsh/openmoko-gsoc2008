@@ -24,7 +24,7 @@ namespace ODeviced {
 		MainLoop loop = new MainLoop (null, false);		
 		public HashTable<string, Plugin> loadedTable = new HashTable<string, Plugin>((HashFunc)str_hash, (EqualFunc)str_equal);
 		
-		private string dev_name = new string();		
+		public static string dev_name = new string();		
 		private KeyFile conf_file = new KeyFile();
 		private string plugins_location = new string();
 		
@@ -110,7 +110,7 @@ namespace ODeviced {
 			
 		}
 		
-		
+
 		private void load_multiple(string[] plugins) {
 			
 			foreach (string plugin in plugins) {
