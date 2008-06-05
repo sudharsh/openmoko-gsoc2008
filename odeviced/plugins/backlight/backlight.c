@@ -41,6 +41,7 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 static gpointer backlight_plugin_parent_class = NULL;
 static gboolean _dbus_backlight_plugin_get_max_brightness (BacklightPlugin* self, gint* result, GError** error);
 static gboolean _dbus_backlight_plugin_set_brightness (BacklightPlugin* self, gint brightness, gboolean* result, GError** error);
+static gboolean _dbus_backlight_plugin_get_curr_brightness (BacklightPlugin* self, gint* result, GError** error);
 static void backlight_plugin_dispose (GObject * obj);
 
 
@@ -67,6 +68,26 @@ gboolean backlight_plugin_set_brightness (BacklightPlugin* self, gint brightness
 	return TRUE;
 }
 
+gint backlight_plugin_get_curr_brightness (BacklightPlugin* self) {
+	
+	GKeyFile *_file;
+        char *dev_name = odeviced_helpers_get_device();
+        char *curr_node;
+        FILE *sys_node;
+        int brightness;
+	GError *error;
+
+	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), 0);
+	_file = g_key_file_new();
+	g_key_file_load_from_file(_file, "/usr/share/odeviced/plugins/backlight.conf", G_KEY_FILE_NONE, &error);
+	curr_node = g_key_file_get_string (_file, dev_name, "curr_brightness_node", &error);
+
+        sys_node = fopen( curr_node, "r");
+	fscanf(sys_node, "%d", &brightness);
+	fclose(sys_node);
+	return brightness;
+}
+
 
 /*
  * This file exists to generate the sources.
@@ -77,7 +98,6 @@ BacklightPlugin* backlight_plugin_new (void) {
 	self = g_object_newv (TYPE_BACKLIGHT_PLUGIN, 0, NULL);
 	return self;
 }
-
 
 static GObject * backlight_plugin_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties) {
 	GObject * obj;
@@ -138,6 +158,12 @@ static gboolean _dbus_backlight_plugin_set_brightness (BacklightPlugin* self, gi
 }
 
 
+static gboolean _dbus_backlight_plugin_get_curr_brightness (BacklightPlugin* self, gint* result, GError** error) {
+	*result = backlight_plugin_get_curr_brightness (self);
+	return !error || !*error;
+}
+
+
 static void backlight_plugin_class_init (BacklightPluginClass * klass) {
 	backlight_plugin_parent_class = g_type_class_peek_parent (klass);
 	g_type_class_add_private (klass, sizeof (BacklightPluginPrivate));
@@ -146,9 +172,10 @@ static void backlight_plugin_class_init (BacklightPluginClass * klass) {
 	static const DBusGMethodInfo backlight_plugin_dbus_methods[] = {
 { (GCallback) _dbus_backlight_plugin_get_max_brightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 0 },
 { (GCallback) _dbus_backlight_plugin_set_brightness, g_cclosure_user_marshal_BOOLEAN__INT_POINTER_POINTER, 81 },
+{ (GCallback) _dbus_backlight_plugin_get_curr_brightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 173 },
 }
 ;
-	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 2, "org.freesmartphone.Device.Plugins.Backlight\0get_max_brightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Plugins.Backlight\0set_brightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0", "", "" };
+	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 3, "org.freesmartphone.Device.Plugins.Backlight\0get_max_brightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Plugins.Backlight\0set_brightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Plugins.Backlight\0get_curr_brightness\0S\0result\0O\0F\0N\0i\0\0", "", "" };
 	dbus_g_object_type_install_info (TYPE_BACKLIGHT_PLUGIN, &backlight_plugin_dbus_object_info);
 }
 
@@ -176,14 +203,12 @@ GType backlight_plugin_get_type (void) {
 	return backlight_plugin_type_id;
 }
 
-
 G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	BacklightPlugin *backlightobj;
 	backlightobj = backlight_plugin_new();
 	odeviced_helpers_register_dbus_object (plugin, G_OBJECT(backlightobj));
 	return TRUE;
 }
-
 
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {

@@ -39,6 +39,7 @@ public class BacklightPlugin: GLib.Object {
 		this.max_brightness_node = _file.get_string("backlight", "max_brightness_node");
 		this.set_brightness_node = _file.get_string("backlight", "set_brightness_node");
 		
+		
 	}
 		
 
@@ -48,6 +49,10 @@ public class BacklightPlugin: GLib.Object {
 
 	public bool set_brightness(int brightness) {
 		return true;
+	}
+
+	public int get_curr_brightness() {
+		return 1;
 	}
 
 }
