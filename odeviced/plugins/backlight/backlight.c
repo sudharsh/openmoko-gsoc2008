@@ -86,6 +86,7 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 	BacklightPlugin * self;
 	GError * inner_error;
 	FILE *max_node;
+	char *dev_name = odeviced_helpers_get_device();
 	klass = BACKLIGHT_PLUGIN_CLASS (g_type_class_peek (TYPE_BACKLIGHT_PLUGIN));
 	parent_class = G_OBJECT_CLASS (g_type_class_peek_parent (klass));
 	obj = parent_class->constructor (type, n_construct_properties, construct_properties);
@@ -102,13 +103,13 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 			g_clear_error (&inner_error);
 		}
 		_tmp0 = NULL;
-		self->priv->max_brightness_node = (_tmp0 = g_key_file_get_string (_file, "backlight", "max_brightness_node", &inner_error), (self->priv->max_brightness_node = (g_free (self->priv->max_brightness_node), NULL)), _tmp0);
+		self->priv->max_brightness_node = (_tmp0 = g_key_file_get_string (_file, dev_name, "max_brightness_node", &inner_error), (self->priv->max_brightness_node = (g_free (self->priv->max_brightness_node), NULL)), _tmp0);
 		if (inner_error != NULL) {
 			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
 			g_clear_error (&inner_error);
 		}
 		_tmp1 = NULL;
-		self->priv->set_brightness_node = (_tmp1 = g_key_file_get_string (_file, "backlight", "set_brightness_node", &inner_error), (self->priv->set_brightness_node = (g_free (self->priv->set_brightness_node), NULL)), _tmp1);
+		self->priv->set_brightness_node = (_tmp1 = g_key_file_get_string (_file, dev_name, "set_brightness_node", &inner_error), (self->priv->set_brightness_node = (g_free (self->priv->set_brightness_node), NULL)), _tmp1);
 		if (inner_error != NULL) {
 			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
 			g_clear_error (&inner_error);
