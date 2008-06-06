@@ -140,17 +140,24 @@ namespace ODeviced {
 			message("Probing plugins at %s\n", plugins_path);
 			
 			string[] _temp;
-			var dir = Dir.open(plugins_path, 0);
-			string plugin = dir.read_name();
-			
-			while (plugin!=null) {
-				if(plugin.has_suffix(".so")) {
-					_temp = plugin.split(".", 0);
-					message("Probing " + _temp[0]);
-					load(_temp[0]);
+
+			try {
+				var dir = Dir.open(plugins_path, 0);
+				string plugin = dir.read_name();
+				while (plugin!=null) {
+					if(plugin.has_suffix(".so")) {
+						_temp = plugin.split(".", 0);
+						message("Probing " + _temp[0]);
+						load(_temp[0]);
+					}
+					plugin = dir.read_name();
 				}
-				plugin = dir.read_name();
 			}
+
+			catch(GLib.FileError error) {
+				warning(error.message);
+			}
+			
 		}
 
 		
