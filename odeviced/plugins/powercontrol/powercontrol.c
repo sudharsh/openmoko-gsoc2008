@@ -99,7 +99,7 @@ GType generic_power_control_get_type (void) {
 G_MODULE_EXPORT gboolean powercontrol_init (ODevicedPlugin *plugin) {
 	GenericPowerControl *powerobj;
 	powerobj = generic_power_control_new();
-	odeviced_helpers_register_dbus_object (plugin, G_OBJECT(powerobj));
+	odeviced_register_dbus_object (plugin, G_OBJECT(powerobj));
 	return TRUE;
 }
 

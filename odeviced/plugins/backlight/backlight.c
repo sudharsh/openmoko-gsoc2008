@@ -71,7 +71,7 @@ gboolean backlight_plugin_set_brightness (BacklightPlugin* self, gint brightness
 gint backlight_plugin_get_curr_brightness (BacklightPlugin* self) {
 	
 	GKeyFile *_file;
-        char *dev_name = odeviced_helpers_get_device();
+        char *dev_name = odeviced_get_device();
         char *curr_node;
         FILE *sys_node;
         int brightness;
@@ -106,7 +106,7 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 	BacklightPlugin * self;
 	GError * inner_error;
 	FILE *max_node;
-	char *dev_name = odeviced_helpers_get_device();
+	char *dev_name = odeviced_get_device();
 	klass = BACKLIGHT_PLUGIN_CLASS (g_type_class_peek (TYPE_BACKLIGHT_PLUGIN));
 	parent_class = G_OBJECT_CLASS (g_type_class_peek_parent (klass));
 	obj = parent_class->constructor (type, n_construct_properties, construct_properties);
@@ -206,7 +206,7 @@ GType backlight_plugin_get_type (void) {
 G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	BacklightPlugin *backlightobj;
 	backlightobj = backlight_plugin_new();
-	odeviced_helpers_register_dbus_object (plugin, G_OBJECT(backlightobj));
+	odeviced_register_dbus_object (plugin, G_OBJECT(backlightobj));
 	return TRUE;
 }
 

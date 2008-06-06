@@ -169,7 +169,7 @@ G_MODULE_EXPORT gboolean wifi_init (ODevicedPlugin *plugin) {
 		}
 		wifiobj = wifi_plugin_new ();
 		if(wifiobj) {
-			odeviced_helpers_register_dbus_object (plugin, G_OBJECT(wifiobj));
+			odeviced_register_dbus_object (plugin, G_OBJECT(wifiobj));
 		}
 	}
 	goto __finally0;
