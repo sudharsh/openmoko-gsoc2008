@@ -56,16 +56,11 @@ gint backlight_plugin_get_max_brightness (BacklightPlugin* self) {
 
 gboolean backlight_plugin_set_brightness (BacklightPlugin* self, gint brightness) {
 
-	FILE *set_node;
-	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), FALSE);
+       	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), FALSE);
 	if(brightness > self->priv->max_brightness) 
 		return FALSE;
 
-	set_node = fopen( (char *)self->priv->set_brightness_node, "w");
-	fprintf(set_node, "%d", brightness);
-	fclose(set_node);
-	
-	return TRUE;
+	return odeviced_write_integer(self->priv->set_brightness_node, brightness);
 }
 
 gint backlight_plugin_get_curr_brightness (BacklightPlugin* self) {
@@ -73,8 +68,7 @@ gint backlight_plugin_get_curr_brightness (BacklightPlugin* self) {
 	GKeyFile *_file;
         char *dev_name = odeviced_get_device();
         char *curr_node;
-        FILE *sys_node;
-        int brightness;
+	int brightness;
 	GError *error;
 
 	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), 0);
@@ -82,10 +76,7 @@ gint backlight_plugin_get_curr_brightness (BacklightPlugin* self) {
 	g_key_file_load_from_file(_file, "/usr/share/odeviced/plugins/backlight.conf", G_KEY_FILE_NONE, &error);
 	curr_node = g_key_file_get_string (_file, dev_name, "curr_brightness_node", &error);
 
-        sys_node = fopen( curr_node, "r");
-	fscanf(sys_node, "%d", &brightness);
-	fclose(sys_node);
-	return brightness;
+        return odeviced_read_integer(curr_node);
 }
 
 
@@ -105,8 +96,7 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 	GObjectClass * parent_class;
 	BacklightPlugin * self;
 	GError * inner_error;
-	FILE *max_node;
-	char *dev_name = odeviced_get_device();
+       	char *dev_name = odeviced_get_device();
 	klass = BACKLIGHT_PLUGIN_CLASS (g_type_class_peek (TYPE_BACKLIGHT_PLUGIN));
 	parent_class = G_OBJECT_CLASS (g_type_class_peek_parent (klass));
 	obj = parent_class->constructor (type, n_construct_properties, construct_properties);
@@ -136,10 +126,9 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 		}
 
 		/**************************************************/
-		max_node = fopen((char *)self->priv->max_brightness_node, "r");
-		fscanf(max_node, "%d", &self->priv->max_brightness);
-		fclose(max_node);
-
+		printf(self->priv->max_brightness_node);
+		self->priv->max_brightness = odeviced_read_integer(self->priv->max_brightness_node);
+		
 		(_file == NULL ? NULL : (_file = (g_key_file_free (_file), NULL)));
 	}
 	return obj;
