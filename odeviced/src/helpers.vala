@@ -47,7 +47,7 @@ namespace ODeviced {
 	}
 
 	public static string get_conf(Plugin plugin) {
-		return ODeviced.Service.conf_dir_plugins + "/" + plugin.name + ".plugin";
+		return plugin.conf;
 	}
 
 	/* I know =( */
