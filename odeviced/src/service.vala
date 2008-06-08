@@ -24,7 +24,9 @@ namespace ODeviced {
 		MainLoop loop = new MainLoop (null, false);		
 		public HashTable<string, Plugin> loadedTable = new HashTable<string, Plugin>((HashFunc)str_hash, (EqualFunc)str_equal);
 		
-		public static string dev_name = new string();		
+		public static string dev_name = new string();
+		public static string conf_dir_plugins = new string();
+
 		private KeyFile conf_file = new KeyFile();
 		private string plugins_location = new string();
 		
@@ -47,6 +49,7 @@ namespace ODeviced {
 				if (conf_file.has_group("odeviced")) {
 					this.dev_name = conf_file.get_string("odeviced", "device_name");
 					this.plugins_location = conf_file.get_string("odeviced", "plugins_path");
+					this.conf_dir_plugins = conf_file.get_string("odeviced", "plugins_conf");
 				}
 
 				if (conf_file.has_key("odeviced", "enable")) {
@@ -82,7 +85,7 @@ namespace ODeviced {
 			
 			KeyFile _plugin_conf = new KeyFile();
 			try {
-				_plugin_conf.load_from_file("/usr/share/odeviced/plugins/" + plugin_name + ".conf", KeyFileFlags.NONE);
+				_plugin_conf.load_from_file(this.conf_dir_plugins + "/" + plugin_name + ".plugin", KeyFileFlags.NONE);
 				
 				/* Get dependencies of the plugin and try to load them */
 				if(_plugin_conf.has_group(plugin_name) && _plugin_conf.has_key(plugin_name, "depends")) {

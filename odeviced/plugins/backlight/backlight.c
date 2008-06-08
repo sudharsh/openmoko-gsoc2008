@@ -70,10 +70,10 @@ gint backlight_plugin_get_curr_brightness (BacklightPlugin* self) {
         char *curr_node;
 	int brightness;
 	GError *error;
-
+     
 	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), 0);
 	_file = g_key_file_new();
-	g_key_file_load_from_file(_file, "/usr/share/odeviced/plugins/backlight.conf", G_KEY_FILE_NONE, &error);
+	g_key_file_load_from_file(_file, self->conf, G_KEY_FILE_NONE, &error);
 	curr_node = g_key_file_get_string (_file, dev_name, "curr_brightness_node", &error);
 
         return odeviced_read_integer(curr_node);
@@ -97,6 +97,7 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 	BacklightPlugin * self;
 	GError * inner_error;
        	char *dev_name = odeviced_get_device();
+	
 	klass = BACKLIGHT_PLUGIN_CLASS (g_type_class_peek (TYPE_BACKLIGHT_PLUGIN));
 	parent_class = G_OBJECT_CLASS (g_type_class_peek_parent (klass));
 	obj = parent_class->constructor (type, n_construct_properties, construct_properties);
@@ -107,7 +108,7 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 		char* _tmp0;
 		char* _tmp1;
 		_file = g_key_file_new ();
-		g_key_file_load_from_file (_file, "/usr/share/odeviced/plugins/backlight.conf", G_KEY_FILE_NONE, &inner_error);
+		g_key_file_load_from_file (_file, "/usr/share/odeviced/plugins/backlight.plugin", G_KEY_FILE_NONE, &inner_error);
 		if (inner_error != NULL) {
 			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
 			g_clear_error (&inner_error);
@@ -124,9 +125,8 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
 			g_clear_error (&inner_error);
 		}
-
+		
 		/**************************************************/
-		printf(self->priv->max_brightness_node);
 		self->priv->max_brightness = odeviced_read_integer(self->priv->max_brightness_node);
 		
 		(_file == NULL ? NULL : (_file = (g_key_file_free (_file), NULL)));
@@ -195,6 +195,7 @@ GType backlight_plugin_get_type (void) {
 G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	BacklightPlugin *backlightobj;
 	backlightobj = backlight_plugin_new();
+	backlightobj->conf = odeviced_get_conf(plugin);
 	odeviced_register_dbus_object (plugin, G_OBJECT(backlightobj));
 	return TRUE;
 }

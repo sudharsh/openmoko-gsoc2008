@@ -27,7 +27,7 @@ namespace ODeviced {
 		KeyFile plugin_conf = new KeyFile();
 		plugin_conf.set_list_separator(',');
 		try {
-			plugin_conf.load_from_file("/usr/share/odeviced/plugins/" + plugin.name + ".conf", KeyFileFlags.NONE);
+			plugin_conf.load_from_file(ODeviced.Service.conf_dir_plugins + "/" + plugin.name + ".plugin", KeyFileFlags.NONE);
 			if(plugin_conf.has_group(plugin.name)) {
 				plugin.dbus_object_path = plugin_conf.get_string(plugin.name, "dbus_object_path");				
 				plugin.conn.register_object (plugin.dbus_object_path, interface_obj);
@@ -44,6 +44,10 @@ namespace ODeviced {
 	
 	public static string get_device () {
 		return ODeviced.Service.dev_name;
+	}
+
+	public static string get_conf(Plugin plugin) {
+		return ODeviced.Service.conf_dir_plugins + "/" + plugin.name + ".plugin";
 	}
 
 	/* I know =( */

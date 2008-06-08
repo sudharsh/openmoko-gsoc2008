@@ -49,6 +49,7 @@ typedef struct _BacklightPluginPrivate BacklightPluginPrivate;
  */
 struct _BacklightPlugin {
 	GObject parent_instance;
+	char *conf;
 	BacklightPluginPrivate * priv;
 };
 
