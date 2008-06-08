@@ -60,6 +60,12 @@ namespace ODeviced {
 		node_file.scanf("%s", val);
 		return val;
 	}
+
+	public static bool write_integer(string node, int val) {
+		FileStream node_file = FileStream.open(node, "w");
+		node_file.printf("%d", val);
+		return TRUE;
+	}
  
 }
 
