@@ -32,7 +32,7 @@ namespace ODeviced {
 		
 		public static DBus.Connection conn {
 			get;
-			set construct;
+			construct;
 		}
 		
 		

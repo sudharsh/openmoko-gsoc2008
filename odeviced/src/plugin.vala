@@ -36,13 +36,13 @@ namespace ODeviced {
 		
 		public string path {
 			public get;
-			set construct;
+			construct;
 		}
 
 
 		public string name {
 			public get;
-			set construct;
+			construct;
 		}
 
 	       		
