@@ -55,7 +55,7 @@ namespace ODeviced {
 		construct {
 			Rand rand = new Rand();
 			this.handle = rand.int_range(10, 99);
-			this.conf   = "/usr/share/odeviced/plugins/" + this.name + ".conf";
+			this.conf   = ODeviced.Service.conf_dir_plugins + "/" + this.name + ".plugin";
 		}
 
 		public bool register(DBus.Connection _conn) {
