@@ -10,7 +10,7 @@ AM_CPPFLAGS = \
 
 pkgdir		= $(libdir)/odeviced/plugins
 wificonfdir	= $(datadir)/odeviced/plugins
-wificonf_DATA   = wifi.conf	
+wificonf_DATA   = wifi.plugin	
 
 pkg_LTLIBRARIES	= wifi.la
 wifi_la_SOURCES	= wifi.c \

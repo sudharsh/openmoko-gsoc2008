@@ -10,7 +10,7 @@ AM_CPPFLAGS = \
 
 pkgdir		= $(libdir)/odeviced/plugins
 backlightconfdir	= $(datadir)/odeviced/plugins
-backlightconf_DATA   = backlight.conf	
+backlightconf_DATA   = backlight.plugin
 
 pkg_LTLIBRARIES	= backlight.la
 backlight_la_SOURCES	= backlight.c \
