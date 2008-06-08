@@ -50,7 +50,7 @@ namespace ODeviced {
 	public static int read_integer(string node) {
 		FileStream node_file = FileStream.open(node, "r");
 		int val;
-		node_file.scanf("%d", val);
+		node_file.scanf("%d", ref val);
 		return val;		
 	}
 
@@ -64,7 +64,7 @@ namespace ODeviced {
 	public static bool write_integer(string node, int val) {
 		FileStream node_file = FileStream.open(node, "w");
 		node_file.printf("%d", val);
-		return TRUE;
+		return true;
 	}
  
 }
