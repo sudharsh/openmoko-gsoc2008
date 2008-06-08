@@ -46,6 +46,21 @@ namespace ODeviced {
 		return ODeviced.Service.dev_name;
 	}
 
+	/* I know =( */
+	public static int read_integer(string node) {
+		FileStream node_file = FileStream.open(node, "r");
+		int val;
+		node_file.scanf("%d", val);
+		return val;		
+	}
+
+	public static string read_string(string node) {
+		FileStream node_file = FileStream.open(node, "r");
+		string val;
+		node_file.scanf("%s", val);
+		return val;
+	}
+ 
 }
 
 
