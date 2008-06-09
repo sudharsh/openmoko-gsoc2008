@@ -20,7 +20,7 @@
  */
 
 #include "power.h"
-#include "daemon/helpers.h"
+#include "helpers.h"
 #include <dbus/dbus-glib.h>
 
 
@@ -37,6 +37,8 @@ struct _PowerPrivate {
 enum  {
 	POWER_DUMMY_PROPERTY
 };
+static gboolean power_poll_energy (Power* self);
+static gboolean _power_poll_energy_gsource_func (gpointer self);
 static GObject * power_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties);
 static gpointer power_parent_class = NULL;
 static gboolean _dbus_power_current_energy (Power* self, gint* result, GError** error);
@@ -126,12 +128,26 @@ char* power_technology (Power* self) {
 }
 
 
+static gboolean power_poll_energy (Power* self) {
+	gint _curr;
+	g_return_val_if_fail (IS_POWER (self), FALSE);
+	_curr = power_current_energy (self);
+	g_message ("Current energy %d", _curr);
+	return TRUE;
+}
+
+
 /* This vala source exists to generate the boilerplate code
    $ valac -C powercontrol.vala --pkg dbus-glib-1*/
 Power* power_new (void) {
 	Power * self;
 	self = g_object_newv (TYPE_POWER, 0, NULL);
 	return self;
+}
+
+
+static gboolean _power_poll_energy_gsource_func (gpointer self) {
+	return power_poll_energy (self);
 }
 
 
@@ -147,6 +163,7 @@ static GObject * power_constructor (GType type, guint n_construct_properties, GO
 	self = POWER (obj);
 	inner_error = NULL;
 	{
+		g_timeout_add_seconds (((guint) (300)), _power_poll_energy_gsource_func, self);
 		{
 			char* dev;
 			char* _tmp0;
@@ -154,20 +171,20 @@ static GObject * power_constructor (GType type, guint n_construct_properties, GO
 			dev = odeviced_get_device ();
 			g_key_file_load_from_file (self->priv->conf, "/usr/share/odeviced/plugins/power.plugin", G_KEY_FILE_NONE, &inner_error);
 			if (inner_error != NULL) {
-				goto __catch5_g_error;
+				goto __catch6_g_error;
 			}
 			_tmp0 = NULL;
 			self->priv->power_supply_node = (_tmp0 = g_key_file_get_string (self->priv->conf, dev, "power_supply_node", &inner_error), (self->priv->power_supply_node = (g_free (self->priv->power_supply_node), NULL)), _tmp0);
 			if (inner_error != NULL) {
-				goto __catch5_g_error;
+				goto __catch6_g_error;
 			}
 			_tmp1 = NULL;
 			self->priv->max_energy = odeviced_read_integer ((_tmp1 = g_strconcat (self->priv->power_supply_node, "/energy_full", NULL)));
 			_tmp1 = (g_free (_tmp1), NULL);
 			dev = (g_free (dev), NULL);
 		}
-		goto __finally5;
-		__catch5_g_error:
+		goto __finally6;
+		__catch6_g_error:
 		{
 			GError * error;
 			error = inner_error;
@@ -176,7 +193,7 @@ static GObject * power_constructor (GType type, guint n_construct_properties, GO
 				g_critical (error->message);
 			}
 		}
-		__finally5:
+		__finally6:
 		;
 	}
 	return obj;

@@ -36,6 +36,8 @@ public class Power: GLib.Object {
 	private int max_energy = new string();
 	
 	construct {
+		
+		Timeout.add_seconds(300, poll_energy);
 		try {
 			var dev = ODeviced.get_device();
 			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
@@ -77,6 +79,12 @@ public class Power: GLib.Object {
 
 	public string technology() {
 		return ODeviced.read_string(this.power_supply_node + "/technology");
+	}
+
+	private bool poll_energy() {
+		var _curr = current_energy();
+		message("Current energy, %d", _curr);
+		return true;
 	}
 
 	
