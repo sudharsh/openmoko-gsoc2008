@@ -1,5 +1,0 @@
-[powercontrol]
-dbus_object_path=/org/freesmartphone/Device/Plugins/Powercontrol
-
-[FreeRunner]
-power_supply_node=/sys/class/power_supply/BAT1
