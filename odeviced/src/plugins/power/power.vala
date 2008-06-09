@@ -31,6 +31,7 @@ using ODeviced;
 public class Power: GLib.Object {
 	
 	private string power_supply_node = new string();
+	private string status = new string();
 	private KeyFile conf = new KeyFile();
 	private int max_energy = new string();
 	
@@ -53,6 +54,32 @@ public class Power: GLib.Object {
 	public int get_max_energy() {
 		return this.max_energy;
 	}
+
+	public int energy_full_design() {
+		return ODeviced.read_integer(this.power_supply_node + "/energy_full_design");
+	}
+
+	public string battery_status() {
+		return ODeviced.read_string(this.power_supply_node + "/status");
+	}
+
+	public string type() {
+		return ODeviced.read_string(this.power_supply_node + "/type");
+	}
+
+	public string model_name() {
+		return ODeviced.read_string(this.power_supply_node + "/model_name");
+	}
+
+	public string manufacturer() {
+		return ODeviced.read_string(this.power_supply_node + "/manufacturer");
+	}
+
+	public string technology() {
+		return ODeviced.read_string(this.power_supply_node + "/technology");
+	}
+
+	
 
 /*
  * Uncomment this in the generated file

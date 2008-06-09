@@ -24,6 +24,8 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <stdlib.h>
+#include <string.h>
 
 G_BEGIN_DECLS
 
@@ -53,6 +55,12 @@ struct _PowerClass {
 
 gint power_current_energy (Power* self);
 gint power_get_max_energy (Power* self);
+gint power_energy_full_design (Power* self);
+char* power_battery_status (Power* self);
+char* power_type (Power* self);
+char* power_model_name (Power* self);
+char* power_manufacturer (Power* self);
+char* power_technology (Power* self);
 Power* power_new (void);
 GType power_get_type (void);
 
