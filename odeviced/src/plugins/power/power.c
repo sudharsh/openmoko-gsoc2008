@@ -22,7 +22,7 @@
 #include "power.h"
 #include <stdlib.h>
 #include <string.h>
-#include "helpers.h"
+#include "daemon/helpers.h"
 #include <dbus/dbus-glib.h>
 
 
