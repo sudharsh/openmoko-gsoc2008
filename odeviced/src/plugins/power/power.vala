@@ -39,12 +39,24 @@ public class Power: GLib.Object {
 			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
 			this.power_supply_node = conf.get_string(dev, "power_supply_node");
 		}
+		catch (GLib.Error error) {
+			critical(error.message);
+		}
 	}
 
-	public long current_energy() {
-		return ODeviced.read_long(this.power_supply_node + "/energy_now");
+	public int current_energy() {
+		return ODeviced.read_integer(this.power_supply_node + "/energy_now");
 	}
 
 }
 
 
+/*
+ * Uncomment this in the generated file
+G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
+	Power *powerobj;
+	powerobj = power_new();
+	odeviced_register_dbus_object (plugin, G_OBJECT(powerobj));
+	return TRUE;
+}
+*/

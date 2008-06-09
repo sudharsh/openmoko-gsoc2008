@@ -1,5 +1,6 @@
 SUBDIRS = \
 	powercontrol \
 	wifi \
-	backlight
+	backlight \
+	power
 
