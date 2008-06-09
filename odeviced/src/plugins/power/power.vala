@@ -34,6 +34,7 @@ public class Power: GLib.Object {
 	private string status = new string();
 	private KeyFile conf = new KeyFile();
 	private int max_energy = new string();
+	private int low_energy_threshold;
 	
 	construct {
 		
@@ -42,7 +43,10 @@ public class Power: GLib.Object {
 			var dev = ODeviced.get_device();
 			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
 			this.power_supply_node = conf.get_string(dev, "power_supply_node");
+			var _min = conf.get_integer(dev, "low_energy_threshold");
 			this.max_energy = ODeviced.read_integer (this.power_supply_node + "/energy_full");
+			/* Prolly use this for warning during low battery */
+			this.low_energy_threshold = this.max_energy * (_min/100);
 		}
 		catch (GLib.Error error) {
 			critical(error.message);

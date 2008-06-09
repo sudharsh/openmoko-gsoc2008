@@ -31,6 +31,7 @@ struct _PowerPrivate {
 	char* status;
 	GKeyFile* conf;
 	gint max_energy;
+	gint low_energy_threshold;
 };
 
 #define POWER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_POWER, PowerPrivate))
@@ -132,7 +133,7 @@ static gboolean power_poll_energy (Power* self) {
 	gint _curr;
 	g_return_val_if_fail (IS_POWER (self), FALSE);
 	_curr = power_current_energy (self);
-	g_message ("Current energy %d", _curr);
+	g_message ("power.vala:90: Current energy, %d", _curr);
 	return TRUE;
 }
 
@@ -167,6 +168,7 @@ static GObject * power_constructor (GType type, guint n_construct_properties, GO
 		{
 			char* dev;
 			char* _tmp0;
+			gint _min;
 			char* _tmp1;
 			dev = odeviced_get_device ();
 			g_key_file_load_from_file (self->priv->conf, "/usr/share/odeviced/plugins/power.plugin", G_KEY_FILE_NONE, &inner_error);
@@ -178,9 +180,15 @@ static GObject * power_constructor (GType type, guint n_construct_properties, GO
 			if (inner_error != NULL) {
 				goto __catch6_g_error;
 			}
+			_min = g_key_file_get_integer (self->priv->conf, dev, "low_energy_threshold", &inner_error);
+			if (inner_error != NULL) {
+				goto __catch6_g_error;
+			}
 			_tmp1 = NULL;
 			self->priv->max_energy = odeviced_read_integer ((_tmp1 = g_strconcat (self->priv->power_supply_node, "/energy_full", NULL)));
 			_tmp1 = (g_free (_tmp1), NULL);
+			/* Prolly use this for warning during low battery */
+			self->priv->low_energy_threshold = self->priv->max_energy * (_min / 100);
 			dev = (g_free (dev), NULL);
 		}
 		goto __finally6;
@@ -303,6 +311,7 @@ G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
 	odeviced_register_dbus_object (plugin, G_OBJECT(powerobj));
 	return TRUE;
 }
+
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
 	typedef gboolean (*GMarshalFunc_BOOLEAN__POINTER_POINTER) (gpointer data1, gpointer arg_1, gpointer arg_2, gpointer data2);
