@@ -22,10 +22,6 @@
 #ifndef __BACKLIGHT_H__
 #define __BACKLIGHT_H__
 
-#include "plugin.h"
-#include "helpers.h"
-
-#include <stdio.h>
 #include <glib.h>
 #include <glib-object.h>
 
@@ -49,7 +45,6 @@ typedef struct _BacklightPluginPrivate BacklightPluginPrivate;
  */
 struct _BacklightPlugin {
 	GObject parent_instance;
-	char *conf;
 	BacklightPluginPrivate * priv;
 };
 

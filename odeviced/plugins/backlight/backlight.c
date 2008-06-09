@@ -22,6 +22,9 @@
 #include "backlight.h"
 #include <stdlib.h>
 #include <string.h>
+#include <dbus/dbus-glib-lowlevel.h>
+#include <dbus/dbus-glib.h>
+#include "helpers.h"
 #include <dbus/dbus-glib.h>
 
 
@@ -31,6 +34,7 @@ struct _BacklightPluginPrivate {
 	gint max_brightness;
 	char* max_brightness_node;
 	char* set_brightness_node;
+	char* curr_brightness_node;
 };
 
 #define BACKLIGHT_PLUGIN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_BACKLIGHT_PLUGIN, BacklightPluginPrivate))
@@ -50,33 +54,23 @@ static void g_cclosure_user_marshal_BOOLEAN__INT_POINTER_POINTER (GClosure * clo
 
 gint backlight_plugin_get_max_brightness (BacklightPlugin* self) {
 	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), 0);
- 	return self->priv->max_brightness;
+	return self->priv->max_brightness;
 }
 
 
 gboolean backlight_plugin_set_brightness (BacklightPlugin* self, gint brightness) {
-
-       	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), FALSE);
-	if(brightness > self->priv->max_brightness) 
+	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), FALSE);
+	if (brightness > self->priv->max_brightness) {
 		return FALSE;
-
-	return odeviced_write_integer(self->priv->set_brightness_node, brightness);
+	}
+	odeviced_write_integer (self->priv->curr_brightness_node, brightness);
+	return TRUE;
 }
 
-gint backlight_plugin_get_curr_brightness (BacklightPlugin* self) {
-	
-	GKeyFile *_file;
-        char *dev_name = odeviced_get_device();
-        char *curr_node;
-	int brightness;
-	GError *error;
-     
-	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), 0);
-	_file = g_key_file_new();
-	g_key_file_load_from_file(_file, self->conf, G_KEY_FILE_NONE, &error);
-	curr_node = g_key_file_get_string (_file, dev_name, "curr_brightness_node", &error);
 
-        return odeviced_read_integer(curr_node);
+gint backlight_plugin_get_curr_brightness (BacklightPlugin* self) {
+	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), 0);
+	return odeviced_read_integer (self->priv->curr_brightness_node);
 }
 
 
@@ -90,46 +84,78 @@ BacklightPlugin* backlight_plugin_new (void) {
 	return self;
 }
 
+
 static GObject * backlight_plugin_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties) {
 	GObject * obj;
 	BacklightPluginClass * klass;
 	GObjectClass * parent_class;
 	BacklightPlugin * self;
 	GError * inner_error;
-       	char *dev_name = odeviced_get_device();
-	
 	klass = BACKLIGHT_PLUGIN_CLASS (g_type_class_peek (TYPE_BACKLIGHT_PLUGIN));
 	parent_class = G_OBJECT_CLASS (g_type_class_peek_parent (klass));
 	obj = parent_class->constructor (type, n_construct_properties, construct_properties);
 	self = BACKLIGHT_PLUGIN (obj);
 	inner_error = NULL;
 	{
-		GKeyFile* _file;
-		char* _tmp0;
-		char* _tmp1;
-		_file = g_key_file_new ();
-		g_key_file_load_from_file (_file, "/usr/share/odeviced/plugins/backlight.plugin", G_KEY_FILE_NONE, &inner_error);
-		if (inner_error != NULL) {
-			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
-			g_clear_error (&inner_error);
+		{
+			GKeyFile* _file;
+			char* dev;
+			char* _tmp0;
+			char* _tmp1;
+			char* _tmp2;
+			_file = g_key_file_new ();
+			g_key_file_load_from_file (_file, "/usr/share/odeviced/plugins/backlight.plugin", G_KEY_FILE_NONE, &inner_error);
+			if (inner_error != NULL) {
+				if (inner_error->domain == DBUS_GERROR) {
+					goto __catch0_dbus_gerror;
+				}
+				g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
+				g_clear_error (&inner_error);
+			}
+			dev = odeviced_get_device ();
+			_tmp0 = NULL;
+			self->priv->max_brightness_node = (_tmp0 = g_key_file_get_string (_file, dev, "max_brightness_node", &inner_error), (self->priv->max_brightness_node = (g_free (self->priv->max_brightness_node), NULL)), _tmp0);
+			if (inner_error != NULL) {
+				if (inner_error->domain == DBUS_GERROR) {
+					goto __catch0_dbus_gerror;
+				}
+				g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
+				g_clear_error (&inner_error);
+			}
+			_tmp1 = NULL;
+			self->priv->set_brightness_node = (_tmp1 = g_key_file_get_string (_file, dev, "set_brightness_node", &inner_error), (self->priv->set_brightness_node = (g_free (self->priv->set_brightness_node), NULL)), _tmp1);
+			if (inner_error != NULL) {
+				if (inner_error->domain == DBUS_GERROR) {
+					goto __catch0_dbus_gerror;
+				}
+				g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
+				g_clear_error (&inner_error);
+			}
+			_tmp2 = NULL;
+			self->priv->curr_brightness_node = (_tmp2 = g_key_file_get_string (_file, dev, "curr_brightness_node", &inner_error), (self->priv->curr_brightness_node = (g_free (self->priv->curr_brightness_node), NULL)), _tmp2);
+			if (inner_error != NULL) {
+				if (inner_error->domain == DBUS_GERROR) {
+					goto __catch0_dbus_gerror;
+				}
+				g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
+				g_clear_error (&inner_error);
+			}
+			self->priv->max_brightness = odeviced_read_integer (self->priv->max_brightness_node);
+			(_file == NULL ? NULL : (_file = (g_key_file_free (_file), NULL)));
+			dev = (g_free (dev), NULL);
 		}
-		_tmp0 = NULL;
-		self->priv->max_brightness_node = (_tmp0 = g_key_file_get_string (_file, dev_name, "max_brightness_node", &inner_error), (self->priv->max_brightness_node = (g_free (self->priv->max_brightness_node), NULL)), _tmp0);
-		if (inner_error != NULL) {
-			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
-			g_clear_error (&inner_error);
+		goto __finally0;
+		__catch0_dbus_gerror:
+		{
+			GError * e;
+			e = inner_error;
+			inner_error = NULL;
+			{
+				g_critical (e->message);
+			}
 		}
-		_tmp1 = NULL;
-		self->priv->set_brightness_node = (_tmp1 = g_key_file_get_string (_file, dev_name, "set_brightness_node", &inner_error), (self->priv->set_brightness_node = (g_free (self->priv->set_brightness_node), NULL)), _tmp1);
-		if (inner_error != NULL) {
-			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
-			g_clear_error (&inner_error);
-		}
-		
-		/**************************************************/
-		self->priv->max_brightness = odeviced_read_integer(self->priv->max_brightness_node);
-		
-		(_file == NULL ? NULL : (_file = (g_key_file_free (_file), NULL)));
+		__finally0:
+		;
 	}
 	return obj;
 }
@@ -179,6 +205,7 @@ static void backlight_plugin_dispose (GObject * obj) {
 	self = BACKLIGHT_PLUGIN (obj);
 	self->priv->max_brightness_node = (g_free (self->priv->max_brightness_node), NULL);
 	self->priv->set_brightness_node = (g_free (self->priv->set_brightness_node), NULL);
+	self->priv->curr_brightness_node = (g_free (self->priv->curr_brightness_node), NULL);
 	G_OBJECT_CLASS (backlight_plugin_parent_class)->dispose (obj);
 }
 
@@ -193,13 +220,11 @@ GType backlight_plugin_get_type (void) {
 }
 
 G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
-	BacklightPlugin *backlightobj;
-	backlightobj = backlight_plugin_new();
-	backlightobj->conf = odeviced_get_conf(plugin);
-	odeviced_register_dbus_object (plugin, G_OBJECT(backlightobj));
-	return TRUE;
+       BacklightPlugin *backlightobj;
+       backlightobj = backlight_plugin_new();
+       odeviced_register_dbus_object (plugin, G_OBJECT(backlightobj));
+       return TRUE;
 }
-
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
 	typedef gboolean (*GMarshalFunc_BOOLEAN__POINTER_POINTER) (gpointer data1, gpointer arg_1, gpointer arg_2, gpointer data2);

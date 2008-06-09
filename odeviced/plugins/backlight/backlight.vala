@@ -25,6 +25,7 @@
  */
 
 using DBus;
+using ODeviced;
 
 [DBus (name = "org.freesmartphone.Device.Plugins.Backlight")]
 public class BacklightPlugin: GLib.Object {
@@ -32,27 +33,39 @@ public class BacklightPlugin: GLib.Object {
 	private int max_brightness;
 	private string max_brightness_node;
 	private string set_brightness_node;
+	private string curr_brightness_node;
 	
 	construct {
-		GLib.KeyFile _file = new GLib.KeyFile();
-		_file.load_from_file("/usr/share/odeviced/plugins/backlight.conf", GLib.KeyFileFlags.NONE);
-		this.max_brightness_node = _file.get_string("backlight", "max_brightness_node");
-		this.set_brightness_node = _file.get_string("backlight", "set_brightness_node");
+		try {
+			GLib.KeyFile _file = new GLib.KeyFile();
+			_file.load_from_file("/usr/share/odeviced/plugins/backlight.plugin", GLib.KeyFileFlags.NONE);
 		
-		
+			var dev = ODeviced.get_device();
+			this.max_brightness_node = _file.get_string(dev, "max_brightness_node");
+			this.set_brightness_node = _file.get_string(dev, "set_brightness_node");
+			this.curr_brightness_node = _file.get_string(dev, "curr_brightness_node");
+			this.max_brightness = ODeviced.read_integer(this.max_brightness_node);
+		}
+
+		catch (Error e) {
+			GLib.critical(e.message);
+		}
 	}
 		
 
 	public int get_max_brightness() {
-		return 1;
+		return this.max_brightness;
 	}
 
 	public bool set_brightness(int brightness) {
+		if(brightness > this.max_brightness)
+			return false;
+		ODeviced.write_integer(this.curr_brightness_node, brightness);
 		return true;
 	}
 
 	public int get_curr_brightness() {
-		return 1;
+		return ODeviced.read_integer(this.curr_brightness_node);
 	}
 
 }
