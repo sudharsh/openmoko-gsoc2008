@@ -59,10 +59,23 @@ namespace ODeviced {
 	}
 
 	public static string read_string(string node) {
-		FileStream node_file = FileStream.open(node, "r");
-		string val;
-		node_file.scanf("%s", val);
-		return val;
+		File node_file = File.new_for_path(node);
+		DataInputStream stream;
+		string line;
+
+		try {
+			stream = new DataInputStream(node_file.read(null));
+			line = stream.read_line(null, null);
+		}
+
+		catch (GLib.Error e) {
+			critical (e.message);
+		}
+
+		finally {
+			stream.close(null);
+		}
+		return line;
 	}
 
   	public static bool write_integer(string node, int val) {
