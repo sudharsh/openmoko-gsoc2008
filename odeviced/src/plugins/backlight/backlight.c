@@ -24,7 +24,7 @@
 #include <string.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <dbus/dbus-glib.h>
-#include "helpers.h"
+#include "daemon/helpers.h"
 #include <dbus/dbus-glib.h>
 
 
