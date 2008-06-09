@@ -22,8 +22,8 @@
 #ifndef __POWERCONTROL_H__
 #define __POWERCONTROL_H__
 
-#include "plugin.h"
-#include "helpers.h"
+#include "daemon/plugin.h"
+#include "daemon/helpers.h"
 
 #include <glib.h>
 #include <glib-object.h>

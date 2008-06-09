@@ -22,7 +22,8 @@
 #ifndef __WIFI_H__
 #define __WIFI_H__
 
-#include "helpers.h"
+#include "daemon/helpers.h"
+#include "daemon/plugin.h"
 
 #include <sys/types.h>
 #include <sys/ioctl.h>

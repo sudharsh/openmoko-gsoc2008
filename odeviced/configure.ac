@@ -56,8 +56,9 @@ AC_CONFIG_FILES([po/Makefile.in])
 
 AC_OUTPUT([
 Makefile
-plugins/Makefile
-plugins/powercontrol/Makefile
-plugins/wifi/Makefile
-plugins/backlight/Makefile
+src/Makefile
+src/plugins/Makefile
+src/plugins/powercontrol/Makefile
+src/plugins/wifi/Makefile
+src/plugins/backlight/Makefile
 ])

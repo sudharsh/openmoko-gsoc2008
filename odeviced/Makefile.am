@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 SUBDIRS = \
 	po \
-	plugins \
+	src \
 	$(NULL)
 
 AM_CPPFLAGS = \
@@ -16,15 +16,15 @@ AM_CPPFLAGS = \
 	-ggdb \
 	$(NULL)
 
-BUILT_SOURCES = src/odeviced.vala.stamp 
+BUILT_SOURCES = src/daemon/odeviced.vala.stamp 
 
 bin_PROGRAMS = odeviced
 
 odeviced_VALASOURCES = \
-	src/helpers.vala \
-	src/plugin.vala \
-	src/odeviced.vala \
-	src/service.vala \
+	src/daemon/helpers.vala \
+	src/daemon/plugin.vala \
+	src/daemon/odeviced.vala \
+	src/daemon/service.vala \
 	$(NULL)
 
 odeviced_SOURCES = \
@@ -33,7 +33,7 @@ odeviced_SOURCES = \
 	$(NULL)
 
 
-src/odeviced.vala.stamp: $(odeviced_VALASOURCES)
+src/daemon/odeviced.vala.stamp: $(odeviced_VALASOURCES)
 	$(VALAC) -C --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0 --basedir $(top_srcdir) $^
 	touch $@
 
@@ -54,7 +54,7 @@ EXTRA_DIST = \
 	intltool-update.in \
 	intltool-merge.in \
 	$(odeviced_VALASOURCES) \
-	src/odeviced.vala.stamp \
+	src/daemon/odeviced.vala.stamp \
 	dbussystem_DATA \
 	odevicedconf_DATA \
 	$(NULL)
@@ -67,8 +67,8 @@ DISTCLEANFILES = \
 	$(NULL)
 
 CLEANFILES = \
-	src/*.c \
-	src/*.h \
-	src/*.stamp \
+	src/daemon/*.c \
+	src/daemon/*.h \
+	src/daemon/*.stamp \
 	$(NULL)
 
