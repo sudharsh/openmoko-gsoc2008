@@ -22,7 +22,7 @@ using GLib;
 using DBus;
 
 namespace ODeviced {
-		
+
 	public static void register_dbus_object(Plugin plugin, GLib.Object interface_obj) {
 		KeyFile plugin_conf = new KeyFile();
 		plugin_conf.set_list_separator(',');
@@ -50,7 +50,7 @@ namespace ODeviced {
 		return plugin.conf;
 	}
 
-	/* I know =( */
+	/* I know =(, Ideally these should have been a single function */
 	public static int read_integer(string node) {
 		FileStream node_file = FileStream.open(node, "r");
 		int val;
@@ -65,7 +65,7 @@ namespace ODeviced {
 		return val;
 	}
 
-	public static bool write_integer(string node, int val) {
+  	public static bool write_integer(string node, int val) {
 		FileStream node_file = FileStream.open(node, "w");
 		node_file.printf("%d", val);
 		return true;
