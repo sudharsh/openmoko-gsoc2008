@@ -32,12 +32,14 @@ public class Power: GLib.Object {
 	
 	private string power_supply_node = new string();
 	private KeyFile conf = new KeyFile();
-
+	private int max_energy = new string();
+	
 	construct {
 		try {
 			var dev = ODeviced.get_device();
 			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
 			this.power_supply_node = conf.get_string(dev, "power_supply_node");
+			this.max_energy = ODeviced.read_integer (this.power_supply_node + "/energy_full");
 		}
 		catch (GLib.Error error) {
 			critical(error.message);
@@ -48,8 +50,9 @@ public class Power: GLib.Object {
 		return ODeviced.read_integer(this.power_supply_node + "/energy_now");
 	}
 
-}
-
+	public int get_max_energy() {
+		return this.max_energy;
+	}
 
 /*
  * Uncomment this in the generated file
@@ -60,3 +63,6 @@ G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
 	return TRUE;
 }
 */
+
+}
+

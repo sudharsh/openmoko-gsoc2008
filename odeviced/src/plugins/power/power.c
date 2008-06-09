@@ -22,7 +22,7 @@
 #include "power.h"
 #include <stdlib.h>
 #include <string.h>
-#include "daemon/helpers.h"
+#include "helpers.h"
 #include <dbus/dbus-glib.h>
 
 
@@ -31,6 +31,7 @@
 struct _PowerPrivate {
 	char* power_supply_node;
 	GKeyFile* conf;
+	gint max_energy;
 };
 
 #define POWER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_POWER, PowerPrivate))
@@ -40,6 +41,7 @@ enum  {
 static GObject * power_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties);
 static gpointer power_parent_class = NULL;
 static gboolean _dbus_power_current_energy (Power* self, gint* result, GError** error);
+static gboolean _dbus_power_get_max_energy (Power* self, gint* result, GError** error);
 static void power_dispose (GObject * obj);
 
 
@@ -51,6 +53,12 @@ gint power_current_energy (Power* self) {
 	g_return_val_if_fail (IS_POWER (self), 0);
 	_tmp0 = NULL;
 	return (_tmp1 = odeviced_read_integer ((_tmp0 = g_strconcat (self->priv->power_supply_node, "/energy_now", NULL))), (_tmp0 = (g_free (_tmp0), NULL)), _tmp1);
+}
+
+
+gint power_get_max_energy (Power* self) {
+	g_return_val_if_fail (IS_POWER (self), 0);
+	return self->priv->max_energy;
 }
 
 
@@ -78,6 +86,7 @@ static GObject * power_constructor (GType type, guint n_construct_properties, GO
 		{
 			char* dev;
 			char* _tmp0;
+			char* _tmp1;
 			dev = odeviced_get_device ();
 			g_key_file_load_from_file (self->priv->conf, "/usr/share/odeviced/plugins/power.plugin", G_KEY_FILE_NONE, &inner_error);
 			if (inner_error != NULL) {
@@ -88,6 +97,9 @@ static GObject * power_constructor (GType type, guint n_construct_properties, GO
 			if (inner_error != NULL) {
 				goto __catch5_g_error;
 			}
+			_tmp1 = NULL;
+			self->priv->max_energy = odeviced_read_integer ((_tmp1 = g_strconcat (self->priv->power_supply_node, "/energy_full", NULL)));
+			_tmp1 = (g_free (_tmp1), NULL);
 			dev = (g_free (dev), NULL);
 		}
 		goto __finally5;
@@ -113,6 +125,12 @@ static gboolean _dbus_power_current_energy (Power* self, gint* result, GError** 
 }
 
 
+static gboolean _dbus_power_get_max_energy (Power* self, gint* result, GError** error) {
+	*result = power_get_max_energy (self);
+	return !error || !*error;
+}
+
+
 static void power_class_init (PowerClass * klass) {
 	power_parent_class = g_type_class_peek_parent (klass);
 	g_type_class_add_private (klass, sizeof (PowerPrivate));
@@ -120,9 +138,10 @@ static void power_class_init (PowerClass * klass) {
 	G_OBJECT_CLASS (klass)->dispose = power_dispose;
 	static const DBusGMethodInfo power_dbus_methods[] = {
 { (GCallback) _dbus_power_current_energy, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 0 },
+{ (GCallback) _dbus_power_get_max_energy, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 73 },
 }
 ;
-	static const DBusGObjectInfo power_dbus_object_info = { 0, power_dbus_methods, 1, "org.freesmartphone.Device.Plugins.Power\0current_energy\0S\0result\0O\0F\0N\0i\0\0", "", "" };
+	static const DBusGObjectInfo power_dbus_object_info = { 0, power_dbus_methods, 2, "org.freesmartphone.Device.Plugins.Power\0current_energy\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Plugins.Power\0get_max_energy\0S\0result\0O\0F\0N\0i\0\0", "", "" };
 	dbus_g_object_type_install_info (TYPE_POWER, &power_dbus_object_info);
 }
 
@@ -131,6 +150,7 @@ static void power_instance_init (Power * self) {
 	self->priv = POWER_GET_PRIVATE (self);
 	self->priv->power_supply_node = g_new0 (char, 1);
 	self->priv->conf = g_key_file_new ();
+	self->priv->max_energy = ((gint) (g_new0 (char, 1)));
 }
 
 
@@ -160,6 +180,8 @@ G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
 	return TRUE;
 }
 
+
+
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
 	typedef gboolean (*GMarshalFunc_BOOLEAN__POINTER_POINTER) (gpointer data1, gpointer arg_1, gpointer arg_2, gpointer data2);
 	register GMarshalFunc_BOOLEAN__POINTER_POINTER callback;
@@ -180,3 +202,6 @@ static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure
 	v_return = callback (data1, g_value_get_pointer (param_values + 1), g_value_get_pointer (param_values + 2), data2);
 	g_value_set_boolean (return_value, v_return);
 }
+
+
+

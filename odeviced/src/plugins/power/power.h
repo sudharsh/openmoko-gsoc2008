@@ -52,6 +52,7 @@ struct _PowerClass {
 
 
 gint power_current_energy (Power* self);
+gint power_get_max_energy (Power* self);
 Power* power_new (void);
 GType power_get_type (void);
 
