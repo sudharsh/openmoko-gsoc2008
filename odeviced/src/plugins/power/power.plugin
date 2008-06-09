@@ -4,4 +4,5 @@ dbus_object_path=/org/freesmartphone/Device/Plugins/Power
 [FreeRunner]
 power_supply_node=/sys/class/power_supply/BAT1
 # low_energy threshold in percentage
-low_energy_threshold=10 
+low_energy_threshold=10
+status_poll_interval=5

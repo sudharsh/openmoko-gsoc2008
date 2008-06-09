@@ -35,6 +35,11 @@ public class Power: GLib.Object {
 	private KeyFile conf = new KeyFile();
 	private int max_energy = new string();
 	private int low_energy_threshold;
+	private int status_poll_interval;
+
+	public signal void battery_status_changed(string status);
+
+	private string _curr_status;
 	
 	construct {
 		
@@ -44,9 +49,13 @@ public class Power: GLib.Object {
 			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
 			this.power_supply_node = conf.get_string(dev, "power_supply_node");
 			var _min = conf.get_integer(dev, "low_energy_threshold");
+			this.status_poll_interval = conf.get_integer(dev, "status_poll_interval");
 			this.max_energy = ODeviced.read_integer (this.power_supply_node + "/energy_full");
 			/* Prolly use this for warning during low battery */
 			this.low_energy_threshold = this.max_energy * (_min/100);
+
+			Timeout.add_seconds(this.status_poll_interval, poll_status);
+			this._curr_status = battery_status();
 		}
 		catch (GLib.Error error) {
 			critical(error.message);
@@ -91,7 +100,15 @@ public class Power: GLib.Object {
 		return true;
 	}
 
-	
+	private bool poll_status() {
+		var _curr = battery_status();
+		if(_curr != this._curr_status) {
+			message("\tStatus changed, %s", _curr);
+			this.battery_status_changed(_curr);
+			this._curr_status = _curr;
+		}
+		return true;
+	}
 
 /*
  * Uncomment this in the generated file
@@ -104,4 +121,3 @@ G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
 */
 
 }
-
