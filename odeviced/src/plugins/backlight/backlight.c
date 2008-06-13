@@ -23,7 +23,6 @@
 #include <dbus/dbus-glib-lowlevel.h>
 #include <dbus/dbus-glib.h>
 #include "helpers.h"
-#include "plugin.h"
 #include <dbus/dbus-glib.h>
 
 
@@ -32,38 +31,44 @@
 struct _BacklightPluginPrivate {
 	gint max_brightness;
 	char* _node;
+	char* _dbus_path;
 };
 
 #define BACKLIGHT_PLUGIN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_BACKLIGHT_PLUGIN, BacklightPluginPrivate))
 enum  {
 	BACKLIGHT_PLUGIN_DUMMY_PROPERTY,
-	BACKLIGHT_PLUGIN_NODE
+	BACKLIGHT_PLUGIN_NODE,
+	BACKLIGHT_PLUGIN_DBUS_PATH
 };
-static BacklightPlugin* backlight_plugin_new (const char* node);
+static BacklightPlugin* backlight_plugin_new (const char* node, const char* dbus_path);
 static void backlight_plugin_set_node (BacklightPlugin* self, const char* value);
+static void backlight_plugin_set_dbus_path (BacklightPlugin* self, const char* value);
 static GObject * backlight_plugin_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties);
 static gpointer backlight_plugin_parent_class = NULL;
 static gboolean _dbus_backlight_plugin_GetMaximumBrightness (BacklightPlugin* self, gint* result, GError** error);
 static gboolean _dbus_backlight_plugin_SetBrightness (BacklightPlugin* self, gint brightness, gboolean* result, GError** error);
 static gboolean _dbus_backlight_plugin_GetCurrentBrightness (BacklightPlugin* self, gint* result, GError** error);
 static void backlight_plugin_dispose (GObject * obj);
-static gboolean backlight_init (ODevicedPlugin* plugin);
-static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 static void g_cclosure_user_marshal_BOOLEAN__INT_POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 
-static BacklightPlugin* backlight_plugin_new (const char* node) {
+static BacklightPlugin* backlight_plugin_new (const char* node, const char* dbus_path) {
 	GParameter * __params;
 	GParameter * __params_it;
 	BacklightPlugin * self;
 	g_return_val_if_fail (node != NULL, NULL);
-	__params = g_new0 (GParameter, 1);
+	g_return_val_if_fail (dbus_path != NULL, NULL);
+	__params = g_new0 (GParameter, 2);
 	__params_it = __params;
 	__params_it->name = "node";
 	g_value_init (&__params_it->value, G_TYPE_STRING);
 	g_value_set_string (&__params_it->value, node);
+	__params_it++;
+	__params_it->name = "dbus-path";
+	g_value_init (&__params_it->value, G_TYPE_STRING);
+	g_value_set_string (&__params_it->value, dbus_path);
 	__params_it++;
 	self = g_object_newv (TYPE_BACKLIGHT_PLUGIN, __params_it - __params, __params);
 	while (__params_it > __params) {
@@ -119,6 +124,22 @@ static void backlight_plugin_set_node (BacklightPlugin* self, const char* value)
 }
 
 
+const char* backlight_plugin_get_dbus_path (BacklightPlugin* self) {
+	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), NULL);
+	return self->priv->_dbus_path;
+}
+
+
+static void backlight_plugin_set_dbus_path (BacklightPlugin* self, const char* value) {
+	char* _tmp2;
+	const char* _tmp1;
+	g_return_if_fail (IS_BACKLIGHT_PLUGIN (self));
+	_tmp2 = NULL;
+	_tmp1 = NULL;
+	self->priv->_dbus_path = (_tmp2 = (_tmp1 = value, (_tmp1 == NULL ? NULL : g_strdup (_tmp1))), (self->priv->_dbus_path = (g_free (self->priv->_dbus_path), NULL)), _tmp2);
+}
+
+
 static GObject * backlight_plugin_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties) {
 	GObject * obj;
 	BacklightPluginClass * klass;
@@ -140,7 +161,7 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 			g_key_file_load_from_file (_file, "/usr/share/odeviced/plugins/backlight.plugin", G_KEY_FILE_NONE, &inner_error);
 			if (inner_error != NULL) {
 				if (inner_error->domain == DBUS_GERROR) {
-					goto __catch7_dbus_gerror;
+					goto __catch6_dbus_gerror;
 				}
 				g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
 				g_clear_error (&inner_error);
@@ -154,8 +175,8 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 			(_file == NULL ? NULL : (_file = (g_key_file_free (_file), NULL)));
 			dev = (g_free (dev), NULL);
 		}
-		goto __finally7;
-		__catch7_dbus_gerror:
+		goto __finally6;
+		__catch6_dbus_gerror:
 		{
 			GError * e;
 			e = inner_error;
@@ -164,7 +185,7 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 				g_critical (e->message);
 			}
 		}
-		__finally7:
+		__finally6:
 		;
 	}
 	return obj;
@@ -177,6 +198,9 @@ static void backlight_plugin_get_property (GObject * object, guint property_id, 
 	switch (property_id) {
 		case BACKLIGHT_PLUGIN_NODE:
 		g_value_set_string (value, backlight_plugin_get_node (self));
+		break;
+		case BACKLIGHT_PLUGIN_DBUS_PATH:
+		g_value_set_string (value, backlight_plugin_get_dbus_path (self));
 		break;
 		default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -191,6 +215,9 @@ static void backlight_plugin_set_property (GObject * object, guint property_id, 
 	switch (property_id) {
 		case BACKLIGHT_PLUGIN_NODE:
 		backlight_plugin_set_node (self, g_value_get_string (value));
+		break;
+		case BACKLIGHT_PLUGIN_DBUS_PATH:
+		backlight_plugin_set_dbus_path (self, g_value_get_string (value));
 		break;
 		default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -225,13 +252,14 @@ static void backlight_plugin_class_init (BacklightPluginClass * klass) {
 	G_OBJECT_CLASS (klass)->constructor = backlight_plugin_constructor;
 	G_OBJECT_CLASS (klass)->dispose = backlight_plugin_dispose;
 	g_object_class_install_property (G_OBJECT_CLASS (klass), BACKLIGHT_PLUGIN_NODE, g_param_spec_string ("node", "node", "node", NULL, G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB | G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+	g_object_class_install_property (G_OBJECT_CLASS (klass), BACKLIGHT_PLUGIN_DBUS_PATH, g_param_spec_string ("dbus-path", "dbus-path", "dbus-path", NULL, G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB | G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 	static const DBusGMethodInfo backlight_plugin_dbus_methods[] = {
 { (GCallback) _dbus_backlight_plugin_GetMaximumBrightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 0 },
 { (GCallback) _dbus_backlight_plugin_SetBrightness, g_cclosure_user_marshal_BOOLEAN__INT_POINTER_POINTER, 75 },
 { (GCallback) _dbus_backlight_plugin_GetCurrentBrightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 158 },
 }
 ;
-	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 3, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0", "", "org.freesmartphone.Device.Backlight\0node\0" };
+	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 3, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0", "", "org.freesmartphone.Device.Backlight\0node\0org.freesmartphone.Device.Backlight\0dbus_path\0" };
 	dbus_g_object_type_install_info (TYPE_BACKLIGHT_PLUGIN, &backlight_plugin_dbus_object_info);
 }
 
@@ -245,6 +273,7 @@ static void backlight_plugin_dispose (GObject * obj) {
 	BacklightPlugin * self;
 	self = BACKLIGHT_PLUGIN (obj);
 	self->priv->_node = (g_free (self->priv->_node), NULL);
+	self->priv->_dbus_path = (g_free (self->priv->_dbus_path), NULL);
 	G_OBJECT_CLASS (backlight_plugin_parent_class)->dispose (obj);
 }
 
@@ -258,86 +287,25 @@ GType backlight_plugin_get_type (void) {
 	return backlight_plugin_type_id;
 }
 
-
-/*
-G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
-GType type;
-type = backlight_plugin_get_type();
-odeviced_compute_dbus_paths (plugin, type);
-return TRUE;
+void register_dbus(BacklightPlugin *obj) {
+	g_message(obj->priv->_dbus_path);
+	dbus_g_connection_register_g_object(odeviced_plugin_conn, obj->priv->_dbus_path, G_OBJECT(obj));
 }
 
 
 G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
-GType type;
-Backlight *obj;
-gchar **paths;
-type = backlight_plugin_get_type();
-paths = odeviced_compute_dbus_paths (plugin, type);
-for(; *paths!=NULL; **paths++) {
-obj = g_object_new()
-}
-
-return TRUE;
-}
-
-*/
-G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin* plugin) {
-	gint nodes_length1;
-	char** nodes;
-	char** _tmp0;
-	gboolean _tmp5;
-	g_return_val_if_fail (ODEVICED_IS_PLUGIN (plugin), FALSE);
-	nodes = (nodes_length1 = 0, NULL);
-	_tmp0 = NULL;
-	nodes = (_tmp0 = odeviced_compute_dbus_paths (plugin), (nodes = (_vala_array_free (nodes, nodes_length1, ((GDestroyNotify) (g_free))), NULL)), nodes_length1 = -1, _tmp0);
-	{
-		char** node_collection;
-		int node_collection_length1;
-		int node_it;
-		node_collection = nodes;
-		node_collection_length1 = nodes_length1;
-		for (node_it = 0; (nodes_length1 != -1 && node_it < nodes_length1) || (nodes_length1 == -1 && node_collection[node_it] != NULL); node_it = node_it + 1) {
-			const char* _tmp4;
-			char* node;
-			_tmp4 = NULL;
-			node = (_tmp4 = node_collection[node_it], (_tmp4 == NULL ? NULL : g_strdup (_tmp4)));
-			{
-				char* _tmp1;
-				BacklightPlugin* _tmp2;
-				BacklightPlugin* obj;
-				char* _tmp3;
-				_tmp1 = NULL;
-				_tmp2 = NULL;
-				obj = (_tmp2 = backlight_plugin_new ((_tmp1 = g_strconcat ("/sys/class/backlight/", node, NULL))), (_tmp1 = (g_free (_tmp1), NULL)), _tmp2);
-				_tmp3 = NULL;
-				dbus_g_connection_register_g_object (odeviced_plugin_conn, (_tmp3 = g_strconcat ("/org/freesmartphone/Device/Backlight/", node, NULL)), G_OBJECT (obj));
-				_tmp3 = (g_free (_tmp3), NULL);
-				node = (g_free (node), NULL);
-				(obj == NULL ? NULL : (obj = (g_object_unref (obj), NULL)));
-			}
-		}
-	}
-	(_tmp5 = TRUE, (nodes = (_vala_array_free (nodes, nodes_length1, ((GDestroyNotify) (g_free))), NULL)), _tmp5);
+	GType type;
+	GList *list = NULL;
+	type = backlight_plugin_get_type();
+	list = odeviced_compute_objects (plugin, type);
+	//for(; *paths!=NULL; **paths++) {
+	//	obj = g_object_new();
+	//}
+	g_list_foreach(list, (GFunc)register_dbus, NULL);
+	
 	return TRUE;
 }
 
-
-static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func) {
-	if (array != NULL && destroy_func != NULL) {
-		int i;
-		if (array_length >= 0)
-		for (i = 0; i < array_length; i = i + 1) {
-			if (((gpointer*) (array))[i] != NULL)
-			destroy_func (((gpointer*) (array))[i]);
-		}
-		else
-		for (i = 0; ((gpointer*) (array))[i] != NULL; i = i + 1) {
-			destroy_func (((gpointer*) (array))[i]);
-		}
-	}
-	g_free (array);
-}
 
 
 

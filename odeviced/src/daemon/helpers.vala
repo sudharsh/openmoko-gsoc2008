@@ -24,40 +24,44 @@ using DBus;
 namespace ODeviced {
 
 	public static void register_dbus_object(Plugin plugin, GLib.Object interface_obj) {
-
-		if(plugin.conf.has_group(plugin.name)) {
-				plugin.dbus_object_path = plugin.conf.get_string(plugin.name, "dbus_object_path");
-				plugin.conn.register_object (plugin.dbus_object_path, interface_obj);
-				plugin.plugin_instance = interface_obj;
+		try {
+			if(plugin.conf.has_group(plugin.name)) {
+				var at_path = plugin.conf.get_string(plugin.name, "dbus_object_path");
+				plugin.conn.register_object (at_path, interface_obj);
+			}
+			else
+				critical("Malformed plugin configuration file");
 		}
-		else 
-			critical("Malformed plugin configuration file");
+		catch (GLib.Error error) {
+			critical(error.message);
+		}
 	}
 	
-	
+		
 	public static string get_device () {
 		return ODeviced.Service.dev_name;
 	}
 
-	[NoArrayLength]
-	public static string[]? compute_dbus_paths(Plugin plugin) {
+	public static List compute_objects(Plugin plugin, GLib.Type klass) {
 	
-		string[] ret = new string[5];
-
+		List<GLib.Object> objList = new List<GLib.Object>();
+		
 		if(plugin.conf.has_group(plugin.name)) {
 			var dev_class = plugin.conf.get_string(plugin.name, "device_class");
 			var dev_node = "/sys/class/" + dev_class;
+			var dbus_path = plugin.conf.get_string(plugin.name, "dbus_object_path");
 			Dir dir = Dir.open(dev_node, 0);
 			string node = dir.read_name();
 			var i = 0;
 			while(node!=null) {
+				var obj = GLib.Object.new(klass, "node", dev_node + "/" + node,
+										  "dbus_path", dbus_path + "/" + node);
 				message(dev_node + "/" + node);
-				ret[i] = node;
+				objList.append(obj);
 				node = dir.read_name();
-				i++;
 			}
 		}
-		return ret;
+		return objList;
 	}
 	
 

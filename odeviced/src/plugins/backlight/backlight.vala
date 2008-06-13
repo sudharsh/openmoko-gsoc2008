@@ -36,8 +36,14 @@ public class BacklightPlugin: GLib.Object {
 		construct;
 	}
 
-	BacklightPlugin(string node) {
+	public string dbus_path {
+		get;
+		construct;
+	}
+
+	BacklightPlugin(string node, string dbus_path) {
 		this.node = node;
+		this.dbus_path = dbus_path;
 	}
 		
 	construct {
@@ -71,40 +77,27 @@ public class BacklightPlugin: GLib.Object {
 	}
 
 /*
-G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
-	GType type;
-	type = backlight_plugin_get_type();
-	odeviced_compute_dbus_paths (plugin, type);
-	return TRUE;
+
+void register_dbus(BacklightPlugin *obj) {
+	g_message(obj->priv->_dbus_path);
+	dbus_g_connection_register_g_object(odeviced_plugin_conn, obj->priv->_dbus_path, G_OBJECT(obj));
 }
 
 
 G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	GType type;
-	Backlight *obj;
-	gchar **paths;
+	GList *list = NULL;
 	type = backlight_plugin_get_type();
-	paths = odeviced_compute_dbus_paths (plugin, type);
-	for(; *paths!=NULL; **paths++) {
-		obj = g_object_new()
-	}
+	list = odeviced_compute_objects (plugin, type);
+	//for(; *paths!=NULL; **paths++) {
+	//	obj = g_object_new();
+	//}
+	g_list_foreach(list, (GFunc)register_dbus, NULL);
 	
 	return TRUE;
 }
+
 
 */
 
-}
-	
-
-bool backlight_init (ODeviced.Plugin plugin) {
-
-	string[] nodes;
-	nodes = ODeviced.compute_dbus_paths(plugin);
-	foreach (string node in nodes) {
-		var obj = new BacklightPlugin("/sys/class/backlight/" + node);
-		plugin.conn.register_object("/org/freesmartphone/Device/Backlight/" + node, obj);
-	}
-
-	return true;
 }

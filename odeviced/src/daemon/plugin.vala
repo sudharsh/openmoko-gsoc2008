@@ -29,8 +29,6 @@ namespace ODeviced {
 		public KeyFile conf = new KeyFile();
 		
 		public static DBus.Connection conn;
-		public string dbus_object_path;
-		public GLib.Object plugin_instance;
 		
 		delegate bool PluginFunc(Plugin plugin);
 		
