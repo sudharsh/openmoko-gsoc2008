@@ -64,6 +64,8 @@ namespace ODeviced {
 	/* I know =(, Ideally these should have been a single function */
 	public static int read_integer(string node) {
 		FileStream node_file = FileStream.open(node, "r");
+		if(node_file == null) 
+			return -1;
 		int val;
 		node_file.scanf("%d", ref val);
 		return val;		
@@ -91,6 +93,8 @@ namespace ODeviced {
 
   	public static bool write_integer(string node, int val) {
 		FileStream node_file = FileStream.open(node, "w");
+		if(node_file == null) 
+			return false;
 		node_file.printf("%d", val);
 		return true;
 	}
