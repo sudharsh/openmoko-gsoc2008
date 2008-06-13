@@ -27,24 +27,26 @@
 using DBus;
 using ODeviced;
 
-[DBus (name = "org.freesmartphone.Device.Plugins.Backlight")]
+[DBus (name = "org.freesmartphone.Device.Backlight")]
 public class BacklightPlugin: GLib.Object {
 	
 	private int max_brightness;
-	private string max_brightness_node;
-	private string set_brightness_node;
-	private string curr_brightness_node;
-	
+	public string node {
+		get;
+		construct;
+	}
+
+	BacklightPlugin(string node) {
+		this.node = node;
+	}
+		
 	construct {
 		try {
 			GLib.KeyFile _file = new GLib.KeyFile();
 			_file.load_from_file("/usr/share/odeviced/plugins/backlight.plugin", GLib.KeyFileFlags.NONE);
 		
 			var dev = ODeviced.get_device();
-			this.max_brightness_node = _file.get_string(dev, "max_brightness_node");
-			this.set_brightness_node = _file.get_string(dev, "set_brightness_node");
-			this.curr_brightness_node = _file.get_string(dev, "curr_brightness_node");
-			this.max_brightness = ODeviced.read_integer(this.max_brightness_node);
+			this.max_brightness = ODeviced.read_integer("/sys/class/backlight/" + this.node + "/max_brightness");
 		}
 
 		catch (Error e) {
@@ -53,20 +55,56 @@ public class BacklightPlugin: GLib.Object {
 	}
 		
 
-	public int get_max_brightness() {
+	public int GetMaximumBrightness() {
 		return this.max_brightness;
 	}
 
-	public bool set_brightness(int brightness) {
+	public bool SetBrightness(int brightness) {
 		if(brightness > this.max_brightness)
 			return false;
-		ODeviced.write_integer(this.curr_brightness_node, brightness);
+		ODeviced.write_integer(this.node + "/brightness", brightness);
 		return true;
 	}
 
-	public int get_curr_brightness() {
-		return ODeviced.read_integer(this.curr_brightness_node);
+	public int GetCurrentBrightness() {
+		return ODeviced.read_integer(this.node + "/actual_brightness");
 	}
+
+/*
+G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
+	GType type;
+	type = backlight_plugin_get_type();
+	odeviced_compute_dbus_paths (plugin, type);
+	return TRUE;
+}
+
+
+G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
+	GType type;
+	Backlight *obj;
+	gchar **paths;
+	type = backlight_plugin_get_type();
+	paths = odeviced_compute_dbus_paths (plugin, type);
+	for(; *paths!=NULL; **paths++) {
+		obj = g_object_new()
+	}
+	
+	return TRUE;
+}
+
+*/
 
 }
 	
+
+bool backlight_init (ODeviced.Plugin plugin) {
+
+	string[] nodes;
+	nodes = ODeviced.compute_dbus_paths(plugin);
+	foreach (string node in nodes) {
+		var obj = new BacklightPlugin("/sys/class/backlight/" + node);
+		plugin.conn.register_object("/org/freesmartphone/Device/Backlight/" + node, obj);
+	}
+
+	return true;
+}

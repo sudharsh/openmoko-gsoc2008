@@ -27,19 +27,20 @@ using GLib;
 using ODeviced;
 
 
-[DBus (name = "org.freesmartphone.Device.Plugins.Power")]
+[DBus (name = "org.freesmartphone.Device.PowerSupply")]
 public class Power: GLib.Object {
 	
 	private string power_supply_node = new string();
 	private string status = new string();
 	private KeyFile conf = new KeyFile();
-	private int max_energy = new string();
+	private int max_energy;
 	private int low_energy_threshold;
 	private int status_poll_interval;
 
 	public signal void battery_status_changed(string status);
+	public signal void low_battery(int charge);
 
-	private string _curr_status;
+	private string curr_status;
 	
 	construct {
 		
@@ -47,65 +48,74 @@ public class Power: GLib.Object {
 		try {
 			var dev = ODeviced.get_device();
 			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
-			this.power_supply_node = conf.get_string(dev, "power_supply_node");
 			var _min = conf.get_integer(dev, "low_energy_threshold");
 			this.status_poll_interval = conf.get_integer(dev, "status_poll_interval");
+			this.power_supply_node = conf.get_string(dev, "power_supply_node");
 			this.max_energy = ODeviced.read_integer (this.power_supply_node + "/energy_full");
 			/* Prolly use this for warning during low battery */
 			this.low_energy_threshold = this.max_energy * (_min/100);
 
 			Timeout.add_seconds(this.status_poll_interval, poll_status);
-			this._curr_status = battery_status();
+			this.curr_status = GetBatteryStatus();
 		}
 		catch (GLib.Error error) {
 			critical(error.message);
 		}
 	}
 
-	public int current_energy() {
+	public int GetCurrentEnergy() {
 		return ODeviced.read_integer(this.power_supply_node + "/energy_now");
 	}
 
-	public int get_max_energy() {
+	public int GetMaxEnergy() {
 		return this.max_energy;
 	}
 
-	public int energy_full_design() {
+	public int GetEnergyFullDesign() {
 		return ODeviced.read_integer(this.power_supply_node + "/energy_full_design");
 	}
 
-	public string battery_status() {
+	public string GetBatteryStatus() {
 		return ODeviced.read_string(this.power_supply_node + "/status");
 	}
 
-	public string type() {
+	public string GetType() {
 		return ODeviced.read_string(this.power_supply_node + "/type");
 	}
 
-	public string model_name() {
+	public string GetModel() {
 		return ODeviced.read_string(this.power_supply_node + "/model_name");
 	}
 
-	public string manufacturer() {
+	public string GetManufacturer() {
 		return ODeviced.read_string(this.power_supply_node + "/manufacturer");
 	}
 
-	public string technology() {
+	public string GetTechnology() {
 		return ODeviced.read_string(this.power_supply_node + "/technology");
 	}
 
+	public double GetEnergyPercentage() {
+		var _curr = GetCurrentEnergy();
+		return 100.0 * ((float)_curr / (float)this.max_energy);
+	}
+
 	private bool poll_energy() {
-		var _curr = current_energy();
+		var _curr = GetCurrentEnergy();
 		message("Current energy, %d", _curr);
+		if(_curr < this.low_energy_threshold) {
+			message("\tLow energy warning");
+			this.low_battery(_curr);
+		}
 		return true;
 	}
 
 	private bool poll_status() {
-		var _curr = battery_status();
-		if(_curr != this._curr_status) {
-			message("\tStatus changed, %s", _curr);
-			this.battery_status_changed(_curr);
-			this._curr_status = _curr;
+		var stat = GetBatteryStatus();
+		if(stat != this.curr_status) {
+			message("\tStatus changed, %s", stat);
+			this.battery_status_changed(stat);
+			this.curr_status = stat;
 		}
 		return true;
 	}
@@ -113,11 +123,12 @@ public class Power: GLib.Object {
 /*
  * Uncomment this in the generated file
 G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
-	Power *powerobj;
-	powerobj = power_new();
-	odeviced_register_dbus_object (plugin, G_OBJECT(powerobj));
+	GType type;
+	type = power_get_type();
+	odeviced_compute_dbus_paths (plugin, type);
 	return TRUE;
 }
+
 */
 
 }

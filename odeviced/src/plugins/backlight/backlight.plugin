@@ -1,8 +1,6 @@
 [backlight]
-dbus_object_path=/org/freesmartphone/Device/Plugins/Backlight
+dbus_object_path=/org/freesmartphone/Device/Backlight
+device_class=backlight
 
-# No, This isn't from freerunner. Its from my laptop
-[FreeRunner]
-max_brightness_node=/sys/class/backlight/acpi_video0/max_brightness
-set_brightness_node=/sys/class/backlight/acpi_video0/brightness
-curr_brightness_node=/sys/class/backlight/acpi_video0/actual_brightness
+
+

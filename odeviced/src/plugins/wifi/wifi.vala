@@ -25,16 +25,115 @@
 using GLib;
 
 
-[DBus (name = "org.freesmartphone.Device.Plugins.Wifi") ]
+[DBus (name = "org.freesmartphone.Device.Wifi") ]
 public class WifiPlugin: Object {
-	public bool is_on(string iface) {
+	public bool GetStatus(string iface) {
 		return true;
 	}
 	
-	public bool control(string iface, bool enable) {
+	public bool SetControl(string iface, bool enable) {
 		return true;
 	}
 }
+
+/*
+gboolean wifi_plugin_GetStatus (WifiPlugin* self, const char* iface) {
+	g_return_val_if_fail (IS_WIFI_PLUGIN (self), FALSE);
+	g_return_val_if_fail (iface != NULL, FALSE);
+	struct iwreq wrq;
+	int sock = socket (AF_INET, SOCK_DGRAM, 0);
+	if (!sock)
+	{
+		perror( "Unable to open socket" );
+		return 0;
+	}
+
+	memset (&wrq, 0, sizeof (struct iwreq));
+	strncpy ((char *)&wrq.ifr_name, iface, IFNAMSIZ);
+
+	if (ioctl (sock, SIOCGIWTXPOW, &wrq) != 0)
+	{
+		perror( "Error performing ioctl" );
+		close (sock);
+		return 0;
+	}
+	
+	close (sock);
+	
+	return !wrq.u.txpower.disabled;
+
+}
+
+
+gboolean wifi_plugin_SetControl (WifiPlugin* self, const char* iface, gboolean enable) {
+	g_return_val_if_fail (IS_WIFI_PLUGIN (self), FALSE);
+	g_return_val_if_fail (iface != NULL, FALSE);
+	struct iwreq wrq;
+	int sock = socket (AF_INET, SOCK_DGRAM, 0);
+	if (!sock)
+	{
+		perror( "Unable to open socket" );
+		return 0;
+	}
+
+	memset (&wrq, 0, sizeof (struct iwreq));
+	strncpy ((char *)&wrq.ifr_name, iface, IFNAMSIZ);
+
+	if (ioctl (sock, SIOCGIWTXPOW, &wrq) != 0)
+	{
+		perror( "Error performing ioctl" );
+		close (sock);
+		return 0;
+	}
+
+	if ( wrq.u.txpower.disabled != !enable )
+	{
+		wrq.u.txpower.disabled = !enable;
+
+		if (ioctl (sock, SIOCSIWTXPOW, &wrq) != 0)
+		{
+			perror( "Error performing ioctl" );
+			close (sock);
+			return 0;
+		}
+	}
+
+	close (sock);
+	return 1;
+
+}
+
+
+G_MODULE_EXPORT gboolean wifi_init (ODevicedPlugin *plugin) {
+
+          GError * inner_error;
+          {
+                  WifiPlugin* wifiobj;
+                  if (inner_error != NULL) {
+                          goto __catch0_g_error;
+                  }
+                  wifiobj = wifi_plugin_new ();
+                  if(wifiobj) {
+			  odeviced_register_dbus_object (plugin, G_OBJECT(wifiobj));
+                  }
+          }
+          goto __finally0;
+          __catch0_g_error:
+          {
+                  GError * error;
+                  error = inner_error;
+		  inner_error = NULL;
+                  { 
+                          fprintf (stderr, "%s\n", error->message);
+                  }
+          }
+         __finally0:
+          ;
+  	  return TRUE;
+	  
+ }
+
+*/
 
 public int init() {
 	try {

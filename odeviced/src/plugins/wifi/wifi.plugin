@@ -1,2 +1,2 @@
 [wifi]
-dbus_object_path=/org/freesmartphone/Device/Plugins/Wifi
+dbus_object_path=/org/freesmartphone/Device/Wifi

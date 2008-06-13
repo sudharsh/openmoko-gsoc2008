@@ -24,6 +24,8 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <stdlib.h>
+#include <string.h>
 
 G_BEGIN_DECLS
 
@@ -53,10 +55,10 @@ struct _BacklightPluginClass {
 };
 
 
-gint backlight_plugin_get_max_brightness (BacklightPlugin* self);
-gboolean backlight_plugin_set_brightness (BacklightPlugin* self, gint brightness);
-gint backlight_plugin_get_curr_brightness (BacklightPlugin* self);
-BacklightPlugin* backlight_plugin_new (void);
+gint backlight_plugin_GetMaximumBrightness (BacklightPlugin* self);
+gboolean backlight_plugin_SetBrightness (BacklightPlugin* self, gint brightness);
+gint backlight_plugin_GetCurrentBrightness (BacklightPlugin* self);
+const char* backlight_plugin_get_node (BacklightPlugin* self);
 GType backlight_plugin_get_type (void);
 
 

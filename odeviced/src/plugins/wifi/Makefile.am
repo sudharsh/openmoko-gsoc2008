@@ -1,5 +1,5 @@
 INCLUDES        = 	 -I$(includedir) \
-			-I$(top_srcdir)/src
+			-I$(top_srcdir)/src/daemon
 
 AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \

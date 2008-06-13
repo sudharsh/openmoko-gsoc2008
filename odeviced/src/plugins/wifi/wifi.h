@@ -22,8 +22,7 @@
 #ifndef __WIFI_H__
 #define __WIFI_H__
 
-#include "daemon/helpers.h"
-#include "daemon/plugin.h"
+#include "helpers.h"
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -36,6 +35,7 @@
 
 #include <linux/if.h>
 #include <linux/wireless.h>
+
 
 G_BEGIN_DECLS
 
@@ -51,7 +51,8 @@ typedef struct _WifiPlugin WifiPlugin;
 typedef struct _WifiPluginClass WifiPluginClass;
 typedef struct _WifiPluginPrivate WifiPluginPrivate;
 
-/* This file exists to generate the wifi.[c/h] for modifications */
+/* This file exists to generate wifi.[c/h], being the lazy bum I am
+   $ valac wifi.vala --pkg dbus-glib-1 -C */
 struct _WifiPlugin {
 	GObject parent_instance;
 	WifiPluginPrivate * priv;
@@ -62,12 +63,11 @@ struct _WifiPluginClass {
 };
 
 
-gboolean wifi_plugin_is_on (WifiPlugin* self, const char* iface);
-gboolean wifi_plugin_control (WifiPlugin* self, const char* iface, gboolean enable);
+gboolean wifi_plugin_GetStatus (WifiPlugin* self, const char* iface);
+gboolean wifi_plugin_SetControl (WifiPlugin* self, const char* iface, gboolean enable);
 WifiPlugin* wifi_plugin_new (void);
 GType wifi_plugin_get_type (void);
-gboolean wifi_init (ODevicedPlugin *plugin);
-gboolean wifi_close (ODevicedPlugin *plugin);
+gint init (void);
 
 
 G_END_DECLS

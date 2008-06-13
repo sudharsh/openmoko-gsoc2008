@@ -59,7 +59,7 @@ namespace ODeviced {
 		}
 
 		public bool register(DBus.Connection _conn) {
-					
+
 			this.conn = _conn;
 			this.library = Module.open(this.path, ModuleFlags.BIND_MASK);
 				
