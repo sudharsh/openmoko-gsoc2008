@@ -76,10 +76,11 @@ public class BacklightPlugin: GLib.Object {
 		return ODeviced.read_integer(this.node + "/actual_brightness");
 	}
 
-/*
+
+/* Using auto-detected sysfs nodes
 
 void register_dbus(BacklightPlugin *obj) {
-	g_message(obj->priv->_dbus_path);
+	g_message("Auto-detected DBus object path at %s", obj->priv->_dbus_path);
 	dbus_g_connection_register_g_object(odeviced_plugin_conn, obj->priv->_dbus_path, G_OBJECT(obj));
 }
 
@@ -87,13 +88,11 @@ void register_dbus(BacklightPlugin *obj) {
 G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	GType type;
 	GList *list = NULL;
+	BacklightPlugin *obj;
 	type = backlight_plugin_get_type();
 	list = odeviced_compute_objects (plugin, type);
-	//for(; *paths!=NULL; **paths++) {
-	//	obj = g_object_new();
-	//}
-	g_list_foreach(list, (GFunc)register_dbus, NULL);
-	
+       	g_list_foreach(list, (GFunc)register_dbus, plugin);
+       
 	return TRUE;
 }
 

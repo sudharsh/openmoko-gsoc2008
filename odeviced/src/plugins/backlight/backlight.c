@@ -259,7 +259,7 @@ static void backlight_plugin_class_init (BacklightPluginClass * klass) {
 { (GCallback) _dbus_backlight_plugin_GetCurrentBrightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 158 },
 }
 ;
-	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 3, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0", "", "org.freesmartphone.Device.Backlight\0node\0org.freesmartphone.Device.Backlight\0dbus_path\0" };
+	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 3, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0", "", "" };
 	dbus_g_object_type_install_info (TYPE_BACKLIGHT_PLUGIN, &backlight_plugin_dbus_object_info);
 }
 
@@ -287,8 +287,11 @@ GType backlight_plugin_get_type (void) {
 	return backlight_plugin_type_id;
 }
 
+
+/* Using auto-detected sysfs nodes */
+
 void register_dbus(BacklightPlugin *obj) {
-	g_message(obj->priv->_dbus_path);
+	g_message("Auto-detected DBus object path at %s", obj->priv->_dbus_path);
 	dbus_g_connection_register_g_object(odeviced_plugin_conn, obj->priv->_dbus_path, G_OBJECT(obj));
 }
 
@@ -296,13 +299,11 @@ void register_dbus(BacklightPlugin *obj) {
 G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	GType type;
 	GList *list = NULL;
+	BacklightPlugin *obj;
 	type = backlight_plugin_get_type();
 	list = odeviced_compute_objects (plugin, type);
-	//for(; *paths!=NULL; **paths++) {
-	//	obj = g_object_new();
-	//}
-	g_list_foreach(list, (GFunc)register_dbus, NULL);
-	
+       	g_list_foreach(list, (GFunc)register_dbus, plugin);
+       
 	return TRUE;
 }
 

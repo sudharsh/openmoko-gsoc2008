@@ -37,10 +37,11 @@ namespace ODeviced {
 		}
 	}
 	
-		
+
 	public static string get_device () {
 		return ODeviced.Service.dev_name;
 	}
+
 
 	public static List compute_objects(Plugin plugin, GLib.Type klass) {
 	
@@ -56,14 +57,14 @@ namespace ODeviced {
 			while(node!=null) {
 				var obj = GLib.Object.new(klass, "node", dev_node + "/" + node,
 										  "dbus_path", dbus_path + "/" + node);
-				message(dev_node + "/" + node);
+				message("Created object for sysfs node, %s", dev_node + "/" + node);
 				objList.append(obj);
 				node = dir.read_name();
 			}
 		}
 		return objList;
 	}
-	
+
 
 	/* I know =(, Ideally these should have been a single function */
 	public static int read_integer(string node) {
@@ -74,6 +75,7 @@ namespace ODeviced {
 		node_file.scanf("%d", ref val);
 		return val;		
 	}
+	
 
 	public static string read_string(string node) {
 		File node_file = File.new_for_path(node);
@@ -94,6 +96,7 @@ namespace ODeviced {
 		}
 		return line;
 	}
+	
 
   	public static bool write_integer(string node, int val) {
 		FileStream node_file = FileStream.open(node, "w");
@@ -103,6 +106,7 @@ namespace ODeviced {
 		return true;
 	}
  
+
 }
 
 
