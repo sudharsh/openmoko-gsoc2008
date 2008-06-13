@@ -27,7 +27,7 @@ namespace ODeviced {
 		try {
 			if(plugin.conf.has_group(plugin.name)) {
 				var at_path = plugin.conf.get_string(plugin.name, "dbus_object_path");
-				plugin.conn.register_object (at_path, interface_obj);
+				ODeviced.connection.register_object (at_path, interface_obj);
 			}
 			else
 				critical("Malformed plugin configuration file");

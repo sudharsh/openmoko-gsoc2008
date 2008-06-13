@@ -26,9 +26,7 @@ namespace ODeviced {
 		public Type type;
 		public int handle;
 		public string[] depends;
-		public KeyFile conf = new KeyFile();
-		
-		public static DBus.Connection conn;
+		protected KeyFile conf = new KeyFile();
 		
 		delegate bool PluginFunc(Plugin plugin);
 		
@@ -63,9 +61,9 @@ namespace ODeviced {
 			}
 		}
 
-		public bool register(DBus.Connection _conn) {
 
-			this.conn = _conn;
+		public bool register() {
+
 			this.library = Module.open(this.path, ModuleFlags.BIND_MASK);
 				
 			if(this.library == null) {

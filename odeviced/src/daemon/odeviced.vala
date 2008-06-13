@@ -22,21 +22,21 @@
 using GLib;
 
 namespace ODeviced {
+
+	public static DBus.Connection connection;
 	
 	void main(string[] args) {
-				
-		try {
-			DBus.Connection conn = 
-				DBus.Bus.get(DBus.BusType.SYSTEM);
 
+		try {
+			connection = DBus.Bus.get(DBus.BusType.SYSTEM);		
 			dynamic DBus.Object bus =
-				conn.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
+				connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
 			uint result = bus.RequestName ("org.freesmartphone.Device", (uint) 0);
 
 			if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 
 				print("Starting ODeviced Server....\n");
-				var service = new Service(conn);
+				var service = new Service();
 			
 				if(!GLib.Module.supported()) {
 					critical("Modules are not supported in the current system");

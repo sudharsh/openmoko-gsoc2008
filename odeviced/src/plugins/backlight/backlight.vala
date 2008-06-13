@@ -79,11 +79,6 @@ public class BacklightPlugin: GLib.Object {
 
 /* Using auto-detected sysfs nodes
 
-void register_dbus(BacklightPlugin *obj) {
-	g_message("Auto-detected DBus object path at %s", obj->priv->_dbus_path);
-	dbus_g_connection_register_g_object(odeviced_plugin_conn, obj->priv->_dbus_path, G_OBJECT(obj));
-}
-
 
 G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	GType type;
@@ -91,12 +86,17 @@ G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	BacklightPlugin *obj;
 	type = backlight_plugin_get_type();
 	list = odeviced_compute_objects (plugin, type);
-       	g_list_foreach(list, (GFunc)register_dbus, plugin);
-       
+	g_list_foreach(list, (GFunc)register_dbus, NULL);
+		
 	return TRUE;
 }
 
 
 */
 
+}
+
+void register_dbus (BacklightPlugin obj) {
+	GLib.message("Registering DBus object at %s", obj.dbus_path);
+	ODeviced.connection.register_object(obj.dbus_path, obj);
 }

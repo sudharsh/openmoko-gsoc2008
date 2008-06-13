@@ -22,21 +22,16 @@ namespace ODeviced {
 	public class Service: Object {
 
 		MainLoop loop = new MainLoop (null, false);		
-		public HashTable<string, Plugin> loadedTable = new HashTable<string, Plugin>((HashFunc)str_hash, (EqualFunc)str_equal);
-		
-		public static string dev_name  = new string();
-		public static string conf_dir_plugins  = new string();
+		HashTable<string, Plugin> loadedTable = new HashTable<string, Plugin>((HashFunc)str_hash, (EqualFunc)str_equal);
+			   
+		protected static string dev_name = new string();
+		protected static string conf_dir_plugins = new string();
 
 		private KeyFile conf_file = new KeyFile();
 		private string plugins_location = new string();
 		
-		public static DBus.Connection conn {
-			get;
-			construct;
-		}
-		
-		
-		construct {
+
+	   	construct {
 			
 			Idle.add(this.idle);
 			string[] plugins;
@@ -66,12 +61,7 @@ namespace ODeviced {
 		}
 		
 
-		public Service(DBus.Connection conn) {
-			this.conn = conn;
-		}
-		
-		
-		public bool load(string plugin_name) {
+		private bool load(string plugin_name) {
 			
 			var plugin_path = this.plugins_location + "/" + plugin_name + ".so";
 			
@@ -101,7 +91,7 @@ namespace ODeviced {
 
 			Plugin plugin = new ODeviced.Plugin(plugin_name, plugin_path);
 			
-			if(plugin.register(this.conn)) {
+			if(plugin.register()) {
 				/* This throws up an error in valac atm
 				   plugin.depends = _deps; */
 				this.loadedTable.insert(plugin_name, plugin);
