@@ -25,63 +25,41 @@ namespace ODeviced {
 
 	public static void register_dbus_object(Plugin plugin, GLib.Object interface_obj) {
 
-		KeyFile plugin_conf = new KeyFile();
-		plugin_conf.set_list_separator(',');
-		try {
-			plugin_conf.load_from_file(ODeviced.Service.conf_dir_plugins + "/" + plugin.name + ".plugin", KeyFileFlags.NONE);
-			if(plugin_conf.has_group(plugin.name)) {
-				plugin.dbus_object_path = plugin_conf.get_string(plugin.name, "dbus_object_path");
+		if(plugin.conf.has_group(plugin.name)) {
+				plugin.dbus_object_path = plugin.conf.get_string(plugin.name, "dbus_object_path");
 				plugin.conn.register_object (plugin.dbus_object_path, interface_obj);
 				plugin.plugin_instance = interface_obj;
-			}
-			else 
-				critical("Malformed plugin configuration file");
 		}
-		catch (GLib.Error error) {
-			message("Plugin configuration not found, %s", error.message);
-		}
-		
+		else 
+			critical("Malformed plugin configuration file");
 	}
+	
 	
 	public static string get_device () {
 		return ODeviced.Service.dev_name;
 	}
 
-	public static string get_conf(Plugin plugin) {
-		return plugin.conf;
-	}
-
 	[NoArrayLength]
 	public static string[]? compute_dbus_paths(Plugin plugin) {
 	
-		KeyFile plugin_conf = new KeyFile();
-		
-		plugin_conf.set_list_separator(',');
-		try {
-			string[] ret = new string[5];
-			plugin_conf.load_from_file(ODeviced.Service.conf_dir_plugins + "/" + plugin.name + ".plugin", KeyFileFlags.NONE);
-			if(plugin_conf.has_group(plugin.name)) {
-				var dev_class = plugin_conf.get_string(plugin.name, "device_class");
-				var dev_node = "/sys/class/" + dev_class;
-				Dir dir = Dir.open(dev_node, 0);
-				string node = dir.read_name();
-				var i = 0;
-				while(node!=null) {
-					message(dev_node + "/" + node);
-					ret[i] = node;
-					node = dir.read_name();
-					i++;
-				}
-				return ret;
+		string[] ret = new string[5];
+
+		if(plugin.conf.has_group(plugin.name)) {
+			var dev_class = plugin.conf.get_string(plugin.name, "device_class");
+			var dev_node = "/sys/class/" + dev_class;
+			Dir dir = Dir.open(dev_node, 0);
+			string node = dir.read_name();
+			var i = 0;
+			while(node!=null) {
+				message(dev_node + "/" + node);
+				ret[i] = node;
+				node = dir.read_name();
+				i++;
 			}
 		}
-		catch (GLib.Error error) {
-			critical(error.message);
-		}
-		
-		return  null;
-		
+		return ret;
 	}
+	
 
 	/* I know =(, Ideally these should have been a single function */
 	public static int read_integer(string node) {

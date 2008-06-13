@@ -26,7 +26,7 @@ namespace ODeviced {
 		public Type type;
 		public int handle;
 		public string[] depends;
-		public string conf;
+		public KeyFile conf = new KeyFile();
 		
 		public static DBus.Connection conn;
 		public string dbus_object_path;
@@ -55,7 +55,14 @@ namespace ODeviced {
 		construct {
 			Rand rand = new Rand();
 			this.handle = rand.int_range(10, 99);
-			this.conf   = ODeviced.Service.conf_dir_plugins + "/" + this.name + ".plugin";
+			var _conf  = ODeviced.Service.conf_dir_plugins + "/" + this.name + ".plugin";
+			try {
+				this.conf.load_from_file(_conf, KeyFileFlags.NONE);
+				this.conf.set_list_separator(',');
+			}
+			catch (GLib.Error error) {
+				critical("Plugin configuration file for %s malformed/not found : %s", this.name, error.message);
+			}
 		}
 
 		public bool register(DBus.Connection _conn) {
