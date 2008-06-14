@@ -261,7 +261,7 @@ static void backlight_plugin_class_init (BacklightPluginClass * klass) {
 { (GCallback) _dbus_backlight_plugin_GetCurrentBrightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 158 },
 }
 ;
-	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 3, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0", "", "org.freesmartphone.Device.Backlight\0node\0org.freesmartphone.Device.Backlight\0dbus_path\0" };
+	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 3, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0", "", "" };
 	dbus_g_object_type_install_info (TYPE_BACKLIGHT_PLUGIN, &backlight_plugin_dbus_object_info);
 }
 
