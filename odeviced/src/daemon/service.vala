@@ -26,7 +26,7 @@ namespace ODeviced {
 			   
 		protected static string dev_name = new string();
 		protected static string conf_dir_plugins = new string();
-
+		
 		private KeyFile conf_file = new KeyFile();
 		private string plugins_location = new string();
 		
@@ -42,9 +42,9 @@ namespace ODeviced {
 				/* Hard coded, change later */
 				conf_file.load_from_file("/etc/odeviced.conf", KeyFileFlags.NONE);
 				if (conf_file.has_group("odeviced")) {
-					this.dev_name = conf_file.get_string("odeviced", "device_name");
+					dev_name = conf_file.get_string("odeviced", "device_name");
 					this.plugins_location = conf_file.get_string("odeviced", "plugins_path");
-				    this.conf_dir_plugins = conf_file.get_string("odeviced", "plugins_conf");
+				    conf_dir_plugins = conf_file.get_string("odeviced", "plugins_conf");
 				}
 
 				if (conf_file.has_key("odeviced", "enable")) {

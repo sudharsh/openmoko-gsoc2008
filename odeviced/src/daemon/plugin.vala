@@ -22,35 +22,43 @@ namespace ODeviced {
 
 	public class Plugin: GLib.Object {
 
-		public Module library;
-		public Type type;
-		public int handle;
-		public string[] depends;
-		protected KeyFile conf = new KeyFile();
+		private Module _library;
+		public Module library {
+			get { return _library; }
+		}
 		
-		delegate bool PluginFunc(Plugin plugin);
+		private int _handle;
+		public int handle {
+			get { return _handle; }
+		}
 		
-		public string path {
+		private string[] _depends;
+		public string[] depends {
+			get { return _depends; }
+		}
+		
+		protected KeyFile conf = new KeyFile();		
+		private delegate bool PluginFunc(Plugin plugin);
+		
+	    public string path {
 			public get;
 			construct;
 		}
-
-
+		
 		public string name {
 			public get;
 			construct;
 		}
-
-	       		
+		
 		public Plugin(string name, string path) {
 			this.name = name;		
 			this.path = path;
 		}
 		
-				
+		
 		construct {
 			Rand rand = new Rand();
-			this.handle = rand.int_range(10, 99);
+			this._handle = rand.int_range(10, 99);
 			var _conf  = ODeviced.Service.conf_dir_plugins + "/" + this.name + ".plugin";
 			try {
 				this.conf.load_from_file(_conf, KeyFileFlags.NONE);
@@ -64,17 +72,17 @@ namespace ODeviced {
 
 		public bool register() {
 
-			this.library = Module.open(this.path, ModuleFlags.BIND_MASK);
+			this._library = Module.open(this.path, ModuleFlags.BIND_MASK);
 				
-			if(this.library == null) {
+			if(this._library == null) {
 				critical("plugin.library null!");
 				return false;
 			}
 			
-			this.library.make_resident();
+			this._library.make_resident();
 			
 			var _symbol = null;
-			if(!this.library.symbol(name + "_init", out _symbol)) {
+			if(!this._library.symbol(name + "_init", out _symbol)) {
 				critical("Malformed odeviced plugin");			
 				return false;
 			}

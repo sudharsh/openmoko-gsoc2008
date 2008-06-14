@@ -23,6 +23,7 @@
 #define __WIFI_H__
 
 #include "helpers.h"
+#include "plugin.h"
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
