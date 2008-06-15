@@ -147,9 +147,12 @@ static gboolean power_poll_energy (Power* self) {
 	gint _curr;
 	g_return_val_if_fail (IS_POWER (self), FALSE);
 	_curr = power_GetCurrentEnergy (self);
-	g_message ("power.vala:105: Current energy, %d", _curr);
+	if (_curr == -1) {
+		return FALSE;
+	}
+	g_message ("power.vala:108: Current energy, %d", _curr);
 	if (_curr < self->priv->low_energy_threshold) {
-		g_message ("power.vala:107: \tLow energy warning");
+		g_message ("power.vala:110: \tLow energy warning");
 		g_signal_emit_by_name (G_OBJECT (self), "low-battery", _curr);
 	}
 	return TRUE;
@@ -158,19 +161,23 @@ static gboolean power_poll_energy (Power* self) {
 
 static gboolean power_poll_status (Power* self) {
 	char* stat;
-	gboolean _tmp2;
+	gboolean _tmp3;
 	g_return_val_if_fail (IS_POWER (self), FALSE);
 	stat = power_GetBatteryStatus (self);
-	if (_vala_strcmp0 (stat, self->priv->curr_status) != 0) {
-		char* _tmp1;
-		const char* _tmp0;
-		g_message ("power.vala:116: \tStatus changed, %s", stat);
-		g_signal_emit_by_name (G_OBJECT (self), "battery-status-changed", stat);
-		_tmp1 = NULL;
-		_tmp0 = NULL;
-		self->priv->curr_status = (_tmp1 = (_tmp0 = stat, (_tmp0 == NULL ? NULL : g_strdup (_tmp0))), (self->priv->curr_status = (g_free (self->priv->curr_status), NULL)), _tmp1);
+	if (stat == NULL) {
+		gboolean _tmp0;
+		return (_tmp0 = FALSE, (stat = (g_free (stat), NULL)), _tmp0);
 	}
-	return (_tmp2 = TRUE, (stat = (g_free (stat), NULL)), _tmp2);
+	if (_vala_strcmp0 (stat, self->priv->curr_status) != 0) {
+		char* _tmp2;
+		const char* _tmp1;
+		g_message ("power.vala:122: \tStatus changed, %s", stat);
+		g_signal_emit_by_name (G_OBJECT (self), "battery-status-changed", stat);
+		_tmp2 = NULL;
+		_tmp1 = NULL;
+		self->priv->curr_status = (_tmp2 = (_tmp1 = stat, (_tmp1 == NULL ? NULL : g_strdup (_tmp1))), (self->priv->curr_status = (g_free (self->priv->curr_status), NULL)), _tmp2);
+	}
+	return (_tmp3 = TRUE, (stat = (g_free (stat), NULL)), _tmp3);
 }
 
 
@@ -364,12 +371,10 @@ GType power_get_type (void) {
 }
 
 G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
-	Power *obj;
-	obj = power_new();
+       	Power *obj = power_new() ;
 	odeviced_register_dbus_object (plugin, G_OBJECT(obj));
 	return TRUE;
 }
-
 
 static int _vala_strcmp0 (const char * str1, const char * str2) {
 	if (str1 == NULL) {

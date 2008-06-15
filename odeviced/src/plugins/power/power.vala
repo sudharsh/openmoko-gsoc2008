@@ -102,6 +102,9 @@ public class Power: GLib.Object {
 
 	private bool poll_energy() {
 		var _curr = GetCurrentEnergy();
+		if (_curr == -1) 
+			return false;
+
 		message("Current energy, %d", _curr);
 		if(_curr < this.low_energy_threshold) {
 			message("\tLow energy warning");
@@ -112,6 +115,9 @@ public class Power: GLib.Object {
 
 	private bool poll_status() {
 		var stat = GetBatteryStatus();
+		if (stat == null)
+			return false;
+
 		if(stat != this.curr_status) {
 			message("\tStatus changed, %s", stat);
 			this.battery_status_changed(stat);
@@ -124,8 +130,8 @@ public class Power: GLib.Object {
  * Uncomment this in the generated file
 G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
 	GType type;
-	type = power_get_type();
-	odeviced_compute_dbus_paths (plugin, type);
+	Power *obj = power_new() ;
+	odeviced_register_dbus_objects (plugin, obj);
 	return TRUE;
 }
 
