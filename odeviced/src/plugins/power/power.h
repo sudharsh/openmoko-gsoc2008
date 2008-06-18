@@ -64,7 +64,8 @@ char* power_GetModel (Power* self);
 char* power_GetManufacturer (Power* self);
 char* power_GetTechnology (Power* self);
 double power_GetEnergyPercentage (Power* self);
-Power* power_new (void);
+const char* power_get_node (Power* self);
+const char* power_get_dbus_path (Power* self);
 GType power_get_type (void);
 
 

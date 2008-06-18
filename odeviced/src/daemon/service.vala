@@ -64,6 +64,7 @@ namespace ODeviced {
 		private bool load(string plugin_name) {
 			
 			var plugin_path = this.plugins_location + "/" + plugin_name + ".so";
+			string[] _deps;
 			
 			debug("No of plugins already loaded: %d", this.loadedTable.size());
 			
@@ -79,7 +80,7 @@ namespace ODeviced {
 				
 				/* Get dependencies of the plugin and try to load them */
 				if(_plugin_conf.has_group(plugin_name) && _plugin_conf.has_key(plugin_name, "depends")) {
-					string[] _deps = conf_file.get_string_list(plugin_name, "depends");
+					_deps = conf_file.get_string_list(plugin_name, "depends");
 					print("\t%s has dependencies\n", plugin_name);
 					load_multiple(_deps);
 					print("\tDone handling dependencies\n", plugin_name);
@@ -92,7 +93,7 @@ namespace ODeviced {
 			Plugin plugin = new ODeviced.Plugin(plugin_name, plugin_path);
 			
 			if(plugin.register()) {
-				/* This throws up an error in valac atm
+				/* This throws up an error in valac atm 
 				   plugin.depends = _deps; */
 				this.loadedTable.insert(plugin_name, plugin);
 				message("Successfully loaded %s\n", plugin_name);

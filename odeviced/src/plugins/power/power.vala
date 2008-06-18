@@ -30,7 +30,6 @@ using ODeviced;
 [DBus (name = "org.freesmartphone.Device.PowerSupply")]
 public class Power: GLib.Object {
 	
-	private string power_supply_node = new string();
 	private string status = new string();
 	private KeyFile conf = new KeyFile();
 	private int max_energy;
@@ -41,6 +40,21 @@ public class Power: GLib.Object {
 	public signal void low_battery(int charge);
 
 	private string curr_status;
+
+	public string node {
+		get;
+		construct;
+	}
+
+	public string dbus_path {
+		get;
+		construct;
+	}
+
+	Power(string node, string dbus_path) {
+		this.node = node;
+		this.dbus_path = dbus_path;
+	}
 	
 	construct {
 		
@@ -50,8 +64,8 @@ public class Power: GLib.Object {
 			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
 			var _min = conf.get_integer(dev, "low_energy_threshold");
 			this.status_poll_interval = conf.get_integer(dev, "status_poll_interval");
-			this.power_supply_node = conf.get_string(dev, "power_supply_node");
-			this.max_energy = ODeviced.read_integer (this.power_supply_node + "/energy_full");
+			/*this.power_supply_node = conf.get_string(dev, "power_supply_node");*/
+			this.max_energy = ODeviced.read_integer (this.node + "/energy_full");
 			/* Prolly use this for warning during low battery */
 			this.low_energy_threshold = this.max_energy * (_min/100);
 
@@ -64,7 +78,7 @@ public class Power: GLib.Object {
 	}
 
 	public int GetCurrentEnergy() {
-		return ODeviced.read_integer(this.power_supply_node + "/energy_now");
+		return ODeviced.read_integer(this.node + "/energy_now");
 	}
 
 	public int GetMaxEnergy() {
@@ -72,27 +86,27 @@ public class Power: GLib.Object {
 	}
 
 	public int GetEnergyFullDesign() {
-		return ODeviced.read_integer(this.power_supply_node + "/energy_full_design");
+		return ODeviced.read_integer(this.node + "/energy_full_design");
 	}
 
 	public string GetBatteryStatus() {
-		return ODeviced.read_string(this.power_supply_node + "/status");
+		return ODeviced.read_string(this.node + "/status");
 	}
 
 	public string GetType() {
-		return ODeviced.read_string(this.power_supply_node + "/type");
+		return ODeviced.read_string(this.node + "/type");
 	}
 
 	public string GetModel() {
-		return ODeviced.read_string(this.power_supply_node + "/model_name");
+		return ODeviced.read_string(this.node + "/model_name");
 	}
 
 	public string GetManufacturer() {
-		return ODeviced.read_string(this.power_supply_node + "/manufacturer");
+		return ODeviced.read_string(this.node + "/manufacturer");
 	}
 
 	public string GetTechnology() {
-		return ODeviced.read_string(this.power_supply_node + "/technology");
+		return ODeviced.read_string(this.node + "/technology");
 	}
 
 	public double GetEnergyPercentage() {
@@ -128,13 +142,24 @@ public class Power: GLib.Object {
 
 /*
  * Uncomment this in the generated file
+
 G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
 	GType type;
-	Power *obj = power_new() ;
-	odeviced_register_dbus_objects (plugin, obj);
+	GList *list = NULL;
+	Power *obj;
+	type = power_get_type();
+	list = odeviced_compute_objects (plugin, type);
+	g_list_foreach(list, (GFunc)register_dbus, NULL);
+	
 	return TRUE;
 }
 
 */
 
+}
+
+
+void register_dbus (Power obj) {
+	GLib.message("Registering DBus object at %s", obj.dbus_path);
+	ODeviced.connection.register_object(obj.dbus_path, obj);
 }

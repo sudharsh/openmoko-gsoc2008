@@ -32,10 +32,12 @@ namespace ODeviced {
 			get { return _handle; }
 		}
 		
-		private string[] _depends;
-		public string[] depends {
+		private string[] depends;
+		/*public string[] depends {
 			get { return _depends; }
+			set { _depends = value; }
 		}
+		*/
 		
 		protected KeyFile conf = new KeyFile();		
 		private delegate bool PluginFunc(Plugin plugin);
