@@ -157,7 +157,6 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 		{
 			GKeyFile* _file;
 			char* dev;
-			char* _tmp1;
 			char* _tmp0;
 			_file = g_key_file_new ();
 			g_key_file_load_from_file (_file, "/usr/share/odeviced/plugins/backlight.plugin", G_KEY_FILE_NONE, &inner_error);
@@ -169,10 +168,8 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 				g_clear_error (&inner_error);
 			}
 			dev = odeviced_get_device ();
-			_tmp1 = NULL;
 			_tmp0 = NULL;
-			self->priv->max_brightness = odeviced_read_integer ((_tmp1 = g_strconcat ((_tmp0 = g_strconcat ("/sys/class/backlight/", self->priv->_node, NULL)), "/max_brightness", NULL)));
-			_tmp1 = (g_free (_tmp1), NULL);
+			self->priv->max_brightness = odeviced_read_integer ((_tmp0 = g_strconcat (self->priv->_node, "/max_brightness", NULL)));
 			_tmp0 = (g_free (_tmp0), NULL);
 			(_file == NULL ? NULL : (_file = (g_key_file_free (_file), NULL)));
 			dev = (g_free (dev), NULL);
@@ -261,7 +258,7 @@ static void backlight_plugin_class_init (BacklightPluginClass * klass) {
 { (GCallback) _dbus_backlight_plugin_GetCurrentBrightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 158 },
 }
 ;
-	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 3, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0", "", "" };
+	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 3, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0", "", "org.freesmartphone.Device.Backlight\0node\0org.freesmartphone.Device.Backlight\0dbus_path\0" };
 	dbus_g_object_type_install_info (TYPE_BACKLIGHT_PLUGIN, &backlight_plugin_dbus_object_info);
 }
 
@@ -295,6 +292,7 @@ static void register_dbus (BacklightPlugin* obj) {
 	g_message ("backlight.vala:100: Registering DBus object at %s", backlight_plugin_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, backlight_plugin_get_dbus_path (obj), G_OBJECT (obj));
 }
+
 
 G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	GType type;

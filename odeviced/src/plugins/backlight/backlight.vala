@@ -52,7 +52,7 @@ public class BacklightPlugin: GLib.Object {
 			_file.load_from_file("/usr/share/odeviced/plugins/backlight.plugin", GLib.KeyFileFlags.NONE);
 		
 			var dev = ODeviced.get_device();
-			this.max_brightness = ODeviced.read_integer("/sys/class/backlight/" + this.node + "/max_brightness");
+			this.max_brightness = ODeviced.read_integer(this.node + "/max_brightness");
 		}
 
 		catch (Error e) {
