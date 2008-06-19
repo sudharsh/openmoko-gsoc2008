@@ -43,23 +43,36 @@ namespace ODeviced {
 	}
 
 
-	public static List compute_objects(Plugin plugin, GLib.Type klass) {
+	public static List? compute_objects(Plugin plugin, GLib.Type klass) {
 	
 		List<GLib.Object> objList = new List<GLib.Object>();
-		
+		string dev_class;
+		string dev_node;
+
 		if(plugin.conf.has_group(plugin.name)) {
-			var dev_class = plugin.conf.get_string(plugin.name, "device_class");
-			var dev_node = "/sys/class/" + dev_class;
-			var dbus_path = plugin.conf.get_string(plugin.name, "dbus_object_path");
-			Dir dir = Dir.open(dev_node, 0);
-			string node = dir.read_name();
-			var i = 0;
-			while(node!=null) {
-				var obj = GLib.Object.new(klass, "node", dev_node + "/" + node,
-										  "dbus_path", dbus_path + "/" + node);
-				message("Created object for sysfs node, %s", dev_node + "/" + node);
-				objList.append(obj);
-				node = dir.read_name();
+			try {
+
+				dev_class = plugin.conf.get_string(plugin.name, "device_class");
+				dev_node = "/sys/class/" + dev_class;
+				var dbus_path = plugin.conf.get_string(plugin.name, "dbus_object_path");
+			
+				Dir dir = Dir.open(dev_node, 0);
+				string node = dir.read_name();
+				var i = 0;
+				while(node!=null) {
+					var obj = GLib.Object.new(klass, "node", dev_node + "/" + node,
+											  "dbus_path", dbus_path + "/" + node);
+					message("Created object for sysfs node, %s", dev_node + "/" + node);
+					objList.append(obj);
+					node = dir.read_name();
+				}
+			}
+
+			catch (GLib.FileError e) {
+				message ("Device class: %s doesn't exist", dev_class);
+			}
+			catch (GLib.KeyFileError e) {
+				message ("%s %s", plugin.name, e.message);
 			}
 		}
 		return objList;

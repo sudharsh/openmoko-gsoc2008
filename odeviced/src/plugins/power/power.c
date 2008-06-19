@@ -471,8 +471,11 @@ G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
 	Power *obj;
 	type = power_get_type();
 	list = odeviced_compute_objects (plugin, type);
-	g_list_foreach(list, (GFunc)register_dbus, NULL);
-	
+
+	if (!list)
+		return FALSE;
+
+	g_list_foreach(list, (GFunc)register_dbus, NULL);	
 	return TRUE;
 }
 

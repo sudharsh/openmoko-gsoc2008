@@ -99,7 +99,7 @@ namespace ODeviced {
 				message("Successfully loaded %s\n", plugin_name);
 				return true;
 			}
-			critical("Unknown Error: Couldn't load %s", plugin_name);
+			message("Couldn't load %s", plugin_name);
 			return false;	
 			
 		}

@@ -342,8 +342,11 @@ G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	BacklightPlugin *obj;
 	type = backlight_plugin_get_type();
 	list = odeviced_compute_objects (plugin, type);
-	g_list_foreach(list, (GFunc)register_dbus, NULL);
-	
+
+	if (!list)
+		return FALSE;
+
+	g_list_foreach(list, (GFunc)register_dbus, NULL);	
 	return TRUE;
 }
 
