@@ -20,6 +20,10 @@ using DBus;
 
 namespace ODeviced {
 
+	errordomain PluginError {
+		LOAD_ERROR;
+	}			
+
 	public class Plugin: GLib.Object {
 
 		private Module _library;
@@ -56,8 +60,7 @@ namespace ODeviced {
 			this.name = name;		
 			this.path = path;
 		}
-		
-		
+
 		construct {
 			Rand rand = new Rand();
 			this._handle = rand.int_range(10, 99);
@@ -72,21 +75,19 @@ namespace ODeviced {
 		}
 
 
-		public bool register() {
+		public bool register() throws PluginError {
 
 			this._library = Module.open(this.path, ModuleFlags.BIND_MASK);
 				
 			if(this._library == null) {
-				critical("plugin.library null!");
-				return false;
+				throw new PluginError.LOAD_ERROR("_library is null");
 			}
 			
 			this._library.make_resident();
 			
 			var _symbol = null;
 			if(!this._library.symbol(name + "_init", out _symbol)) {
-				critical("Malformed odeviced plugin");			
-				return false;
+				throw new PluginError.LOAD_ERROR("Malformed odeviced plugin");
 			}
 
 			PluginFunc func = (PluginFunc)_symbol;

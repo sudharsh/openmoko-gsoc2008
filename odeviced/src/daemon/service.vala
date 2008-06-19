@@ -85,21 +85,25 @@ namespace ODeviced {
 					load_multiple(_deps);
 					print("\tDone handling dependencies\n", plugin_name);
 				}
+
+				Plugin plugin = new ODeviced.Plugin(plugin_name, plugin_path);
+			
+				if(plugin.register()) {
+					/* This throws up an error in valac atm 
+					   plugin.depends = _deps; */
+					this.loadedTable.insert(plugin_name, plugin);
+					message("Successfully loaded %s\n", plugin_name);
+					return true;
+				}
+			
 			}			
 			catch (GLib.Error error) {
 				warning("No configuration file for %s", plugin_name);
 			}
-
-			Plugin plugin = new ODeviced.Plugin(plugin_name, plugin_path);
 			
-			if(plugin.register()) {
-				/* This throws up an error in valac atm 
-				   plugin.depends = _deps; */
-				this.loadedTable.insert(plugin_name, plugin);
-				message("Successfully loaded %s\n", plugin_name);
-				return true;
+			catch (ODeviced.PluginError error) {
+				message(error.message);
 			}
-			message("Couldn't load %s", plugin_name);
 			return false;	
 			
 		}
