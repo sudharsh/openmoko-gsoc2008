@@ -1,6 +1,6 @@
 [backlight]
 dbus_object_path=/org/freesmartphone/Device/Backlight
-device_class=backligh
+device_class=backlight
 
 
 
