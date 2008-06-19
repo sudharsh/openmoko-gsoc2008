@@ -96,14 +96,15 @@ namespace ODeviced {
 					return true;
 				}
 			
-			}			
+			}
+			catch (ODeviced.PluginError error) {
+				message(error.message);
+			}
+						
 			catch (GLib.Error error) {
 				warning("No configuration file for %s", plugin_name);
 			}
 			
-			catch (ODeviced.PluginError error) {
-				message(error.message);
-			}
 			return false;	
 			
 		}
