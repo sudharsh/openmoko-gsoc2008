@@ -49,12 +49,15 @@ static gpointer backlight_plugin_parent_class = NULL;
 static gboolean _dbus_backlight_plugin_GetMaximumBrightness (BacklightPlugin* self, gint* result, GError** error);
 static gboolean _dbus_backlight_plugin_SetBrightness (BacklightPlugin* self, gint brightness, gboolean* result, GError** error);
 static gboolean _dbus_backlight_plugin_GetCurrentBrightness (BacklightPlugin* self, gint* result, GError** error);
+static gboolean _dbus_backlight_plugin_GetBacklightPower (BacklightPlugin* self, gboolean* result, GError** error);
+static gboolean _dbus_backlight_plugin_SetBacklightPower (BacklightPlugin* self, gboolean power, GError** error);
 static void backlight_plugin_dispose (GObject * obj);
 static void register_dbus (BacklightPlugin* obj);
 
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 static void g_cclosure_user_marshal_BOOLEAN__INT_POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
+static void g_cclosure_user_marshal_BOOLEAN__BOOLEAN_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 
 static BacklightPlugin* backlight_plugin_new (const char* node, const char* dbus_path) {
 	GParameter * __params;
@@ -107,6 +110,31 @@ gint backlight_plugin_GetCurrentBrightness (BacklightPlugin* self) {
 	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), 0);
 	_tmp0 = NULL;
 	return (_tmp1 = odeviced_read_integer ((_tmp0 = g_strconcat (self->priv->_node, "/actual_brightness", NULL))), (_tmp0 = (g_free (_tmp0), NULL)), _tmp1);
+}
+
+
+gboolean backlight_plugin_GetBacklightPower (BacklightPlugin* self) {
+	char* _tmp0;
+	gboolean _tmp1;
+	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), FALSE);
+	_tmp0 = NULL;
+	return (_tmp1 = odeviced_read_integer ((_tmp0 = g_strconcat (self->priv->_node, "/bl_power", NULL))) == 0, (_tmp0 = (g_free (_tmp0), NULL)), _tmp1);
+}
+
+
+void backlight_plugin_SetBacklightPower (BacklightPlugin* self, gboolean power) {
+	gint _val;
+	char* _tmp0;
+	g_return_if_fail (IS_BACKLIGHT_PLUGIN (self));
+	_val = 0;
+	if (power) {
+		_val = 0;
+	} else {
+		_val = 1;
+	}
+	_tmp0 = NULL;
+	odeviced_write_integer ((_tmp0 = g_strconcat (self->priv->_node, "/bl_power", NULL)), _val);
+	_tmp0 = (g_free (_tmp0), NULL);
 }
 
 
@@ -243,6 +271,18 @@ static gboolean _dbus_backlight_plugin_GetCurrentBrightness (BacklightPlugin* se
 }
 
 
+static gboolean _dbus_backlight_plugin_GetBacklightPower (BacklightPlugin* self, gboolean* result, GError** error) {
+	*result = backlight_plugin_GetBacklightPower (self);
+	return !error || !*error;
+}
+
+
+static gboolean _dbus_backlight_plugin_SetBacklightPower (BacklightPlugin* self, gboolean power, GError** error) {
+	backlight_plugin_SetBacklightPower (self, power);
+	return !error || !*error;
+}
+
+
 static void backlight_plugin_class_init (BacklightPluginClass * klass) {
 	backlight_plugin_parent_class = g_type_class_peek_parent (klass);
 	g_type_class_add_private (klass, sizeof (BacklightPluginPrivate));
@@ -256,9 +296,11 @@ static void backlight_plugin_class_init (BacklightPluginClass * klass) {
 { (GCallback) _dbus_backlight_plugin_GetMaximumBrightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 0 },
 { (GCallback) _dbus_backlight_plugin_SetBrightness, g_cclosure_user_marshal_BOOLEAN__INT_POINTER_POINTER, 75 },
 { (GCallback) _dbus_backlight_plugin_GetCurrentBrightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 158 },
+{ (GCallback) _dbus_backlight_plugin_GetBacklightPower, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 233 },
+{ (GCallback) _dbus_backlight_plugin_SetBacklightPower, g_cclosure_user_marshal_BOOLEAN__BOOLEAN_POINTER, 305 },
 }
 ;
-	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 3, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0", "", "org.freesmartphone.Device.Backlight\0node\0org.freesmartphone.Device.Backlight\0dbus_path\0" };
+	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 5, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0GetBacklightPower\0S\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0SetBacklightPower\0S\0power\0I\0b\0\0", "", "" };
 	dbus_g_object_type_install_info (TYPE_BACKLIGHT_PLUGIN, &backlight_plugin_dbus_object_info);
 }
 
@@ -289,7 +331,7 @@ GType backlight_plugin_get_type (void) {
 
 static void register_dbus (BacklightPlugin* obj) {
 	g_return_if_fail (IS_BACKLIGHT_PLUGIN (obj));
-	g_message ("backlight.vala:100: Registering DBus object at %s", backlight_plugin_get_dbus_path (obj));
+	g_message ("backlight.vala:111: Registering DBus object at %s", backlight_plugin_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, backlight_plugin_get_dbus_path (obj), G_OBJECT (obj));
 }
 
@@ -304,6 +346,7 @@ G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	
 	return TRUE;
 }
+
 
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
@@ -346,6 +389,28 @@ static void g_cclosure_user_marshal_BOOLEAN__INT_POINTER_POINTER (GClosure * clo
 	}
 	callback = ((GMarshalFunc_BOOLEAN__INT_POINTER_POINTER) ((marshal_data ? marshal_data : cc->callback)));
 	v_return = callback (data1, g_value_get_int (param_values + 1), g_value_get_pointer (param_values + 2), g_value_get_pointer (param_values + 3), data2);
+	g_value_set_boolean (return_value, v_return);
+}
+
+
+static void g_cclosure_user_marshal_BOOLEAN__BOOLEAN_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
+	typedef gboolean (*GMarshalFunc_BOOLEAN__BOOLEAN_POINTER) (gpointer data1, gboolean arg_1, gpointer arg_2, gpointer data2);
+	register GMarshalFunc_BOOLEAN__BOOLEAN_POINTER callback;
+	register GCClosure * cc;
+	register gpointer data1, data2;
+	gboolean v_return;
+	cc = ((GCClosure *) (closure));
+	g_return_if_fail (return_value != NULL);
+	g_return_if_fail (n_param_values == 3);
+	if (G_CCLOSURE_SWAP_DATA (closure)) {
+		data1 = closure->data;
+		data2 = param_values->data[0].v_pointer;
+	} else {
+		data1 = param_values->data[0].v_pointer;
+		data2 = closure->data;
+	}
+	callback = ((GMarshalFunc_BOOLEAN__BOOLEAN_POINTER) ((marshal_data ? marshal_data : cc->callback)));
+	v_return = callback (data1, g_value_get_boolean (param_values + 1), g_value_get_pointer (param_values + 2), data2);
 	g_value_set_boolean (return_value, v_return);
 }
 

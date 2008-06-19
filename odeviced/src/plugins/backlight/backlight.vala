@@ -60,7 +60,6 @@ public class BacklightPlugin: GLib.Object {
 		}
 	}
 		
-
 	public int GetMaximumBrightness() {
 		return this.max_brightness;
 	}
@@ -76,6 +75,18 @@ public class BacklightPlugin: GLib.Object {
 		return ODeviced.read_integer(this.node + "/actual_brightness");
 	}
 
+	public bool GetBacklightPower() {
+		return ODeviced.read_integer(this.node + "/bl_power") == 0;
+	}
+
+	public void SetBacklightPower(bool power) {
+		int _val;
+		if (power)
+			_val = 0;
+		else
+			_val = 1;
+		ODeviced.write_integer(this.node + "/bl_power", _val);
+	}
 
 /* Using auto-detected sysfs nodes
 
@@ -91,10 +102,10 @@ G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	return TRUE;
 }
 
-
 */
 
 }
+
 
 void register_dbus (BacklightPlugin obj) {
 	GLib.message("Registering DBus object at %s", obj.dbus_path);
