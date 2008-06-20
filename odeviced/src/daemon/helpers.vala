@@ -81,24 +81,11 @@ namespace ODeviced {
 
 	/* I know =(, Ideally these should have been a single function */
 	public static int read_integer(string node) {
-		File node_file = File.new_for_path(node);
-		DataInputStream stream;
 		int val;
-
-		try {
-			stream = new DataInputStream(node_file.read(null));
-			val = stream.read_int32(null);
-		}
-
-		catch (GLib.Error e) {
-			message (e.message);
-			val = -1;
-		}
-		
-		finally {
-			stream.close(null);			
-		}
-								
+		FileStream node_file = FileStream.open(node, "r");
+		if(node_file == null) 
+			return -1;
+		node_file.scanf("%d", ref val);
 		return val;
 	}
 	
