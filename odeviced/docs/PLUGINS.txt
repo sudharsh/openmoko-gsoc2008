@@ -4,13 +4,17 @@ There are two types of configurations files which odeviced reads at
 startup. 
 
 * The global configuration located at /etc/odeviced.conf
-* Plugin specific configuration at /usr/share/odeviced/plugins/<foo>.conf
+* Plugin specific configuration at /usr/share/odeviced/plugins/<foo>.plugin
+
 
 
 1.) Ensure that the shared module exports the init symbol of the form
     <your_plugin_name>_init(ODevicedPlugin *plugin).
+
     For example, for the "wifi" plugin it would be
     wifi_init(ODevicedPlugin *plugin) {.......}
+
+
 
 2.) If the plugin provides a DBus interface, odeviced_helpers_register_dbus_object()
     can be used to register the dbus object that pertains to the plugin interface.
@@ -19,12 +23,25 @@ startup.
     
     [wifi]
     dbus_object_path=/org/freesmartphone/Device/Plugins/Wifi 
+    
+    In case the plugin uses sysfs, compute_objects() can be used to return a list of objects, 
+    one for each node under the device class. To do so define the device class as follows,
+    [power]
+    ...
+    device_class = power_supply
+
+    This is used in the power and the backlight plugin to register DBus paths automatically 
+    based on the device class which is set in their respective configuration files.
+
+
 
 3.) If a plugin is to be loaded at odeviced startup, append the plugin name to
     "enable" of [odeviced] group in the global configuration file. For example
 
     [odeviced]
     enable = powercontrol,wifi
+
+
 
 4.) Dependencies for the plugins can be set in the plugin configuration file
     using the "depends" key.
@@ -33,6 +50,7 @@ startup.
     depends = powercontrol
 
     Multiple dependencies can be separated using ','.
+
     
 
 WARNING: Docs may change drastically as the code evolves :D
