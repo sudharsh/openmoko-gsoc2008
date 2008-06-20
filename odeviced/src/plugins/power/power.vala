@@ -68,11 +68,14 @@ public class Power: GLib.Object {
 			this.status_poll_interval = conf.get_integer(dev, "status_poll_interval");
 			/*this.power_supply_node = conf.get_string(dev, "power_supply_node");*/
 			this.max_energy = ODeviced.read_integer (this.node + "/energy_full");
-			/* Prolly use this for warning during low battery */
-			this.low_energy_threshold = this.max_energy * (_min/100);
-
-			this._status_id = Timeout.add_seconds(this.status_poll_interval, poll_status);
-			this.curr_status = GetBatteryStatus();
+			if(this.max_energy != -1) {
+				/* Prolly use this for warning during low battery */
+				this.low_energy_threshold = this.max_energy * (_min/100);
+				this._status_id = Timeout.add_seconds(this.status_poll_interval, poll_status);
+				this.curr_status = GetBatteryStatus();
+			}
+			else
+				Source.remove(this._energy_id);
 		}
 		catch (GLib.Error error) {
 			critical(error.message);

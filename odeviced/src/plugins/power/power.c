@@ -189,9 +189,9 @@ static gboolean power_poll_energy (Power* self) {
 		g_source_remove (self->priv->_energy_id);
 		return FALSE;
 	}
-	g_message ("power.vala:126: Current energy, %d", _curr);
+	g_message ("power.vala:129: Current energy, %d", _curr);
 	if (_curr < self->priv->low_energy_threshold) {
-		g_message ("power.vala:128: \tLow energy warning");
+		g_message ("power.vala:131: \tLow energy warning");
 		g_signal_emit_by_name (G_OBJECT (self), "low-battery", _curr);
 	}
 	return TRUE;
@@ -211,7 +211,7 @@ static gboolean power_poll_status (Power* self) {
 	if (_vala_strcmp0 (stat, self->priv->curr_status) != 0) {
 		char* _tmp2;
 		const char* _tmp1;
-		g_message ("power.vala:142: \tStatus changed, %s", stat);
+		g_message ("power.vala:145: \tStatus changed, %s", stat);
 		g_signal_emit_by_name (G_OBJECT (self), "battery-status-changed", stat);
 		_tmp2 = NULL;
 		_tmp1 = NULL;
@@ -280,33 +280,37 @@ static GObject * power_constructor (GType type, guint n_construct_properties, GO
 			char* dev;
 			gint _min;
 			char* _tmp0;
-			char* _tmp1;
 			dev = odeviced_get_device ();
 			g_key_file_load_from_file (self->priv->conf, "/usr/share/odeviced/plugins/power.plugin", G_KEY_FILE_NONE, &inner_error);
 			if (inner_error != NULL) {
-				goto __catch9_g_error;
+				goto __catch8_g_error;
 			}
 			_min = g_key_file_get_integer (self->priv->conf, dev, "low_energy_threshold", &inner_error);
 			if (inner_error != NULL) {
-				goto __catch9_g_error;
+				goto __catch8_g_error;
 			}
 			self->priv->status_poll_interval = g_key_file_get_integer (self->priv->conf, dev, "status_poll_interval", &inner_error);
 			if (inner_error != NULL) {
-				goto __catch9_g_error;
+				goto __catch8_g_error;
 			}
 			/*this.power_supply_node = conf.get_string(dev, "power_supply_node");*/
 			_tmp0 = NULL;
 			self->priv->max_energy = odeviced_read_integer ((_tmp0 = g_strconcat (self->priv->_node, "/energy_full", NULL)));
 			_tmp0 = (g_free (_tmp0), NULL);
-			/* Prolly use this for warning during low battery */
-			self->priv->low_energy_threshold = self->priv->max_energy * (_min / 100);
-			self->priv->_status_id = g_timeout_add_seconds (((guint) (self->priv->status_poll_interval)), _power_poll_status_gsource_func, self);
-			_tmp1 = NULL;
-			self->priv->curr_status = (_tmp1 = power_GetBatteryStatus (self), (self->priv->curr_status = (g_free (self->priv->curr_status), NULL)), _tmp1);
+			if (self->priv->max_energy != -1) {
+				char* _tmp1;
+				/* Prolly use this for warning during low battery */
+				self->priv->low_energy_threshold = self->priv->max_energy * (_min / 100);
+				self->priv->_status_id = g_timeout_add_seconds (((guint) (self->priv->status_poll_interval)), _power_poll_status_gsource_func, self);
+				_tmp1 = NULL;
+				self->priv->curr_status = (_tmp1 = power_GetBatteryStatus (self), (self->priv->curr_status = (g_free (self->priv->curr_status), NULL)), _tmp1);
+			} else {
+				g_source_remove (self->priv->_energy_id);
+			}
 			dev = (g_free (dev), NULL);
 		}
-		goto __finally9;
-		__catch9_g_error:
+		goto __finally8;
+		__catch8_g_error:
 		{
 			GError * error;
 			error = inner_error;
@@ -315,7 +319,7 @@ static GObject * power_constructor (GType type, guint n_construct_properties, GO
 				g_critical (error->message);
 			}
 		}
-		__finally9:
+		__finally8:
 		;
 	}
 	return obj;
@@ -469,9 +473,10 @@ GType power_get_type (void) {
 
 static void register_dbus (Power* obj) {
 	g_return_if_fail (IS_POWER (obj));
-	g_message ("power.vala:171: Registering DBus object at %s", power_get_dbus_path (obj));
+	g_message ("power.vala:174: Registering DBus object at %s", power_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, power_get_dbus_path (obj), G_OBJECT (obj));
 }
+
 
 G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
 	GType type;
@@ -485,7 +490,6 @@ G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
 	
 	return TRUE;
 }
-
 
 static int _vala_strcmp0 (const char * str1, const char * str2) {
 	if (str1 == NULL) {
