@@ -76,15 +76,15 @@ public class BacklightPlugin: GLib.Object {
 	}
 
 	public bool GetBacklightPower() {
-		return ODeviced.read_integer(this.node + "/bl_power") == 0;
+		return ODeviced.read_integer(this.node + "/bl_power")==0;
 	}
 
 	public void SetBacklightPower(bool power) {
 		int _val;
 		if (power)
-			_val = 0;
-		else
 			_val = 1;
+		else
+			_val = 0;
 		ODeviced.write_integer(this.node + "/bl_power", _val);
 	}
 
@@ -97,6 +97,8 @@ G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	BacklightPlugin *obj;
 	type = backlight_plugin_get_type();
 	list = odeviced_compute_objects (plugin, type);
+	if(!list)
+	return FALSE;
 	g_list_foreach(list, (GFunc)register_dbus, NULL);
 		
 	return TRUE;

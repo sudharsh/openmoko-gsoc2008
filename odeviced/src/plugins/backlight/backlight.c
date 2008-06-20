@@ -128,9 +128,9 @@ void backlight_plugin_SetBacklightPower (BacklightPlugin* self, gboolean power) 
 	g_return_if_fail (IS_BACKLIGHT_PLUGIN (self));
 	_val = 0;
 	if (power) {
-		_val = 0;
-	} else {
 		_val = 1;
+	} else {
+		_val = 0;
 	}
 	_tmp0 = NULL;
 	odeviced_write_integer ((_tmp0 = g_strconcat (self->priv->_node, "/bl_power", NULL)), _val);
@@ -190,7 +190,7 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 			g_key_file_load_from_file (_file, "/usr/share/odeviced/plugins/backlight.plugin", G_KEY_FILE_NONE, &inner_error);
 			if (inner_error != NULL) {
 				if (inner_error->domain == DBUS_GERROR) {
-					goto __catch7_dbus_gerror;
+					goto __catch8_dbus_gerror;
 				}
 				g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
 				g_clear_error (&inner_error);
@@ -202,8 +202,8 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 			(_file == NULL ? NULL : (_file = (g_key_file_free (_file), NULL)));
 			dev = (g_free (dev), NULL);
 		}
-		goto __finally7;
-		__catch7_dbus_gerror:
+		goto __finally8;
+		__catch8_dbus_gerror:
 		{
 			GError * e;
 			e = inner_error;
@@ -212,7 +212,7 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 				g_critical (e->message);
 			}
 		}
-		__finally7:
+		__finally8:
 		;
 	}
 	return obj;
@@ -329,9 +329,10 @@ GType backlight_plugin_get_type (void) {
 }
 
 
+/* Using auto-detected sysfs nodes */
 static void register_dbus (BacklightPlugin* obj) {
 	g_return_if_fail (IS_BACKLIGHT_PLUGIN (obj));
-	g_message ("backlight.vala:111: Registering DBus object at %s", backlight_plugin_get_dbus_path (obj));
+	g_message ("backlight.vala:113: Registering DBus object at %s", backlight_plugin_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, backlight_plugin_get_dbus_path (obj), G_OBJECT (obj));
 }
 
@@ -342,11 +343,10 @@ G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	BacklightPlugin *obj;
 	type = backlight_plugin_get_type();
 	list = odeviced_compute_objects (plugin, type);
-
-	if (!list)
+	if(!list)
 		return FALSE;
-
-	g_list_foreach(list, (GFunc)register_dbus, NULL);	
+	g_list_foreach(list, (GFunc)register_dbus, NULL);
+	
 	return TRUE;
 }
 
