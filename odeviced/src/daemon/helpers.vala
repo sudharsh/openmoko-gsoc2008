@@ -90,7 +90,7 @@ namespace ODeviced {
 	}
 	
 
-	public static string read_string(string node) {
+	public static string? read_string(string node) {
 		File node_file = File.new_for_path(node);
 		DataInputStream stream;
 		string line;
@@ -102,11 +102,9 @@ namespace ODeviced {
 
 		catch (GLib.Error e) {
 			message (e.message);
+			return null;
 		}
 
-		finally {
-			stream.close(null);
-		}
 		return line;
 	}
 	
