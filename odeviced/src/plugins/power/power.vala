@@ -35,6 +35,8 @@ public class Power: GLib.Object {
 	private int max_energy;
 	private int low_energy_threshold;
 	private int status_poll_interval;
+	private uint _energy_id;
+	private uint _status_id;
 
 	public signal void battery_status_changed(string status);
 	public signal void low_battery(int charge);
@@ -58,7 +60,7 @@ public class Power: GLib.Object {
 	
 	construct {
 		
-		Timeout.add_seconds(300, poll_energy);
+		this._energy_id = Timeout.add_seconds(300, poll_energy);
 		try {
 			var dev = ODeviced.get_device();
 			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
@@ -69,7 +71,7 @@ public class Power: GLib.Object {
 			/* Prolly use this for warning during low battery */
 			this.low_energy_threshold = this.max_energy * (_min/100);
 
-			Timeout.add_seconds(this.status_poll_interval, poll_status);
+			this._status_id = Timeout.add_seconds(this.status_poll_interval, poll_status);
 			this.curr_status = GetBatteryStatus();
 		}
 		catch (GLib.Error error) {
@@ -116,8 +118,10 @@ public class Power: GLib.Object {
 
 	private bool poll_energy() {
 		var _curr = GetCurrentEnergy();
-		if (_curr == -1) 
+		if (_curr == -1) { 
+			Source.remove(_energy_id);
 			return false;
+		}
 
 		message("Current energy, %d", _curr);
 		if(_curr < this.low_energy_threshold) {
@@ -129,8 +133,10 @@ public class Power: GLib.Object {
 
 	private bool poll_status() {
 		var stat = GetBatteryStatus();
-		if (stat == null)
+		if (stat == null) {
+			Source.remove(_status_id);
 			return false;
+		}
 
 		if(stat != this.curr_status) {
 			message("\tStatus changed, %s", stat);
@@ -149,6 +155,8 @@ G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
 	Power *obj;
 	type = power_get_type();
 	list = odeviced_compute_objects (plugin, type);
+	if(!list)
+	return FALSE;
 	g_list_foreach(list, (GFunc)register_dbus, NULL);
 	
 	return TRUE;
