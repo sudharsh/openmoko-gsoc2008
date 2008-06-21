@@ -44,10 +44,10 @@ odeviced_LDADD = \
 	$(NULL)
 
 dbussystemdir = $(DBUS_SYSTEM_DIR)
-dbussystem_DATA = Device.conf
+dbussystem_DATA = etc/dbus-1/system.d/Device.conf
 
 odevicedconfdir = /etc
-odevicedconf_DATA = conf/odeviced.conf
+odevicedconf_DATA = etc/odeviced.conf
 
 EXTRA_DIST = \
 	intltool-extract.in \
