@@ -26,8 +26,6 @@
 #include <glib-object.h>
 #include <stdlib.h>
 #include <string.h>
-#include <float.h>
-#include <math.h>
 
 G_BEGIN_DECLS
 
@@ -64,7 +62,7 @@ char* power_GetType (Power* self);
 char* power_GetModel (Power* self);
 char* power_GetManufacturer (Power* self);
 char* power_GetTechnology (Power* self);
-double power_GetEnergyPercentage (Power* self);
+gint power_GetEnergyPercentage (Power* self);
 const char* power_get_node (Power* self);
 const char* power_get_dbus_path (Power* self);
 GType power_get_type (void);

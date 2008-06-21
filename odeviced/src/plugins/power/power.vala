@@ -120,9 +120,9 @@ public class Power: GLib.Object {
 		return ODeviced.read_string(this.node + "/technology");
 	}
 
-	public double GetEnergyPercentage() {
+	public int GetEnergyPercentage() {
 		var _curr = GetCurrentEnergy();
-		return 100.0 * ((float)_curr / (float)this.max_energy);
+		return (int)(100.0 * ((float)_curr / (float)this.max_energy));
 	}
 
 	private bool poll_energy() {

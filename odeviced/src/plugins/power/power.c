@@ -20,6 +20,8 @@
  */
 
 #include "power.h"
+#include <float.h>
+#include <math.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <dbus/dbus-glib.h>
 #include "helpers.h"
@@ -67,7 +69,7 @@ static gboolean _dbus_power_GetType (Power* self, char** result, GError** error)
 static gboolean _dbus_power_GetModel (Power* self, char** result, GError** error);
 static gboolean _dbus_power_GetManufacturer (Power* self, char** result, GError** error);
 static gboolean _dbus_power_GetTechnology (Power* self, char** result, GError** error);
-static gboolean _dbus_power_GetEnergyPercentage (Power* self, double* result, GError** error);
+static gboolean _dbus_power_GetEnergyPercentage (Power* self, gint* result, GError** error);
 static void power_dispose (GObject * obj);
 static void register_dbus (Power* obj);
 static int _vala_strcmp0 (const char * str1, const char * str2);
@@ -183,11 +185,11 @@ char* power_GetTechnology (Power* self) {
 }
 
 
-double power_GetEnergyPercentage (Power* self) {
+gint power_GetEnergyPercentage (Power* self) {
 	gint _curr;
-	g_return_val_if_fail (IS_POWER (self), 0.0);
+	g_return_val_if_fail (IS_POWER (self), 0);
 	_curr = power_GetCurrentEnergy (self);
-	return 100.0 * (((float) (_curr)) / ((float) (self->priv->max_energy)));
+	return ((gint) ((100.0 * (((float) (_curr)) / ((float) (self->priv->max_energy))))));
 }
 
 
@@ -427,7 +429,7 @@ static gboolean _dbus_power_GetTechnology (Power* self, char** result, GError** 
 }
 
 
-static gboolean _dbus_power_GetEnergyPercentage (Power* self, double* result, GError** error) {
+static gboolean _dbus_power_GetEnergyPercentage (Power* self, gint* result, GError** error) {
 	*result = power_GetEnergyPercentage (self);
 	return !error || !*error;
 }
@@ -457,7 +459,7 @@ static void power_class_init (PowerClass * klass) {
 { (GCallback) _dbus_power_GetEnergyPercentage, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 626 },
 }
 ;
-	static const DBusGObjectInfo power_dbus_object_info = { 0, power_dbus_methods, 10, "org.freesmartphone.Device.PowerSupply\0GetCurrentEnergy\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.PowerSupply\0GetMaxEnergy\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.PowerSupply\0GetEnergyFullDesign\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.PowerSupply\0GetBatteryStatus\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetName\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetType\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetModel\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetManufacturer\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetTechnology\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetEnergyPercentage\0S\0result\0O\0F\0N\0d\0\0", "org.freesmartphone.Device.PowerSupply\0battery_status_changed\0org.freesmartphone.Device.PowerSupply\0low_battery\0", "" };
+	static const DBusGObjectInfo power_dbus_object_info = { 0, power_dbus_methods, 10, "org.freesmartphone.Device.PowerSupply\0GetCurrentEnergy\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.PowerSupply\0GetMaxEnergy\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.PowerSupply\0GetEnergyFullDesign\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.PowerSupply\0GetBatteryStatus\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetName\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetType\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetModel\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetManufacturer\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetTechnology\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetEnergyPercentage\0S\0result\0O\0F\0N\0i\0\0", "org.freesmartphone.Device.PowerSupply\0battery_status_changed\0org.freesmartphone.Device.PowerSupply\0low_battery\0", "" };
 	dbus_g_object_type_install_info (TYPE_POWER, &power_dbus_object_info);
 }
 
