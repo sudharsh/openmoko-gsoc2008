@@ -37,6 +37,7 @@ public class Power: GLib.Object {
 	private int status_poll_interval;
 	private uint _energy_id;
 	private uint _status_id;
+	private string name = new string();
 
 	public signal void battery_status_changed(string status);
 	public signal void low_battery(int charge);
@@ -66,6 +67,7 @@ public class Power: GLib.Object {
 			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
 			var _min = conf.get_integer(dev, "low_energy_threshold");
 			this.status_poll_interval = conf.get_integer(dev, "status_poll_interval");
+			this.name = ODeviced.compute_name (this.dbus_path);
 			/*this.power_supply_node = conf.get_string(dev, "power_supply_node");*/
 			this.max_energy = ODeviced.read_integer (this.node + "/energy_full");
 			if(this.max_energy != -1) {
@@ -96,6 +98,10 @@ public class Power: GLib.Object {
 
 	public string GetBatteryStatus() {
 		return ODeviced.read_string(this.node + "/status");
+	}
+
+	public string GetName() {
+		return this.name;
 	}
 
 	public string GetType() {

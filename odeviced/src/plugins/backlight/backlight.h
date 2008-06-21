@@ -60,6 +60,7 @@ gboolean backlight_plugin_SetBrightness (BacklightPlugin* self, gint brightness)
 gint backlight_plugin_GetCurrentBrightness (BacklightPlugin* self);
 gboolean backlight_plugin_GetBacklightPower (BacklightPlugin* self);
 void backlight_plugin_SetBacklightPower (BacklightPlugin* self, gboolean power);
+char* backlight_plugin_GetName (BacklightPlugin* self);
 const char* backlight_plugin_get_node (BacklightPlugin* self);
 const char* backlight_plugin_get_dbus_path (BacklightPlugin* self);
 GType backlight_plugin_get_type (void);

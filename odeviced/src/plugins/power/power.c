@@ -37,6 +37,7 @@ struct _PowerPrivate {
 	gint status_poll_interval;
 	guint _energy_id;
 	guint _status_id;
+	char* name;
 	char* curr_status;
 	char* _node;
 	char* _dbus_path;
@@ -61,6 +62,7 @@ static gboolean _dbus_power_GetCurrentEnergy (Power* self, gint* result, GError*
 static gboolean _dbus_power_GetMaxEnergy (Power* self, gint* result, GError** error);
 static gboolean _dbus_power_GetEnergyFullDesign (Power* self, gint* result, GError** error);
 static gboolean _dbus_power_GetBatteryStatus (Power* self, char** result, GError** error);
+static gboolean _dbus_power_GetName (Power* self, char** result, GError** error);
 static gboolean _dbus_power_GetType (Power* self, char** result, GError** error);
 static gboolean _dbus_power_GetModel (Power* self, char** result, GError** error);
 static gboolean _dbus_power_GetManufacturer (Power* self, char** result, GError** error);
@@ -133,6 +135,14 @@ char* power_GetBatteryStatus (Power* self) {
 }
 
 
+char* power_GetName (Power* self) {
+	const char* _tmp0;
+	g_return_val_if_fail (IS_POWER (self), NULL);
+	_tmp0 = NULL;
+	return (_tmp0 = self->priv->name, (_tmp0 == NULL ? NULL : g_strdup (_tmp0)));
+}
+
+
 char* power_GetType (Power* self) {
 	char* _tmp0;
 	char* _tmp1;
@@ -189,9 +199,9 @@ static gboolean power_poll_energy (Power* self) {
 		g_source_remove (self->priv->_energy_id);
 		return FALSE;
 	}
-	g_message ("power.vala:129: Current energy, %d", _curr);
+	g_message ("power.vala:135: Current energy, %d", _curr);
 	if (_curr < self->priv->low_energy_threshold) {
-		g_message ("power.vala:131: \tLow energy warning");
+		g_message ("power.vala:137: \tLow energy warning");
 		g_signal_emit_by_name (G_OBJECT (self), "low-battery", _curr);
 	}
 	return TRUE;
@@ -211,7 +221,7 @@ static gboolean power_poll_status (Power* self) {
 	if (_vala_strcmp0 (stat, self->priv->curr_status) != 0) {
 		char* _tmp2;
 		const char* _tmp1;
-		g_message ("power.vala:145: \tStatus changed, %s", stat);
+		g_message ("power.vala:151: \tStatus changed, %s", stat);
 		g_signal_emit_by_name (G_OBJECT (self), "battery-status-changed", stat);
 		_tmp2 = NULL;
 		_tmp1 = NULL;
@@ -280,6 +290,7 @@ static GObject * power_constructor (GType type, guint n_construct_properties, GO
 			char* dev;
 			gint _min;
 			char* _tmp0;
+			char* _tmp1;
 			dev = odeviced_get_device ();
 			g_key_file_load_from_file (self->priv->conf, "/usr/share/odeviced/plugins/power.plugin", G_KEY_FILE_NONE, &inner_error);
 			if (inner_error != NULL) {
@@ -293,17 +304,19 @@ static GObject * power_constructor (GType type, guint n_construct_properties, GO
 			if (inner_error != NULL) {
 				goto __catch8_g_error;
 			}
-			/*this.power_supply_node = conf.get_string(dev, "power_supply_node");*/
 			_tmp0 = NULL;
-			self->priv->max_energy = odeviced_read_integer ((_tmp0 = g_strconcat (self->priv->_node, "/energy_full", NULL)));
-			_tmp0 = (g_free (_tmp0), NULL);
+			self->priv->name = (_tmp0 = odeviced_compute_name (self->priv->_dbus_path), (self->priv->name = (g_free (self->priv->name), NULL)), _tmp0);
+			/*this.power_supply_node = conf.get_string(dev, "power_supply_node");*/
+			_tmp1 = NULL;
+			self->priv->max_energy = odeviced_read_integer ((_tmp1 = g_strconcat (self->priv->_node, "/energy_full", NULL)));
+			_tmp1 = (g_free (_tmp1), NULL);
 			if (self->priv->max_energy != -1) {
-				char* _tmp1;
+				char* _tmp2;
 				/* Prolly use this for warning during low battery */
 				self->priv->low_energy_threshold = self->priv->max_energy * (_min / 100);
 				self->priv->_status_id = g_timeout_add_seconds (((guint) (self->priv->status_poll_interval)), _power_poll_status_gsource_func, self);
-				_tmp1 = NULL;
-				self->priv->curr_status = (_tmp1 = power_GetBatteryStatus (self), (self->priv->curr_status = (g_free (self->priv->curr_status), NULL)), _tmp1);
+				_tmp2 = NULL;
+				self->priv->curr_status = (_tmp2 = power_GetBatteryStatus (self), (self->priv->curr_status = (g_free (self->priv->curr_status), NULL)), _tmp2);
 			} else {
 				g_source_remove (self->priv->_energy_id);
 			}
@@ -384,6 +397,12 @@ static gboolean _dbus_power_GetBatteryStatus (Power* self, char** result, GError
 }
 
 
+static gboolean _dbus_power_GetName (Power* self, char** result, GError** error) {
+	*result = power_GetName (self);
+	return !error || !*error;
+}
+
+
 static gboolean _dbus_power_GetType (Power* self, char** result, GError** error) {
 	*result = power_GetType (self);
 	return !error || !*error;
@@ -430,14 +449,15 @@ static void power_class_init (PowerClass * klass) {
 { (GCallback) _dbus_power_GetMaxEnergy, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 73 },
 { (GCallback) _dbus_power_GetEnergyFullDesign, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 142 },
 { (GCallback) _dbus_power_GetBatteryStatus, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 218 },
-{ (GCallback) _dbus_power_GetType, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 291 },
-{ (GCallback) _dbus_power_GetModel, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 355 },
-{ (GCallback) _dbus_power_GetManufacturer, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 420 },
-{ (GCallback) _dbus_power_GetTechnology, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 492 },
-{ (GCallback) _dbus_power_GetEnergyPercentage, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 562 },
+{ (GCallback) _dbus_power_GetName, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 291 },
+{ (GCallback) _dbus_power_GetType, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 355 },
+{ (GCallback) _dbus_power_GetModel, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 419 },
+{ (GCallback) _dbus_power_GetManufacturer, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 484 },
+{ (GCallback) _dbus_power_GetTechnology, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 556 },
+{ (GCallback) _dbus_power_GetEnergyPercentage, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 626 },
 }
 ;
-	static const DBusGObjectInfo power_dbus_object_info = { 0, power_dbus_methods, 9, "org.freesmartphone.Device.PowerSupply\0GetCurrentEnergy\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.PowerSupply\0GetMaxEnergy\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.PowerSupply\0GetEnergyFullDesign\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.PowerSupply\0GetBatteryStatus\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetType\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetModel\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetManufacturer\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetTechnology\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetEnergyPercentage\0S\0result\0O\0F\0N\0d\0\0", "org.freesmartphone.Device.PowerSupply\0battery_status_changed\0org.freesmartphone.Device.PowerSupply\0low_battery\0", "" };
+	static const DBusGObjectInfo power_dbus_object_info = { 0, power_dbus_methods, 10, "org.freesmartphone.Device.PowerSupply\0GetCurrentEnergy\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.PowerSupply\0GetMaxEnergy\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.PowerSupply\0GetEnergyFullDesign\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.PowerSupply\0GetBatteryStatus\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetName\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetType\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetModel\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetManufacturer\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetTechnology\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.PowerSupply\0GetEnergyPercentage\0S\0result\0O\0F\0N\0d\0\0", "org.freesmartphone.Device.PowerSupply\0battery_status_changed\0org.freesmartphone.Device.PowerSupply\0low_battery\0", "" };
 	dbus_g_object_type_install_info (TYPE_POWER, &power_dbus_object_info);
 }
 
@@ -446,6 +466,7 @@ static void power_instance_init (Power * self) {
 	self->priv = POWER_GET_PRIVATE (self);
 	self->priv->status = g_new0 (char, 1);
 	self->priv->conf = g_key_file_new ();
+	self->priv->name = g_new0 (char, 1);
 }
 
 
@@ -454,6 +475,7 @@ static void power_dispose (GObject * obj) {
 	self = POWER (obj);
 	self->priv->status = (g_free (self->priv->status), NULL);
 	(self->priv->conf == NULL ? NULL : (self->priv->conf = (g_key_file_free (self->priv->conf), NULL)));
+	self->priv->name = (g_free (self->priv->name), NULL);
 	self->priv->curr_status = (g_free (self->priv->curr_status), NULL);
 	self->priv->_node = (g_free (self->priv->_node), NULL);
 	self->priv->_dbus_path = (g_free (self->priv->_dbus_path), NULL);
@@ -473,7 +495,7 @@ GType power_get_type (void) {
 
 static void register_dbus (Power* obj) {
 	g_return_if_fail (IS_POWER (obj));
-	g_message ("power.vala:174: Registering DBus object at %s", power_get_dbus_path (obj));
+	g_message ("power.vala:180: Registering DBus object at %s", power_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, power_get_dbus_path (obj), G_OBJECT (obj));
 }
 
@@ -490,6 +512,7 @@ G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
 	
 	return TRUE;
 }
+
 
 static int _vala_strcmp0 (const char * str1, const char * str2) {
 	if (str1 == NULL) {

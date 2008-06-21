@@ -31,6 +31,8 @@ using ODeviced;
 public class BacklightPlugin: GLib.Object {
 	
 	private int max_brightness;
+	private string name = new string();
+
 	public string node {
 		get;
 		construct;
@@ -52,6 +54,7 @@ public class BacklightPlugin: GLib.Object {
 			_file.load_from_file("/usr/share/odeviced/plugins/backlight.plugin", GLib.KeyFileFlags.NONE);
 		
 			var dev = ODeviced.get_device();
+			this.name = ODeviced.compute_name(dbus_path);
 			this.max_brightness = ODeviced.read_integer(this.node + "/max_brightness");
 		}
 
@@ -86,6 +89,10 @@ public class BacklightPlugin: GLib.Object {
 		else
 			_val = 0;
 		ODeviced.write_integer(this.node + "/bl_power", _val);
+	}
+
+	public string GetName() {
+		return this.name;
 	}
 
 /* Using auto-detected sysfs nodes

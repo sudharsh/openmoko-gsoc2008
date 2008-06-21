@@ -59,6 +59,7 @@ gint power_GetCurrentEnergy (Power* self);
 gint power_GetMaxEnergy (Power* self);
 gint power_GetEnergyFullDesign (Power* self);
 char* power_GetBatteryStatus (Power* self);
+char* power_GetName (Power* self);
 char* power_GetType (Power* self);
 char* power_GetModel (Power* self);
 char* power_GetManufacturer (Power* self);

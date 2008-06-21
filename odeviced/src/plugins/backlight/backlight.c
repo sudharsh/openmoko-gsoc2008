@@ -31,6 +31,7 @@
 
 struct _BacklightPluginPrivate {
 	gint max_brightness;
+	char* name;
 	char* _node;
 	char* _dbus_path;
 };
@@ -51,6 +52,7 @@ static gboolean _dbus_backlight_plugin_SetBrightness (BacklightPlugin* self, gin
 static gboolean _dbus_backlight_plugin_GetCurrentBrightness (BacklightPlugin* self, gint* result, GError** error);
 static gboolean _dbus_backlight_plugin_GetBacklightPower (BacklightPlugin* self, gboolean* result, GError** error);
 static gboolean _dbus_backlight_plugin_SetBacklightPower (BacklightPlugin* self, gboolean power, GError** error);
+static gboolean _dbus_backlight_plugin_GetName (BacklightPlugin* self, char** result, GError** error);
 static void backlight_plugin_dispose (GObject * obj);
 static void register_dbus (BacklightPlugin* obj);
 
@@ -138,6 +140,14 @@ void backlight_plugin_SetBacklightPower (BacklightPlugin* self, gboolean power) 
 }
 
 
+char* backlight_plugin_GetName (BacklightPlugin* self) {
+	const char* _tmp0;
+	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), NULL);
+	_tmp0 = NULL;
+	return (_tmp0 = self->priv->name, (_tmp0 == NULL ? NULL : g_strdup (_tmp0)));
+}
+
+
 const char* backlight_plugin_get_node (BacklightPlugin* self) {
 	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), NULL);
 	return self->priv->_node;
@@ -186,6 +196,7 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 			GKeyFile* _file;
 			char* dev;
 			char* _tmp0;
+			char* _tmp1;
 			_file = g_key_file_new ();
 			g_key_file_load_from_file (_file, "/usr/share/odeviced/plugins/backlight.plugin", G_KEY_FILE_NONE, &inner_error);
 			if (inner_error != NULL) {
@@ -197,8 +208,10 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 			}
 			dev = odeviced_get_device ();
 			_tmp0 = NULL;
-			self->priv->max_brightness = odeviced_read_integer ((_tmp0 = g_strconcat (self->priv->_node, "/max_brightness", NULL)));
-			_tmp0 = (g_free (_tmp0), NULL);
+			self->priv->name = (_tmp0 = odeviced_compute_name (self->priv->_dbus_path), (self->priv->name = (g_free (self->priv->name), NULL)), _tmp0);
+			_tmp1 = NULL;
+			self->priv->max_brightness = odeviced_read_integer ((_tmp1 = g_strconcat (self->priv->_node, "/max_brightness", NULL)));
+			_tmp1 = (g_free (_tmp1), NULL);
 			(_file == NULL ? NULL : (_file = (g_key_file_free (_file), NULL)));
 			dev = (g_free (dev), NULL);
 		}
@@ -283,6 +296,12 @@ static gboolean _dbus_backlight_plugin_SetBacklightPower (BacklightPlugin* self,
 }
 
 
+static gboolean _dbus_backlight_plugin_GetName (BacklightPlugin* self, char** result, GError** error) {
+	*result = backlight_plugin_GetName (self);
+	return !error || !*error;
+}
+
+
 static void backlight_plugin_class_init (BacklightPluginClass * klass) {
 	backlight_plugin_parent_class = g_type_class_peek_parent (klass);
 	g_type_class_add_private (klass, sizeof (BacklightPluginPrivate));
@@ -298,21 +317,24 @@ static void backlight_plugin_class_init (BacklightPluginClass * klass) {
 { (GCallback) _dbus_backlight_plugin_GetCurrentBrightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 158 },
 { (GCallback) _dbus_backlight_plugin_GetBacklightPower, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 233 },
 { (GCallback) _dbus_backlight_plugin_SetBacklightPower, g_cclosure_user_marshal_BOOLEAN__BOOLEAN_POINTER, 305 },
+{ (GCallback) _dbus_backlight_plugin_GetName, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 372 },
 }
 ;
-	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 5, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0GetBacklightPower\0S\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0SetBacklightPower\0S\0power\0I\0b\0\0", "", "" };
+	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 6, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0GetBacklightPower\0S\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0SetBacklightPower\0S\0power\0I\0b\0\0org.freesmartphone.Device.Backlight\0GetName\0S\0result\0O\0F\0N\0s\0\0", "", "" };
 	dbus_g_object_type_install_info (TYPE_BACKLIGHT_PLUGIN, &backlight_plugin_dbus_object_info);
 }
 
 
 static void backlight_plugin_instance_init (BacklightPlugin * self) {
 	self->priv = BACKLIGHT_PLUGIN_GET_PRIVATE (self);
+	self->priv->name = g_new0 (char, 1);
 }
 
 
 static void backlight_plugin_dispose (GObject * obj) {
 	BacklightPlugin * self;
 	self = BACKLIGHT_PLUGIN (obj);
+	self->priv->name = (g_free (self->priv->name), NULL);
 	self->priv->_node = (g_free (self->priv->_node), NULL);
 	self->priv->_dbus_path = (g_free (self->priv->_dbus_path), NULL);
 	G_OBJECT_CLASS (backlight_plugin_parent_class)->dispose (obj);
@@ -329,10 +351,9 @@ GType backlight_plugin_get_type (void) {
 }
 
 
-/* Using auto-detected sysfs nodes */
 static void register_dbus (BacklightPlugin* obj) {
 	g_return_if_fail (IS_BACKLIGHT_PLUGIN (obj));
-	g_message ("backlight.vala:113: Registering DBus object at %s", backlight_plugin_get_dbus_path (obj));
+	g_message ("backlight.vala:120: Registering DBus object at %s", backlight_plugin_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, backlight_plugin_get_dbus_path (obj), G_OBJECT (obj));
 }
 
@@ -349,7 +370,6 @@ G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 	
 	return TRUE;
 }
-
 
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
