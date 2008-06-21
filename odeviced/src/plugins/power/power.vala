@@ -67,8 +67,8 @@ public class Power: GLib.Object {
 			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
 			var _min = conf.get_integer(dev, "low_energy_threshold");
 			this.status_poll_interval = conf.get_integer(dev, "status_poll_interval");
-			this.name = ODeviced.compute_name (this.dbus_path);
 			/*this.power_supply_node = conf.get_string(dev, "power_supply_node");*/
+			this.name = ODeviced.compute_name (this.dbus_path);
 			this.max_energy = ODeviced.read_integer (this.node + "/energy_full");
 			if(this.max_energy != -1) {
 				/* Prolly use this for warning during low battery */
@@ -76,8 +76,10 @@ public class Power: GLib.Object {
 				this._status_id = Timeout.add_seconds(this.status_poll_interval, poll_status);
 				this.curr_status = GetBatteryStatus();
 			}
-			else
+			else {
+				warning("DBus path for %s couldn't be set up properly", this.name);
 				Source.remove(this._energy_id);
+			}
 		}
 		catch (GLib.Error error) {
 			critical(error.message);
@@ -134,7 +136,7 @@ public class Power: GLib.Object {
 
 		message("Current energy, %d", _curr);
 		if(_curr < this.low_energy_threshold) {
-			message("\tLow energy warning");
+			message("%s\tLow energy warning", this.name);
 			this.low_battery(_curr);
 		}
 		return true;
@@ -148,7 +150,7 @@ public class Power: GLib.Object {
 		}
 
 		if(stat != this.curr_status) {
-			message("\tStatus changed, %s", stat);
+			message("%s\tStatus changed, %s", this.name, stat);
 			this.battery_status_changed(stat);
 			this.curr_status = stat;
 		}
