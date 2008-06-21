@@ -79,6 +79,13 @@ namespace ODeviced {
 	}
 
 
+	public static string compute_name (string path) {
+		string[] split_list = path.split("/", 0);
+		var _length = strv_length(split_list);
+		return split_list[_length - 1];
+	}
+
+
 	/* I know =(, Ideally these should have been a single function */
 	public static int read_integer(string node) {
 		int val;
