@@ -49,6 +49,9 @@ dbussystem_DATA = etc/dbus-1/system.d/Device.conf
 odevicedconfdir = /etc
 odevicedconf_DATA = etc/odeviced.conf
 
+initdir = /etc/init.d
+init_DATA = etc/init.d/odeviced
+
 EXTRA_DIST = \
 	intltool-extract.in \
 	intltool-update.in \
@@ -57,6 +60,7 @@ EXTRA_DIST = \
 	src/daemon/odeviced.vala.stamp \
 	dbussystem_DATA \
 	odevicedconf_DATA \
+	init_DATA \
 	$(NULL)
 
 DISTCLEANFILES = \
