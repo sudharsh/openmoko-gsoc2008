@@ -1,0 +1,3 @@
+[rtc]
+dbus_object_path=/org/freesmartphone/Device/RealTimeClock
+device_class=rtc
