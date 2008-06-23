@@ -1,11 +1,9 @@
-INCLUDES        = 	 -I$(includedir) \
-			-I$(top_srcdir)/src/daemon
-
 AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(GMODULE_CFLAGS) \
 	-include $(CONFIG_HEADER) \
+	-I$(top_srcdir)/src/daemon \			
 	-ggdb
 
 pkgdir		= $(libdir)/odeviced/plugins
