@@ -43,7 +43,7 @@ namespace ODeviced {
 
 		/* valac doesnt support duplicating string array intances */
 		/*private string[] _dbus_object_paths;*/
-		public string[] dbus_object_paths;
+		public List<string> dbus_object_paths = new List<string> ();
 		/*{
 			get { return _dbus_object_paths; }
 			set { _dbus_object_paths = value; }
