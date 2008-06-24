@@ -64,6 +64,22 @@ namespace ODeviced {
 			
 		}
 		
+		/*
+		public string[] ListObjectsByInterface (string iface) {
+
+			string[] ret;
+			int i = 0;
+			foreach (ODeviced.Plugin plugin in this.obj_list) {
+				
+				if(iface == plugin.iface) {
+					ret[i] = plugin.dbus_path;
+				}
+				i++;
+			}
+			return ret;
+		}
+		*/
+		
 
 		/* Private methods... */
 		private bool load(string plugin_name) {
@@ -130,7 +146,7 @@ namespace ODeviced {
 		}
 		
 		
-		public bool is_loaded(string plugin_name) {
+		private bool is_loaded(string plugin_name) {
 			
 			if(this.loadedTable.lookup(plugin_name)==null) 
 				return false;
@@ -178,7 +194,7 @@ namespace ODeviced {
 			return false;
 		}
 
-			
+		[DBus (visible = false)]	
 		public void run() {
 			loop.run();
 			
