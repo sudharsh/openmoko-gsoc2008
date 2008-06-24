@@ -62,9 +62,11 @@ namespace ODeviced {
 				while(node!=null) {
 					var obj = GLib.Object.new(klass, "node", dev_node + "/" + node,
 											  "dbus_path", dbus_path + "/" + node);
+					plugin.dbus_object_paths.append(dbus_path + "/" + node);
 					message("Created object for sysfs node, %s", dev_node + "/" + node);
 					objList.append(obj);
 					node = dir.read_name();
+					
 				}
 			}
 
