@@ -64,14 +64,20 @@ namespace ODeviced {
 			
 		}
 		
-		public weak string[]? ListObjectsByInterface (string iface) {
+
+		/* Turn away now if you teach algorithms */
+		[NoArrayLength]
+		public string[]? ListObjectsByInterface (string iface) {
 		
-			string[] ret; 
 			foreach (ODeviced.Plugin plugin in this.obj_list) {
 				uint length = plugin.dbus_object_paths.length();
-				
+				string[] ret = new string[length];
+				uint i = 0;
 				if(iface == plugin.dbus_iface) {
-					ret[0] = plugin.dbus_object_paths.nth_data(0);
+					foreach (string path in plugin.dbus_object_paths) {
+						ret[i] = path;
+						i++;
+					}
 					return ret;
 				}
 				
