@@ -35,7 +35,21 @@ namespace ODeviced {
 		public int handle {
 			get { return _handle; }
 		}
-		
+
+		private string _dbus_iface;
+		public string dbus_iface {
+			get { return _dbus_iface; }
+		}
+
+		/* valac doesnt support duplicating string array intances */
+		/*private string[] _dbus_object_paths;*/
+		public string[] dbus_object_paths;
+		/*{
+			get { return _dbus_object_paths; }
+			set { _dbus_object_paths = value; }
+		}
+		*/
+
 		private string[] depends;
 		/*public string[] depends {
 			get { return _depends; }
@@ -44,7 +58,7 @@ namespace ODeviced {
 		*/
 		
 		protected KeyFile conf = new KeyFile();		
-		private delegate bool PluginFunc(Plugin plugin);
+		private delegate bool InitFunc(Plugin plugin);
 		
 	    public string path {
 			public get;
@@ -68,6 +82,7 @@ namespace ODeviced {
 			try {
 				this.conf.load_from_file(_conf, KeyFileFlags.NONE);
 				this.conf.set_list_separator(',');
+				this._dbus_iface = this.conf.get_string (this.name, "dbus_interface");
 			}
 			catch (GLib.Error error) {
 				critical("Plugin configuration file for %s malformed/not found : %s", this.name, error.message);
@@ -90,12 +105,13 @@ namespace ODeviced {
 				throw new PluginError.LOAD_ERROR("Malformed odeviced plugin");
 			}
 
-			PluginFunc func = (PluginFunc)_symbol;
+			InitFunc func = (InitFunc)_symbol;
 			return func(this);
 									
 		}
 		
-	
+		
+		
 	}
 
 
