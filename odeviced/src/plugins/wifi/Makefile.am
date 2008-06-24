@@ -3,7 +3,8 @@ AM_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	$(GMODULE_CFLAGS) \
 	-include $(CONFIG_HEADER) \
-	-I$(top_srcdir)/src/daemon
+	-I$(top_srcdir)/src/daemon \
+	-ggdb
 
 pkgdir		= $(libdir)/odeviced/plugins
 wificonfdir	= $(datadir)/odeviced/plugins
