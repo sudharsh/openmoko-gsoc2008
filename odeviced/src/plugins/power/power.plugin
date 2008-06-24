@@ -1,4 +1,5 @@
 [power]
+dbus_interface=org.freesmartphone.Device.PowerSupply
 dbus_object_path=/org/freesmartphone/Device/PowerSupply
 device_class=power_supply
 
