@@ -19,7 +19,7 @@
  *
  */
 
-#include "backlight.h"
+#include "display.h"
 #include <dbus/dbus-glib-lowlevel.h>
 #include <dbus/dbus-glib.h>
 #include "helpers.h"
@@ -29,42 +29,42 @@
 
 
 
-struct _BacklightPluginPrivate {
+struct _DisplayPrivate {
 	gint max_brightness;
 	char* name;
 	char* _node;
 	char* _dbus_path;
 };
 
-#define BACKLIGHT_PLUGIN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_BACKLIGHT_PLUGIN, BacklightPluginPrivate))
+#define DISPLAY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_DISPLAY, DisplayPrivate))
 enum  {
-	BACKLIGHT_PLUGIN_DUMMY_PROPERTY,
-	BACKLIGHT_PLUGIN_NODE,
-	BACKLIGHT_PLUGIN_DBUS_PATH
+	DISPLAY_DUMMY_PROPERTY,
+	DISPLAY_NODE,
+	DISPLAY_DBUS_PATH
 };
-static BacklightPlugin* backlight_plugin_new (const char* node, const char* dbus_path);
-static void backlight_plugin_set_node (BacklightPlugin* self, const char* value);
-static void backlight_plugin_set_dbus_path (BacklightPlugin* self, const char* value);
-static GObject * backlight_plugin_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties);
-static gpointer backlight_plugin_parent_class = NULL;
-static gboolean _dbus_backlight_plugin_GetMaximumBrightness (BacklightPlugin* self, gint* result, GError** error);
-static gboolean _dbus_backlight_plugin_SetBrightness (BacklightPlugin* self, gint brightness, gboolean* result, GError** error);
-static gboolean _dbus_backlight_plugin_GetCurrentBrightness (BacklightPlugin* self, gint* result, GError** error);
-static gboolean _dbus_backlight_plugin_GetBacklightPower (BacklightPlugin* self, gboolean* result, GError** error);
-static gboolean _dbus_backlight_plugin_SetBacklightPower (BacklightPlugin* self, gboolean power, GError** error);
-static gboolean _dbus_backlight_plugin_GetName (BacklightPlugin* self, char** result, GError** error);
-static void backlight_plugin_dispose (GObject * obj);
-static void register_dbus (BacklightPlugin* obj);
+static Display* display_new (const char* node, const char* dbus_path);
+static void display_set_node (Display* self, const char* value);
+static void display_set_dbus_path (Display* self, const char* value);
+static GObject * display_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties);
+static gpointer display_parent_class = NULL;
+static gboolean _dbus_display_GetMaximumBrightness (Display* self, gint* result, GError** error);
+static gboolean _dbus_display_SetBrightness (Display* self, gint brightness, gboolean* result, GError** error);
+static gboolean _dbus_display_GetBrightness (Display* self, gint* result, GError** error);
+static gboolean _dbus_display_GetBacklightPower (Display* self, gboolean* result, GError** error);
+static gboolean _dbus_display_SetBacklightPower (Display* self, gboolean power, GError** error);
+static gboolean _dbus_display_GetName (Display* self, char** result, GError** error);
+static void display_dispose (GObject * obj);
+static void register_dbus (Display* obj);
 
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 static void g_cclosure_user_marshal_BOOLEAN__INT_POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 static void g_cclosure_user_marshal_BOOLEAN__BOOLEAN_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 
-static BacklightPlugin* backlight_plugin_new (const char* node, const char* dbus_path) {
+static Display* display_new (const char* node, const char* dbus_path) {
 	GParameter * __params;
 	GParameter * __params_it;
-	BacklightPlugin * self;
+	Display * self;
 	g_return_val_if_fail (node != NULL, NULL);
 	g_return_val_if_fail (dbus_path != NULL, NULL);
 	__params = g_new0 (GParameter, 2);
@@ -77,7 +77,7 @@ static BacklightPlugin* backlight_plugin_new (const char* node, const char* dbus
 	g_value_init (&__params_it->value, G_TYPE_STRING);
 	g_value_set_string (&__params_it->value, dbus_path);
 	__params_it++;
-	self = g_object_newv (TYPE_BACKLIGHT_PLUGIN, __params_it - __params, __params);
+	self = g_object_newv (TYPE_DISPLAY, __params_it - __params, __params);
 	while (__params_it > __params) {
 		--__params_it;
 		g_value_unset (&__params_it->value);
@@ -87,15 +87,15 @@ static BacklightPlugin* backlight_plugin_new (const char* node, const char* dbus
 }
 
 
-gint backlight_plugin_GetMaximumBrightness (BacklightPlugin* self) {
-	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), 0);
+gint display_GetMaximumBrightness (Display* self) {
+	g_return_val_if_fail (IS_DISPLAY (self), 0);
 	return self->priv->max_brightness;
 }
 
 
-gboolean backlight_plugin_SetBrightness (BacklightPlugin* self, gint brightness) {
+gboolean display_SetBrightness (Display* self, gint brightness) {
 	char* _tmp1;
-	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), FALSE);
+	g_return_val_if_fail (IS_DISPLAY (self), FALSE);
 	if (brightness > self->priv->max_brightness) {
 		return FALSE;
 	}
@@ -106,28 +106,28 @@ gboolean backlight_plugin_SetBrightness (BacklightPlugin* self, gint brightness)
 }
 
 
-gint backlight_plugin_GetCurrentBrightness (BacklightPlugin* self) {
+gint display_GetBrightness (Display* self) {
 	char* _tmp0;
 	gint _tmp1;
-	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), 0);
+	g_return_val_if_fail (IS_DISPLAY (self), 0);
 	_tmp0 = NULL;
 	return (_tmp1 = odeviced_read_integer ((_tmp0 = g_strconcat (self->priv->_node, "/actual_brightness", NULL))), (_tmp0 = (g_free (_tmp0), NULL)), _tmp1);
 }
 
 
-gboolean backlight_plugin_GetBacklightPower (BacklightPlugin* self) {
+gboolean display_GetBacklightPower (Display* self) {
 	char* _tmp0;
 	gboolean _tmp1;
-	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), FALSE);
+	g_return_val_if_fail (IS_DISPLAY (self), FALSE);
 	_tmp0 = NULL;
 	return (_tmp1 = odeviced_read_integer ((_tmp0 = g_strconcat (self->priv->_node, "/bl_power", NULL))) == 0, (_tmp0 = (g_free (_tmp0), NULL)), _tmp1);
 }
 
 
-void backlight_plugin_SetBacklightPower (BacklightPlugin* self, gboolean power) {
+void display_SetBacklightPower (Display* self, gboolean power) {
 	gint _val;
 	char* _tmp0;
-	g_return_if_fail (IS_BACKLIGHT_PLUGIN (self));
+	g_return_if_fail (IS_DISPLAY (self));
 	_val = 0;
 	if (power) {
 		_val = 1;
@@ -140,56 +140,56 @@ void backlight_plugin_SetBacklightPower (BacklightPlugin* self, gboolean power) 
 }
 
 
-char* backlight_plugin_GetName (BacklightPlugin* self) {
+char* display_GetName (Display* self) {
 	const char* _tmp0;
-	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), NULL);
+	g_return_val_if_fail (IS_DISPLAY (self), NULL);
 	_tmp0 = NULL;
 	return (_tmp0 = self->priv->name, (_tmp0 == NULL ? NULL : g_strdup (_tmp0)));
 }
 
 
-const char* backlight_plugin_get_node (BacklightPlugin* self) {
-	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), NULL);
+const char* display_get_node (Display* self) {
+	g_return_val_if_fail (IS_DISPLAY (self), NULL);
 	return self->priv->_node;
 }
 
 
-static void backlight_plugin_set_node (BacklightPlugin* self, const char* value) {
+static void display_set_node (Display* self, const char* value) {
 	char* _tmp2;
 	const char* _tmp1;
-	g_return_if_fail (IS_BACKLIGHT_PLUGIN (self));
+	g_return_if_fail (IS_DISPLAY (self));
 	_tmp2 = NULL;
 	_tmp1 = NULL;
 	self->priv->_node = (_tmp2 = (_tmp1 = value, (_tmp1 == NULL ? NULL : g_strdup (_tmp1))), (self->priv->_node = (g_free (self->priv->_node), NULL)), _tmp2);
 }
 
 
-const char* backlight_plugin_get_dbus_path (BacklightPlugin* self) {
-	g_return_val_if_fail (IS_BACKLIGHT_PLUGIN (self), NULL);
+const char* display_get_dbus_path (Display* self) {
+	g_return_val_if_fail (IS_DISPLAY (self), NULL);
 	return self->priv->_dbus_path;
 }
 
 
-static void backlight_plugin_set_dbus_path (BacklightPlugin* self, const char* value) {
+static void display_set_dbus_path (Display* self, const char* value) {
 	char* _tmp2;
 	const char* _tmp1;
-	g_return_if_fail (IS_BACKLIGHT_PLUGIN (self));
+	g_return_if_fail (IS_DISPLAY (self));
 	_tmp2 = NULL;
 	_tmp1 = NULL;
 	self->priv->_dbus_path = (_tmp2 = (_tmp1 = value, (_tmp1 == NULL ? NULL : g_strdup (_tmp1))), (self->priv->_dbus_path = (g_free (self->priv->_dbus_path), NULL)), _tmp2);
 }
 
 
-static GObject * backlight_plugin_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties) {
+static GObject * display_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties) {
 	GObject * obj;
-	BacklightPluginClass * klass;
+	DisplayClass * klass;
 	GObjectClass * parent_class;
-	BacklightPlugin * self;
+	Display * self;
 	GError * inner_error;
-	klass = BACKLIGHT_PLUGIN_CLASS (g_type_class_peek (TYPE_BACKLIGHT_PLUGIN));
+	klass = DISPLAY_CLASS (g_type_class_peek (TYPE_DISPLAY));
 	parent_class = G_OBJECT_CLASS (g_type_class_peek_parent (klass));
 	obj = parent_class->constructor (type, n_construct_properties, construct_properties);
-	self = BACKLIGHT_PLUGIN (obj);
+	self = DISPLAY (obj);
 	inner_error = NULL;
 	{
 		{
@@ -198,7 +198,7 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 			char* _tmp0;
 			char* _tmp1;
 			_file = g_key_file_new ();
-			g_key_file_load_from_file (_file, "/usr/share/odeviced/plugins/backlight.plugin", G_KEY_FILE_NONE, &inner_error);
+			g_key_file_load_from_file (_file, "/usr/share/odeviced/plugins/display.plugin", G_KEY_FILE_NONE, &inner_error);
 			if (inner_error != NULL) {
 				if (inner_error->domain == DBUS_GERROR) {
 					goto __catch8_dbus_gerror;
@@ -232,15 +232,15 @@ static GObject * backlight_plugin_constructor (GType type, guint n_construct_pro
 }
 
 
-static void backlight_plugin_get_property (GObject * object, guint property_id, GValue * value, GParamSpec * pspec) {
-	BacklightPlugin * self;
-	self = BACKLIGHT_PLUGIN (object);
+static void display_get_property (GObject * object, guint property_id, GValue * value, GParamSpec * pspec) {
+	Display * self;
+	self = DISPLAY (object);
 	switch (property_id) {
-		case BACKLIGHT_PLUGIN_NODE:
-		g_value_set_string (value, backlight_plugin_get_node (self));
+		case DISPLAY_NODE:
+		g_value_set_string (value, display_get_node (self));
 		break;
-		case BACKLIGHT_PLUGIN_DBUS_PATH:
-		g_value_set_string (value, backlight_plugin_get_dbus_path (self));
+		case DISPLAY_DBUS_PATH:
+		g_value_set_string (value, display_get_dbus_path (self));
 		break;
 		default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -249,15 +249,15 @@ static void backlight_plugin_get_property (GObject * object, guint property_id, 
 }
 
 
-static void backlight_plugin_set_property (GObject * object, guint property_id, const GValue * value, GParamSpec * pspec) {
-	BacklightPlugin * self;
-	self = BACKLIGHT_PLUGIN (object);
+static void display_set_property (GObject * object, guint property_id, const GValue * value, GParamSpec * pspec) {
+	Display * self;
+	self = DISPLAY (object);
 	switch (property_id) {
-		case BACKLIGHT_PLUGIN_NODE:
-		backlight_plugin_set_node (self, g_value_get_string (value));
+		case DISPLAY_NODE:
+		display_set_node (self, g_value_get_string (value));
 		break;
-		case BACKLIGHT_PLUGIN_DBUS_PATH:
-		backlight_plugin_set_dbus_path (self, g_value_get_string (value));
+		case DISPLAY_DBUS_PATH:
+		display_set_dbus_path (self, g_value_get_string (value));
 		break;
 		default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -266,103 +266,103 @@ static void backlight_plugin_set_property (GObject * object, guint property_id, 
 }
 
 
-static gboolean _dbus_backlight_plugin_GetMaximumBrightness (BacklightPlugin* self, gint* result, GError** error) {
-	*result = backlight_plugin_GetMaximumBrightness (self);
+static gboolean _dbus_display_GetMaximumBrightness (Display* self, gint* result, GError** error) {
+	*result = display_GetMaximumBrightness (self);
 	return !error || !*error;
 }
 
 
-static gboolean _dbus_backlight_plugin_SetBrightness (BacklightPlugin* self, gint brightness, gboolean* result, GError** error) {
-	*result = backlight_plugin_SetBrightness (self, brightness);
+static gboolean _dbus_display_SetBrightness (Display* self, gint brightness, gboolean* result, GError** error) {
+	*result = display_SetBrightness (self, brightness);
 	return !error || !*error;
 }
 
 
-static gboolean _dbus_backlight_plugin_GetCurrentBrightness (BacklightPlugin* self, gint* result, GError** error) {
-	*result = backlight_plugin_GetCurrentBrightness (self);
+static gboolean _dbus_display_GetBrightness (Display* self, gint* result, GError** error) {
+	*result = display_GetBrightness (self);
 	return !error || !*error;
 }
 
 
-static gboolean _dbus_backlight_plugin_GetBacklightPower (BacklightPlugin* self, gboolean* result, GError** error) {
-	*result = backlight_plugin_GetBacklightPower (self);
+static gboolean _dbus_display_GetBacklightPower (Display* self, gboolean* result, GError** error) {
+	*result = display_GetBacklightPower (self);
 	return !error || !*error;
 }
 
 
-static gboolean _dbus_backlight_plugin_SetBacklightPower (BacklightPlugin* self, gboolean power, GError** error) {
-	backlight_plugin_SetBacklightPower (self, power);
+static gboolean _dbus_display_SetBacklightPower (Display* self, gboolean power, GError** error) {
+	display_SetBacklightPower (self, power);
 	return !error || !*error;
 }
 
 
-static gboolean _dbus_backlight_plugin_GetName (BacklightPlugin* self, char** result, GError** error) {
-	*result = backlight_plugin_GetName (self);
+static gboolean _dbus_display_GetName (Display* self, char** result, GError** error) {
+	*result = display_GetName (self);
 	return !error || !*error;
 }
 
 
-static void backlight_plugin_class_init (BacklightPluginClass * klass) {
-	backlight_plugin_parent_class = g_type_class_peek_parent (klass);
-	g_type_class_add_private (klass, sizeof (BacklightPluginPrivate));
-	G_OBJECT_CLASS (klass)->get_property = backlight_plugin_get_property;
-	G_OBJECT_CLASS (klass)->set_property = backlight_plugin_set_property;
-	G_OBJECT_CLASS (klass)->constructor = backlight_plugin_constructor;
-	G_OBJECT_CLASS (klass)->dispose = backlight_plugin_dispose;
-	g_object_class_install_property (G_OBJECT_CLASS (klass), BACKLIGHT_PLUGIN_NODE, g_param_spec_string ("node", "node", "node", NULL, G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB | G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-	g_object_class_install_property (G_OBJECT_CLASS (klass), BACKLIGHT_PLUGIN_DBUS_PATH, g_param_spec_string ("dbus-path", "dbus-path", "dbus-path", NULL, G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB | G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-	static const DBusGMethodInfo backlight_plugin_dbus_methods[] = {
-{ (GCallback) _dbus_backlight_plugin_GetMaximumBrightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 0 },
-{ (GCallback) _dbus_backlight_plugin_SetBrightness, g_cclosure_user_marshal_BOOLEAN__INT_POINTER_POINTER, 75 },
-{ (GCallback) _dbus_backlight_plugin_GetCurrentBrightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 158 },
-{ (GCallback) _dbus_backlight_plugin_GetBacklightPower, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 233 },
-{ (GCallback) _dbus_backlight_plugin_SetBacklightPower, g_cclosure_user_marshal_BOOLEAN__BOOLEAN_POINTER, 305 },
-{ (GCallback) _dbus_backlight_plugin_GetName, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 372 },
+static void display_class_init (DisplayClass * klass) {
+	display_parent_class = g_type_class_peek_parent (klass);
+	g_type_class_add_private (klass, sizeof (DisplayPrivate));
+	G_OBJECT_CLASS (klass)->get_property = display_get_property;
+	G_OBJECT_CLASS (klass)->set_property = display_set_property;
+	G_OBJECT_CLASS (klass)->constructor = display_constructor;
+	G_OBJECT_CLASS (klass)->dispose = display_dispose;
+	g_object_class_install_property (G_OBJECT_CLASS (klass), DISPLAY_NODE, g_param_spec_string ("node", "node", "node", NULL, G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB | G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+	g_object_class_install_property (G_OBJECT_CLASS (klass), DISPLAY_DBUS_PATH, g_param_spec_string ("dbus-path", "dbus-path", "dbus-path", NULL, G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB | G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+	static const DBusGMethodInfo display_dbus_methods[] = {
+{ (GCallback) _dbus_display_GetMaximumBrightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 0 },
+{ (GCallback) _dbus_display_SetBrightness, g_cclosure_user_marshal_BOOLEAN__INT_POINTER_POINTER, 73 },
+{ (GCallback) _dbus_display_GetBrightness, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 154 },
+{ (GCallback) _dbus_display_GetBacklightPower, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 220 },
+{ (GCallback) _dbus_display_SetBacklightPower, g_cclosure_user_marshal_BOOLEAN__BOOLEAN_POINTER, 290 },
+{ (GCallback) _dbus_display_GetName, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 355 },
 }
 ;
-	static const DBusGObjectInfo backlight_plugin_dbus_object_info = { 0, backlight_plugin_dbus_methods, 6, "org.freesmartphone.Device.Backlight\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0GetCurrentBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Backlight\0GetBacklightPower\0S\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Backlight\0SetBacklightPower\0S\0power\0I\0b\0\0org.freesmartphone.Device.Backlight\0GetName\0S\0result\0O\0F\0N\0s\0\0", "", "" };
-	dbus_g_object_type_install_info (TYPE_BACKLIGHT_PLUGIN, &backlight_plugin_dbus_object_info);
+	static const DBusGObjectInfo display_dbus_object_info = { 0, display_dbus_methods, 6, "org.freesmartphone.Device.Display\0GetMaximumBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Display\0SetBrightness\0S\0brightness\0I\0i\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Display\0GetBrightness\0S\0result\0O\0F\0N\0i\0\0org.freesmartphone.Device.Display\0GetBacklightPower\0S\0result\0O\0F\0N\0b\0\0org.freesmartphone.Device.Display\0SetBacklightPower\0S\0power\0I\0b\0\0org.freesmartphone.Device.Display\0GetName\0S\0result\0O\0F\0N\0s\0\0", "", "" };
+	dbus_g_object_type_install_info (TYPE_DISPLAY, &display_dbus_object_info);
 }
 
 
-static void backlight_plugin_instance_init (BacklightPlugin * self) {
-	self->priv = BACKLIGHT_PLUGIN_GET_PRIVATE (self);
+static void display_instance_init (Display * self) {
+	self->priv = DISPLAY_GET_PRIVATE (self);
 	self->priv->name = g_new0 (char, 1);
 }
 
 
-static void backlight_plugin_dispose (GObject * obj) {
-	BacklightPlugin * self;
-	self = BACKLIGHT_PLUGIN (obj);
+static void display_dispose (GObject * obj) {
+	Display * self;
+	self = DISPLAY (obj);
 	self->priv->name = (g_free (self->priv->name), NULL);
 	self->priv->_node = (g_free (self->priv->_node), NULL);
 	self->priv->_dbus_path = (g_free (self->priv->_dbus_path), NULL);
-	G_OBJECT_CLASS (backlight_plugin_parent_class)->dispose (obj);
+	G_OBJECT_CLASS (display_parent_class)->dispose (obj);
 }
 
 
-GType backlight_plugin_get_type (void) {
-	static GType backlight_plugin_type_id = 0;
-	if (G_UNLIKELY (backlight_plugin_type_id == 0)) {
-		static const GTypeInfo g_define_type_info = { sizeof (BacklightPluginClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) backlight_plugin_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (BacklightPlugin), 0, (GInstanceInitFunc) backlight_plugin_instance_init };
-		backlight_plugin_type_id = g_type_register_static (G_TYPE_OBJECT, "BacklightPlugin", &g_define_type_info, 0);
+GType display_get_type (void) {
+	static GType display_type_id = 0;
+	if (G_UNLIKELY (display_type_id == 0)) {
+		static const GTypeInfo g_define_type_info = { sizeof (DisplayClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) display_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (Display), 0, (GInstanceInitFunc) display_instance_init };
+		display_type_id = g_type_register_static (G_TYPE_OBJECT, "Display", &g_define_type_info, 0);
 	}
-	return backlight_plugin_type_id;
+	return display_type_id;
 }
 
 
-static void register_dbus (BacklightPlugin* obj) {
-	g_return_if_fail (IS_BACKLIGHT_PLUGIN (obj));
-	g_message ("backlight.vala:120: Registering DBus object at %s", backlight_plugin_get_dbus_path (obj));
-	dbus_g_connection_register_g_object (odeviced_connection, backlight_plugin_get_dbus_path (obj), G_OBJECT (obj));
+static void register_dbus (Display* obj) {
+	g_return_if_fail (IS_DISPLAY (obj));
+	g_message ("display.vala:120: Registering DBus object at %s", display_get_dbus_path (obj));
+	dbus_g_connection_register_g_object (odeviced_connection, display_get_dbus_path (obj), G_OBJECT (obj));
 }
 
 
-G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
+G_MODULE_EXPORT gboolean display_init (ODevicedPlugin *plugin) {
 	GType type;
 	GList *list = NULL;
-	BacklightPlugin *obj;
-	type = backlight_plugin_get_type();
+	Display *obj;
+	type = display_get_type();
 	list = odeviced_compute_objects (plugin, type);
 	if(!list)
 		return FALSE;

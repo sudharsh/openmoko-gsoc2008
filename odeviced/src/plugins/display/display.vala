@@ -27,8 +27,8 @@
 using DBus;
 using ODeviced;
 
-[DBus (name = "org.freesmartphone.Device.Backlight")]
-public class BacklightPlugin: GLib.Object {
+[DBus (name = "org.freesmartphone.Device.Display")]
+public class Display: GLib.Object {
 	
 	private int max_brightness;
 	private string name = new string();
@@ -43,7 +43,7 @@ public class BacklightPlugin: GLib.Object {
 		construct;
 	}
 
-	BacklightPlugin(string node, string dbus_path) {
+	Display(string node, string dbus_path) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 	}
@@ -51,7 +51,7 @@ public class BacklightPlugin: GLib.Object {
 	construct {
 		try {
 			GLib.KeyFile _file = new GLib.KeyFile();
-			_file.load_from_file("/usr/share/odeviced/plugins/backlight.plugin", GLib.KeyFileFlags.NONE);
+			_file.load_from_file("/usr/share/odeviced/plugins/display.plugin", GLib.KeyFileFlags.NONE);
 		
 			var dev = ODeviced.get_device();
 			this.name = ODeviced.compute_name(dbus_path);
@@ -74,7 +74,7 @@ public class BacklightPlugin: GLib.Object {
 		return true;
 	}
 
-	public int GetCurrentBrightness() {
+	public int GetBrightness() {
 		return ODeviced.read_integer(this.node + "/actual_brightness");
 	}
 
@@ -98,11 +98,11 @@ public class BacklightPlugin: GLib.Object {
 /* Using auto-detected sysfs nodes
 
 
-G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
+G_MODULE_EXPORT gboolean display_init (ODevicedPlugin *plugin) {
 	GType type;
 	GList *list = NULL;
-	BacklightPlugin *obj;
-	type = backlight_plugin_get_type();
+	Display *obj;
+	type = display_get_type();
 	list = odeviced_compute_objects (plugin, type);
 	if(!list)
 	return FALSE;
@@ -116,7 +116,7 @@ G_MODULE_EXPORT gboolean backlight_init (ODevicedPlugin *plugin) {
 }
 
 
-void register_dbus (BacklightPlugin obj) {
+void register_dbus (Display obj) {
 	GLib.message("Registering DBus object at %s", obj.dbus_path);
 	ODeviced.connection.register_object(obj.dbus_path, obj);
 }

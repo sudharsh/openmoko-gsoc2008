@@ -60,6 +60,6 @@ src/Makefile
 src/plugins/Makefile
 src/plugins/wifi/Makefile
 src/plugins/rtc/Makefile
-src/plugins/backlight/Makefile
+src/plugins/display/Makefile
 src/plugins/power/Makefile
 ])

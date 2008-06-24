@@ -1,6 +1,6 @@
 SUBDIRS = \
 	wifi \
-	backlight \
+	display \
 	rtc \
 	power
 

@@ -19,10 +19,12 @@ using GLib;
 
 namespace ODeviced {	
 
+	[DBus (name = "org.freesmartphone.Device")]
 	public class Service: Object {
 
 		MainLoop loop = new MainLoop (null, false);		
 		HashTable<string, Plugin> loadedTable = new HashTable<string, Plugin>((HashFunc)str_hash, (EqualFunc)str_equal);
+		List<Plugin> obj_list = new List<Plugin> ();
 			   
 		protected static string dev_name = new string();
 		protected static string conf_dir_plugins = new string();
@@ -53,6 +55,8 @@ namespace ODeviced {
 				}
 				else	
 					probe_plugins(this.plugins_location);
+
+				this.obj_list = this.loadedTable.get_values();
 			}
 			catch (Error error) {
 				print( "Oops %s\n", error.message);
@@ -61,6 +65,7 @@ namespace ODeviced {
 		}
 		
 
+		/* Private methods... */
 		private bool load(string plugin_name) {
 			
 			var plugin_path = this.plugins_location + "/" + plugin_name + ".so";

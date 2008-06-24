@@ -1,0 +1,6 @@
+[display]
+dbus_object_path=/org/freesmartphone/Device/Display
+device_class=backlight
+
+
+
