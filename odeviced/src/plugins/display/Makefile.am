@@ -4,7 +4,6 @@ AM_CPPFLAGS = \
 	$(GMODULE_CFLAGS) \
 	-include $(CONFIG_HEADER) \
 	-I$(top_srcdir)/src/daemon \
-	-ggdb
 
 pkgdir		= $(libdir)/odeviced/plugins
 displayconfdir	= $(datadir)/odeviced/plugins
