@@ -60,7 +60,6 @@ EXTRA_DIST = \
 	src/daemon/odeviced.vala.stamp \
 	dbussystem_DATA \
 	odevicedconf_DATA \
-	init_DATA \
 	$(NULL)
 
 DISTCLEANFILES = \
