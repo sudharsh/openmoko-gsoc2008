@@ -31,7 +31,7 @@ namespace ODeviced {
 			connection = DBus.Bus.get(DBus.BusType.SYSTEM);		
 			dynamic DBus.Object bus =
 				connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
-			uint result = bus.RequestName ("org.freesmartphone.Device", (uint) 0);
+			uint result = bus.RequestName ("org.freesmartphone.odeviced", (uint) 0);
 
 			if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 

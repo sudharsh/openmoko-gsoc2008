@@ -44,7 +44,7 @@ odeviced_LDADD = \
 	$(NULL)
 
 dbussystemdir = $(DBUS_SYSTEM_DIR)
-dbussystem_DATA = etc/dbus-1/system.d/Device.conf
+dbussystem_DATA = etc/dbus-1/system.d/odeviced.conf
 
 odevicedconfdir = /etc
 odevicedconf_DATA = etc/odeviced.conf
