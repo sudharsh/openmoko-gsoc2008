@@ -186,8 +186,17 @@ char* power_GetTechnology (Power* self) {
 
 
 gint power_GetEnergyPercentage (Power* self) {
+	char* _tmp0;
+	gint _tmp1;
+	gint capacity;
 	gint _curr;
 	g_return_val_if_fail (IS_POWER (self), 0);
+	/* Some devices have capacity, just return that */
+	_tmp0 = NULL;
+	capacity = (_tmp1 = odeviced_read_integer ((_tmp0 = g_strconcat (self->priv->_node, "/capacity", NULL))), (_tmp0 = (g_free (_tmp0), NULL)), _tmp1);
+	if (capacity != -1) {
+		return capacity;
+	}
 	_curr = power_GetCurrentEnergy (self);
 	return ((gint) ((100.0 * (((float) (_curr)) / ((float) (self->priv->max_energy))))));
 }
@@ -201,9 +210,9 @@ static gboolean power_poll_energy (Power* self) {
 		g_source_remove (self->priv->_energy_id);
 		return FALSE;
 	}
-	g_message ("power.vala:137: Current energy, %d", _curr);
+	g_message ("power.vala:142: Current energy, %d", _curr);
 	if (_curr < self->priv->low_energy_threshold) {
-		g_message ("power.vala:139: %s\tLow energy warning", self->priv->name);
+		g_message ("power.vala:144: %s\tLow energy warning", self->priv->name);
 		g_signal_emit_by_name (G_OBJECT (self), "low-battery", _curr);
 	}
 	return TRUE;
@@ -223,7 +232,7 @@ static gboolean power_poll_status (Power* self) {
 	if (_vala_strcmp0 (stat, self->priv->curr_status) != 0) {
 		char* _tmp2;
 		const char* _tmp1;
-		g_message ("power.vala:153: %s\tStatus changed, %s", self->priv->name, stat);
+		g_message ("power.vala:158: %s\tStatus changed, %s", self->priv->name, stat);
 		g_signal_emit_by_name (G_OBJECT (self), "battery-status-changed", stat);
 		_tmp2 = NULL;
 		_tmp1 = NULL;
@@ -498,7 +507,7 @@ GType power_get_type (void) {
 
 static void register_dbus (Power* obj) {
 	g_return_if_fail (IS_POWER (obj));
-	g_message ("power.vala:182: Registering DBus object at %s", power_get_dbus_path (obj));
+	g_message ("power.vala:187: Registering DBus object at %s", power_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, power_get_dbus_path (obj), G_OBJECT (obj));
 }
 
@@ -512,7 +521,7 @@ G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
 	if(!list)
 		return FALSE;
 	g_list_foreach(list, (GFunc)register_dbus, NULL);
- 
+	
 	return TRUE;
 }
 

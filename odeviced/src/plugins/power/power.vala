@@ -123,6 +123,11 @@ public class Power: GLib.Object {
 	}
 
 	public int GetEnergyPercentage() {
+		/* Some devices have capacity, just return that */
+		var capacity = ODeviced.read_integer (this.node + "/capacity");
+		if(capacity != -1)
+			return capacity;
+
 		var _curr = GetCurrentEnergy();
 		return (int)(100.0 * ((float)_curr / (float)this.max_energy));
 	}
