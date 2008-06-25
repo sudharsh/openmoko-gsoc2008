@@ -4,18 +4,20 @@ AUTHOR = "Sudharshan S"
 SECTION = "console/network"
 DEPENDS = "dbus dbus-glib"
 LICENSE = "LGPL"
-#PV = "0.1+gitr${AUTOREV}"
-PV = "0.1"
+CONFLICTS = "python-odeviced"
+
+PV = "0.1+gitr${AUTOREV}"
+#PV = "0.1"
 PR = "r0"
 
-#SRC_URI = "${FREESMARTPHONE_GIT}/openmoko-gsoc2008.git;protocol=git;branch=master \
-#	   "file://odeviced"
-#S = "${WORKDIR}/git/odeviced"
+SRC_URI = "${FREESMARTPHONE_GIT}/openmoko-gsoc2008.git;protocol=git;branch=master \
+	   "file://odeviced"
+S = "${WORKDIR}/git/odeviced"
 
-SRC_URI = "file:///home/sudharsh/Projects/openmoko-gsoc2008/ \
-	   file://odeviced"
+#SRC_URI = "file:///home/sudharsh/Projects/openmoko-gsoc2008/ \
+#	   file://odeviced"
 	  
-S = "${WORKDIR}/openmoko-gsoc2008/odeviced"
+#S = "${WORKDIR}/openmoko-gsoc2008/odeviced"
 
 inherit autotools pkgconfig update-rc.d
 
