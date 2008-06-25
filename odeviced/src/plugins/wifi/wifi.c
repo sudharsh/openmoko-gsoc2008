@@ -156,30 +156,14 @@ GType wifi_plugin_get_type (void) {
 
 G_MODULE_EXPORT gboolean wifi_init (ODevicedPlugin *plugin) {
 
-          GError * inner_error;
-          {
-                  WifiPlugin* wifiobj;
-                  if (inner_error != NULL) {
-                          goto __catch0_g_error;
-                  }
-                  wifiobj = wifi_plugin_new ();
-                  if(wifiobj) {
-			  odeviced_register_dbus_object (plugin, G_OBJECT(wifiobj));
-                  }
-          }
-          goto __finally0;
-          __catch0_g_error:
-          {
-                  GError * error;
-                  error = inner_error;
-		  inner_error = NULL;
-                  { 
-                          fprintf (stderr, "%s\n", error->message);
-                  }
-          }
-         __finally0:
-          ;
-    return TRUE;
+	WifiPlugin* wifiobj;
+	wifiobj = wifi_plugin_new ();
+	if(wifiobj) 
+		odeviced_register_dbus_object (plugin, G_OBJECT(wifiobj));
+	else
+		return FALSE;
+	
+	return TRUE;
   
  }
 
