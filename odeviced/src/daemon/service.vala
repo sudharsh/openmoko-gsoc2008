@@ -66,7 +66,6 @@ namespace ODeviced {
 		
 
 		/* Turn away now if you teach algorithms */
-		[NoArrayLength]
 		public string[]? ListObjectsByInterface (string iface) {
 		
 			foreach (ODeviced.Plugin plugin in this.obj_list) {
@@ -93,7 +92,7 @@ namespace ODeviced {
 			var plugin_path = this.plugins_location + "/" + plugin_name + ".so";
 			string[] _deps;
 			
-			debug("No of plugins already loaded: %d", this.loadedTable.size());
+			debug("No of plugins already loaded: %u", this.loadedTable.size());
 			
 			/* Check the hash table if the plugin exists */
 			if(this.is_loaded(plugin_name)) {
@@ -110,7 +109,7 @@ namespace ODeviced {
 					_deps = conf_file.get_string_list(plugin_name, "depends");
 					print("\t%s has dependencies\n", plugin_name);
 					load_multiple(_deps);
-					print("\tDone handling dependencies\n", plugin_name);
+					print("\tDone handling dependencies for %s\n", plugin_name);
 				}
 
 				Plugin plugin = new ODeviced.Plugin(plugin_name, plugin_path);
