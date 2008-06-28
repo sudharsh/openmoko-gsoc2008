@@ -27,6 +27,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <linux/rtc.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
 G_BEGIN_DECLS
 
 
@@ -41,7 +44,9 @@ typedef struct _RealTimeClock RealTimeClock;
 typedef struct _RealTimeClockClass RealTimeClockClass;
 typedef struct _RealTimeClockPrivate RealTimeClockPrivate;
 
-/* RTC plugin for odeviced */
+/* RTC plugin for odeviced 
+
+*/
 struct _RealTimeClock {
 	GObject parent_instance;
 	RealTimeClockPrivate * priv;
@@ -54,6 +59,7 @@ struct _RealTimeClockClass {
 
 char* real_time_clock_GetName (RealTimeClock* self);
 char* real_time_clock_GetCurrentTime (RealTimeClock* self);
+char* real_time_clock_GetWakeupTime (RealTimeClock* self);
 const char* real_time_clock_get_node (RealTimeClock* self);
 const char* real_time_clock_get_dbus_path (RealTimeClock* self);
 GType real_time_clock_get_type (void);

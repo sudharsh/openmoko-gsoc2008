@@ -50,6 +50,7 @@ static GObject * real_time_clock_constructor (GType type, guint n_construct_prop
 static gpointer real_time_clock_parent_class = NULL;
 static gboolean _dbus_real_time_clock_GetName (RealTimeClock* self, char** result, GError** error);
 static gboolean _dbus_real_time_clock_GetCurrentTime (RealTimeClock* self, char** result, GError** error);
+static gboolean _dbus_real_time_clock_GetWakeupTime (RealTimeClock* self, char** result, GError** error);
 static void real_time_clock_dispose (GObject * obj);
 static void register_dbus (RealTimeClock* obj);
 
@@ -97,6 +98,26 @@ char* real_time_clock_GetCurrentTime (RealTimeClock* self) {
 	_tmp0 = NULL;
 	_tmp1 = NULL;
 	return (_tmp1 = odeviced_read_string ((_tmp0 = g_strconcat (self->priv->_node, "/since_epoch", NULL))), (_tmp0 = (g_free (_tmp0), NULL)), _tmp1);
+}
+
+
+char* real_time_clock_GetWakeupTime (RealTimeClock* self) {
+	
+	int fd = 0;
+	struct rtc_wkalrm alarm;
+	g_return_val_if_fail (IS_REAL_TIME_CLOCK (self), NULL);
+		
+	fd = open("/dev/rtc", O_RDONLY);
+	if (fd == -1) {
+		g_message("Couldn't open rtc device");
+	}
+
+	g_message ("bleh");
+	if(ioctl(fd, RTC_WKALM_RD, &alarm) == 0)
+		g_print(">> %d\n", alarm.time.tm_sec);
+	fclose (fd);
+	
+	return g_strdup ("o");
 }
 
 
@@ -196,6 +217,12 @@ static gboolean _dbus_real_time_clock_GetCurrentTime (RealTimeClock* self, char*
 }
 
 
+static gboolean _dbus_real_time_clock_GetWakeupTime (RealTimeClock* self, char** result, GError** error) {
+	*result = real_time_clock_GetWakeupTime (self);
+	return !error || !*error;
+}
+
+
 static void real_time_clock_class_init (RealTimeClockClass * klass) {
 	real_time_clock_parent_class = g_type_class_peek_parent (klass);
 	g_type_class_add_private (klass, sizeof (RealTimeClockPrivate));
@@ -208,9 +235,10 @@ static void real_time_clock_class_init (RealTimeClockClass * klass) {
 	static const DBusGMethodInfo real_time_clock_dbus_methods[] = {
 { (GCallback) _dbus_real_time_clock_GetName, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 0 },
 { (GCallback) _dbus_real_time_clock_GetCurrentTime, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 66 },
+{ (GCallback) _dbus_real_time_clock_GetWakeupTime, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 139 },
 }
 ;
-	static const DBusGObjectInfo real_time_clock_dbus_object_info = { 0, real_time_clock_dbus_methods, 2, "org.freesmartphone.Device.RealTimeClock\0GetName\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.RealTimeClock\0GetCurrentTime\0S\0result\0O\0F\0N\0s\0\0", "", "" };
+	static const DBusGObjectInfo real_time_clock_dbus_object_info = { 0, real_time_clock_dbus_methods, 3, "org.freesmartphone.Device.RealTimeClock\0GetName\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.RealTimeClock\0GetCurrentTime\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.RealTimeClock\0GetWakeupTime\0S\0result\0O\0F\0N\0s\0\0", "", "" };
 	dbus_g_object_type_install_info (TYPE_REAL_TIME_CLOCK, &real_time_clock_dbus_object_info);
 }
 
@@ -245,9 +273,12 @@ GType real_time_clock_get_type (void) {
 }
 
 
+/*
+
+*/
 static void register_dbus (RealTimeClock* obj) {
 	g_return_if_fail (IS_REAL_TIME_CLOCK (obj));
-	g_message ("rtc.vala:81: Registering DBus object at %s", real_time_clock_get_dbus_path (obj));
+	g_message ("rtc.vala:103: Registering DBus object at %s", real_time_clock_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, real_time_clock_get_dbus_path (obj), G_OBJECT (obj));
 }
 
@@ -263,7 +294,6 @@ G_MODULE_EXPORT gboolean rtc_init (ODevicedPlugin *plugin) {
 	
 	return TRUE;
 }
-
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
 	typedef gboolean (*GMarshalFunc_BOOLEAN__POINTER_POINTER) (gpointer data1, gpointer arg_1, gpointer arg_2, gpointer data2);

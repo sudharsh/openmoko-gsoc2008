@@ -21,6 +21,11 @@
 
 /* RTC plugin for odeviced */
 
+/*
+#include <linux/rtc.h>
+#include <sys/ioctl.h>
+*/
+
 using DBus;
 using GLib;
 using ODeviced;
@@ -57,6 +62,23 @@ public class RealTimeClock: GLib.Object {
 
 	public string GetCurrentTime() {
 		return ODeviced.read_string (this.node + "/since_epoch");
+	}
+
+	public string GetWakeupTime() {
+		/*	int fd = 0;
+		struct rtc_wkalrm alarm;
+		
+		g_return_val_if_fail (IS_REAL_TIME_CLOCK (self), NULL);
+		
+		memset (&alarm, 0, sizeof(struct rtc_wkalrm));
+		fd = open("/dev/rtc", "r");
+	
+		if(ioctl(fd, RTC_WKALM_RD, &alarm) == 0)
+			g_print(">> %d\n", alarm.time.tm_sec);
+		fclose (fd);
+		return g_strdup ("o");
+		*/
+		return "o";
 	}
 
 /*
