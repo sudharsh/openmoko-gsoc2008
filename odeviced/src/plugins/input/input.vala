@@ -107,4 +107,19 @@ public class Input: GLib.Object {
 		}
 	}
 
+/*
+G_MODULE_EXPORT gboolean input_init (ODevicedPlugin *plugin) {
+
+	Input* inputobj;
+	inputobj = input_new ();
+	if(inputobj) 
+		odeviced_register_dbus_object (plugin, G_OBJECT(inputobj));
+	else
+		return FALSE;
+	
+	return TRUE;
+  
+}
+*/
+
 }

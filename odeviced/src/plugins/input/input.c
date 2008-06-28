@@ -80,6 +80,7 @@ static gboolean input_check (GSource* source) {
 
 static gboolean input_dispatch (GSource* source, GSourceFunc cback, void* cback_target) {
 	g_return_val_if_fail (source != NULL, FALSE);
+	g_message("Ooooh, got an event\n");
 	return TRUE;
 }
 
@@ -233,6 +234,18 @@ GType input_get_type (void) {
 	return input_type_id;
 }
 
+G_MODULE_EXPORT gboolean input_init (ODevicedPlugin *plugin) {
+
+	Input* inputobj;
+	inputobj = input_new ();
+	if(inputobj) 
+		odeviced_register_dbus_object (plugin, G_OBJECT(inputobj));
+	else
+		return FALSE;
+	
+	return TRUE;
+  
+}
 
 
 static void g_cclosure_user_marshal_VOID__STRING_STRING_INT (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
