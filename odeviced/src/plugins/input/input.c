@@ -32,17 +32,16 @@ struct _InputPrivate {
 	gint auxbutton_keycode;
 	gint powerbutton_keycode;
 	gint touchscreen_keycode;
-	GPollFD* input_fd;
-	gint input_fd_length1;
 };
 
 #define INPUT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_INPUT, InputPrivate))
 enum  {
 	INPUT_DUMMY_PROPERTY
 };
-static gboolean input_prepare (Input* self, GSource* source, gint* timeout);
-static gboolean input_check (Input* self, GSource* source);
-static gboolean input_dispatch (Input* self, GSource* source, GSourceFunc cback, void* cback_target);
+GPollFD* input_pollfd = NULL;
+static gboolean input_prepare (GSource* source, gint* timeout);
+static gboolean input_check (GSource* source);
+static gboolean input_dispatch (GSource* source, GSourceFunc cback, void* cback_target);
 static GObject * input_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties);
 static gpointer input_parent_class = NULL;
 static void input_dispose (GObject * obj);
@@ -50,24 +49,22 @@ static void input_dispose (GObject * obj);
 
 static void g_cclosure_user_marshal_VOID__STRING_STRING_INT (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 
-static gboolean input_prepare (Input* self, GSource* source, gint* timeout) {
-	g_return_val_if_fail (IS_INPUT (self), FALSE);
+static gboolean input_prepare (GSource* source, gint* timeout) {
 	g_return_val_if_fail (source != NULL, FALSE);
 	return FALSE;
 }
 
 
-static gboolean input_check (Input* self, GSource* source) {
-	g_return_val_if_fail (IS_INPUT (self), FALSE);
+static gboolean input_check (GSource* source) {
 	g_return_val_if_fail (source != NULL, FALSE);
 	{
 		GPollFD* _fd_collection;
 		int _fd_collection_length1;
 		int _fd_it;
-		_fd_collection = self->priv->input_fd;
-		_fd_collection_length1 = self->priv->input_fd_length1;
-		g_assert (self->priv->input_fd_length1 != -1);
-		for (_fd_it = 0; _fd_it < self->priv->input_fd_length1; _fd_it = _fd_it + 1) {
+		_fd_collection = input_pollfd;
+		_fd_collection_length1 = input_pollfd_length1;
+		g_assert (input_pollfd_length1 != -1);
+		for (_fd_it = 0; _fd_it < input_pollfd_length1; _fd_it = _fd_it + 1) {
 			GPollFD _fd;
 			_fd = _fd_collection[_fd_it];
 			{
@@ -81,8 +78,7 @@ static gboolean input_check (Input* self, GSource* source) {
 }
 
 
-static gboolean input_dispatch (Input* self, GSource* source, GSourceFunc cback, void* cback_target) {
-	g_return_val_if_fail (IS_INPUT (self), FALSE);
+static gboolean input_dispatch (GSource* source, GSourceFunc cback, void* cback_target) {
 	g_return_val_if_fail (source != NULL, FALSE);
 	return TRUE;
 }
@@ -112,6 +108,7 @@ static GObject * input_constructor (GType type, guint n_construct_properties, GO
 	{
 		GKeyFile* _conf;
 		GDir* dir;
+
 		GSource* watcher;
 		_conf = g_key_file_new ();
 		dir = g_dir_open (self->priv->dev_node, ((guint) (0)), &inner_error);
@@ -119,17 +116,19 @@ static GObject * input_constructor (GType type, guint n_construct_properties, GO
 			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
 			g_clear_error (&inner_error);
 		}
+
+		/* This is crappy, Must look for a way to do this in vala */
 		
-		/* This is crappy, Must look for a way to do this in vala 
-		 */
-		  static GSourceFuncs funcs = {
-		      input_dispatch,
-		      input_check,
-		      input_dispatch,
-		      NULL,
-		  };
+		static GSourceFuncs funcs = {
+			input_prepare,
+			input_check,
+			input_dispatch,
+			NULL,
+		};
 		
 		watcher = g_source_new (&funcs, ((guint) (sizeof (GSource))));
+		
+		
 		{
 			char* _tmp0;
 			char* _tmp2;
@@ -162,11 +161,10 @@ static GObject * input_constructor (GType type, guint n_construct_properties, GO
 				const char* _tmp3;
 				if (g_str_has_prefix (self->priv->dev_node, "event")) {
 					GPollFD _fd;
-					/*self->priv->input_fd[i].fd = 0;*/
-					self->priv->input_fd[i].fd = open(g_strdup_printf("/dev/input/event%d", i), O_RDONLY); 
-					self->priv->input_fd[i].revents = 0;
-					self->priv->input_fd[i].events = G_IO_IN | G_IO_HUP | G_IO_ERR;
-					_fd = self->priv->input_fd[i];
+					input_pollfd[i].fd = open(g_strdup_printf("/dev/input/event%d", i), O_RDONLY); 
+					input_pollfd[i].revents = 0;
+					input_pollfd[i].events = G_IO_IN | G_IO_HUP | G_IO_ERR;
+					_fd = input_pollfd[i];
 					g_source_add_poll (watcher, &_fd);
 					i++;
 				}
@@ -222,7 +220,6 @@ static void input_dispose (GObject * obj) {
 	self = INPUT (obj);
 	self->priv->device = (g_free (self->priv->device), NULL);
 	self->priv->dev_node = (g_free (self->priv->dev_node), NULL);
-	self->priv->input_fd = (g_free (self->priv->input_fd), NULL);
 	G_OBJECT_CLASS (input_parent_class)->dispose (obj);
 }
 

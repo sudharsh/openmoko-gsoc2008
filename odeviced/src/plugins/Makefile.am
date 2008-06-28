@@ -2,5 +2,6 @@ SUBDIRS = \
 	wifi \
 	display \
 	rtc \
-	power
+	power \
+	input
 

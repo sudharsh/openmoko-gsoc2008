@@ -26,9 +26,11 @@
 #include <glib-object.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <sys/types.h>
 #include <stdio.h>
 #include <fcntl.h>
+
 G_BEGIN_DECLS
 
 
@@ -58,6 +60,8 @@ struct _InputClass {
 };
 
 
+extern GPollFD* input_pollfd;
+extern gint input_pollfd_length1;
 Input* input_new (void);
 GType input_get_type (void);
 
