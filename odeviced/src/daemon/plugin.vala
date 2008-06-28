@@ -20,9 +20,11 @@ using DBus;
 
 namespace ODeviced {
 
+
 	errordomain PluginError {
 		LOAD_ERROR;
-	}			
+	}
+
 
 	public class Plugin: GLib.Object {
 
@@ -40,21 +42,21 @@ namespace ODeviced {
 		public string dbus_iface {
 			get { return _dbus_iface; }
 		}
-
+		
 		/* valac doesnt support duplicating string array intances */
 		/*private string[] _dbus_object_paths;*/
 		public List<string> dbus_object_paths = new List<string> ();
 		/*{
-			get { return _dbus_object_paths; }
-			set { _dbus_object_paths = value; }
-		}
+		  get { return _dbus_object_paths; }
+		  set { _dbus_object_paths = value; }
+		  }
 		*/
-
+		
 		private string[] depends;
 		/*public string[] depends {
-			get { return _depends; }
-			set { _depends = value; }
-		}
+		  get { return _depends; }
+		  set { _depends = value; }
+		  }
 		*/
 		
 		protected KeyFile conf = new KeyFile();		
@@ -74,7 +76,7 @@ namespace ODeviced {
 			this.name = name;		
 			this.path = path;
 		}
-
+		
 		construct {
 			Rand rand = new Rand();
 			this._handle = rand.int_range(10, 99);
@@ -110,8 +112,7 @@ namespace ODeviced {
 									
 		}
 		
-		
-		
+				
 	}
 
 

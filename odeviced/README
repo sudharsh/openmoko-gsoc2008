@@ -5,6 +5,6 @@ offer a framework that offers highly dynamic loading of arbitrary device plugins
 
 For more, refer the docs present in docs/ 
 
-Requires vala 0.3.3
+Requires vala 0.3.4
 -------------------
 Depends on GIO, GLib, GModule and DBus
