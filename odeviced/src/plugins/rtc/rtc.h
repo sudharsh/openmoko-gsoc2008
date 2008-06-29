@@ -26,7 +26,6 @@
 #include <glib-object.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <linux/rtc.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>

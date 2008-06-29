@@ -70,6 +70,9 @@ public class RealTimeClock: GLib.Object {
 		string ret;
 		int fd;
 		int res;
+
+		if (FileUtils.test (this.node + "/wakealarm", FileTest.EXISTS))
+			return ODeviced.read_string (this.node + "/wakealarm");
 		/*	
 			struct rtc_wkalrm alarm;
 			
@@ -109,7 +112,7 @@ public class RealTimeClock: GLib.Object {
 		  fd = open("/dev/rtc", O_RDONLY);
 		  if (fd < 0) { 
 		  g_message ("Couldn't open rtc device");
-		  fclose (fd);
+		  close (fd);
 		  return;
 		  }
 

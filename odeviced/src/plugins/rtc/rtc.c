@@ -20,6 +20,7 @@
  */
 
 #include "rtc.h"
+#include <glib/gstdio.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <dbus/dbus-glib.h>
 #include "helpers.h"
@@ -105,13 +106,26 @@ char* real_time_clock_GetCurrentTime (RealTimeClock* self) {
 
 char* real_time_clock_GetWakeupTime (RealTimeClock* self) {
 	char* ret;
-	int fd = 0;
-	int res = 0;
+	gint fd;
+	gint res;
+	char* _tmp0;
+	gboolean _tmp1;
 	struct rtc_wkalrm alarm;
-	
 	g_return_val_if_fail (IS_REAL_TIME_CLOCK (self), NULL);
 	ret = NULL;
-
+	fd = 0;
+	res = 0;
+	_tmp0 = NULL;
+	if ((_tmp1 = g_file_test ((_tmp0 = g_strconcat (self->priv->_node, "/wakealarm", NULL)), G_FILE_TEST_EXISTS), (_tmp0 = (g_free (_tmp0), NULL)), _tmp1)) {
+		char* _tmp2;
+		char* _tmp3;
+		char* _tmp4;
+		_tmp2 = NULL;
+		_tmp3 = NULL;
+		_tmp4 = NULL;
+		return (_tmp4 = (_tmp3 = odeviced_read_string ((_tmp2 = g_strconcat (self->priv->_node, "/wakealarm", NULL))), (_tmp2 = (g_free (_tmp2), NULL)), _tmp3), (ret = (g_free (ret), NULL)), _tmp4);
+	}
+		
 	fd = open("/dev/rtc", O_RDONLY);
 	if (fd < 0) {
 		g_message("Couldn't open rtc device");
@@ -126,11 +140,12 @@ char* real_time_clock_GetWakeupTime (RealTimeClock* self) {
 		close (fd);
 		return "0";
 	}
-		
+	
 	ret = g_strdup_printf("%d", (alarm.time.tm_sec + (60 * alarm.time.tm_min) + (60 * 60 * alarm.time.tm_hour)));
 	
 	close (fd);
 	return ret;
+	
 }
 
 
@@ -140,17 +155,17 @@ void real_time_clock_SetCurrentTime (RealTimeClock* self, const char* seconds) {
 	g_return_if_fail (IS_REAL_TIME_CLOCK (self));
 	g_return_if_fail (seconds != NULL);
 	fd = 0;
-	
+	res = 0;
 	struct rtc_time time;
 	fd = open("/dev/rtc", O_RDONLY);
 	if (fd < 0) { 
 		g_message ("Couldn't open rtc device");
-		fclose (fd);
+		close (fd);
 		return;
 	}
-
-	time.tm_sec = g_printf("%s", seconds);
 	
+	time.tm_sec = g_printf("%s", seconds);
+		  
 	res = ioctl(fd, RTC_SET_TIME, &time);
 	if (res < 1)
 		perror ("ioctl(RTC_SET_TIME) unsuccessful");
@@ -320,7 +335,7 @@ GType real_time_clock_get_type (void) {
 
 static void register_dbus (RealTimeClock* obj) {
 	g_return_if_fail (IS_REAL_TIME_CLOCK (obj));
-	g_message ("rtc.vala:134: Registering DBus object at %s", real_time_clock_get_dbus_path (obj));
+	g_message ("rtc.vala:151: Registering DBus object at %s", real_time_clock_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, real_time_clock_get_dbus_path (obj), G_OBJECT (obj));
 }
 
@@ -337,7 +352,6 @@ G_MODULE_EXPORT gboolean rtc_init (ODevicedPlugin *plugin) {
 	
 	return TRUE;
 }
-
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
 	typedef gboolean (*GMarshalFunc_BOOLEAN__POINTER_POINTER) (gpointer data1, gpointer arg_1, gpointer arg_2, gpointer data2);
