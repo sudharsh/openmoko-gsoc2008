@@ -115,8 +115,9 @@ char* real_time_clock_GetWakeupTime (RealTimeClock* self) {
 		return "0";
 	}
 	
-	if(ioctl(fd, RTC_WKALM_RD, &alarm) == 0)
-		ret = g_strdup_printf("%d", alarm.time.tm_sec);
+	if(ioctl(fd, RTC_WKALM_RD, &alarm) == 0) 		
+		ret = g_strdup_printf("%d", (alarm.time.tm_sec + (60 * alarm.time.tm_min) + (60 * 60 * alarm.time.tm_hour)));
+	
 	close (fd);
 	
 	return ret;
