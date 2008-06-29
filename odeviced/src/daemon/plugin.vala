@@ -94,7 +94,7 @@ namespace ODeviced {
 
 		public bool register() throws PluginError {
 
-			this._library = Module.open(this.path, ModuleFlags.BIND_MASK);
+			this._library = Module.open(this.path, ModuleFlags.BIND_LAZY);
 				
 			if(this._library == null) {
 				throw new PluginError.LOAD_ERROR("_library is null");

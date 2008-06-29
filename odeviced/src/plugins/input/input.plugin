@@ -2,8 +2,8 @@
 dbus_interface=org.freesmartphone.Device.Input
 dbus_object_path=/org/freesmartphone/Device/Input
 
-# Device specific keycodes, in hex
+# Device specific keycodes
 [FreeRunner]
-auxbutton = 169
-powerbutton = 116
-touchscreen = 0x14a
+auxbutton=169
+powerbutton=116
+touchscreen=0x14a

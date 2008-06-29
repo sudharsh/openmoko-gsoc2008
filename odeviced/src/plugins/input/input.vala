@@ -29,7 +29,9 @@ using DBus;
 using GLib;
 using ODeviced;
 
-
+namespace InputSpace {
+	public PollFD[] pollfd;
+}
 
 [DBus (name = "org.freesmartphone.Device.Input")]
 public class Input: GLib.Object {
@@ -42,14 +44,13 @@ public class Input: GLib.Object {
 
    	public signal void @event(string name, string action, int seconds);
 
-	public static PollFD[] pollfd;
-
 	private static bool prepare (Source source, ref int timeout) {
 		return false;
 	}
 	
 	private static bool check (Source source) {
-		foreach (PollFD _fd in pollfd) {
+
+		foreach (PollFD _fd in InputSpace.pollfd) {
 			if ((_fd.revents & IOCondition.IN) != 0)
 				return true;
 		}
@@ -60,8 +61,8 @@ public class Input: GLib.Object {
 		return true;
 	}
 
-	construct {
 
+	construct {
 		
 		KeyFile _conf = new KeyFile();
 		Dir dir = Dir.open(dev_node, 0);
@@ -91,10 +92,10 @@ public class Input: GLib.Object {
 			int i = 0;
 			while (dev_node!=null) {
 				if (dev_node.has_prefix ("event")) {
-					pollfd[i].fd = 0; /* input_pollfd[i].fd = open(g_strdup_printf("/dev/input/event%d", i), O_RDONLY); */
-					pollfd[i].revents = 0;
-					pollfd[i].events = IOCondition.IN | IOCondition.HUP | IOCondition.ERR;
-					var _fd = pollfd[i];
+					InputSpace.pollfd[i].fd = 0; /* input_pollfd[i].fd = open(g_strdup_printf("/dev/input/event%d", i), O_RDONLY); */
+					InputSpace.pollfd[i].revents = 0;
+					InputSpace.pollfd[i].events = IOCondition.IN | IOCondition.HUP | IOCondition.ERR;
+					var _fd = InputSpace.pollfd[i];
 					watcher.add_poll (ref _fd);
 					i++;
 				}

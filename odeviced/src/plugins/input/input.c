@@ -25,7 +25,8 @@
 
 
 
-
+gint input_space_pollfd_length1;
+GPollFD* input_space_pollfd = NULL;
 struct _InputPrivate {
 	char* device;
 	char* dev_node;
@@ -38,7 +39,6 @@ struct _InputPrivate {
 enum  {
 	INPUT_DUMMY_PROPERTY
 };
-GPollFD* input_pollfd = NULL;
 static gboolean input_prepare (GSource* source, gint* timeout);
 static gboolean input_check (GSource* source);
 static gboolean input_dispatch (GSource* source, GSourceFunc cback, void* cback_target);
@@ -61,10 +61,10 @@ static gboolean input_check (GSource* source) {
 		GPollFD* _fd_collection;
 		int _fd_collection_length1;
 		int _fd_it;
-		_fd_collection = input_pollfd;
-		_fd_collection_length1 = input_pollfd_length1;
-		g_assert (input_pollfd_length1 != -1);
-		for (_fd_it = 0; _fd_it < input_pollfd_length1; _fd_it = _fd_it + 1) {
+		_fd_collection = input_space_pollfd;
+		_fd_collection_length1 = input_space_pollfd_length1;
+		g_assert (input_space_pollfd_length1 != -1);
+		for (_fd_it = 0; _fd_it < input_space_pollfd_length1; _fd_it = _fd_it + 1) {
 			GPollFD _fd;
 			_fd = _fd_collection[_fd_it];
 			{
@@ -80,14 +80,10 @@ static gboolean input_check (GSource* source) {
 
 static gboolean input_dispatch (GSource* source, GSourceFunc cback, void* cback_target) {
 	g_return_val_if_fail (source != NULL, FALSE);
-	g_message("Ooooh, got an event\n");
 	return TRUE;
 }
 
 
-/*
-
-*/
 Input* input_new (void) {
 	Input * self;
 	self = g_object_newv (TYPE_INPUT, 0, NULL);
@@ -109,7 +105,6 @@ static GObject * input_constructor (GType type, guint n_construct_properties, GO
 	{
 		GKeyFile* _conf;
 		GDir* dir;
-
 		GSource* watcher;
 		_conf = g_key_file_new ();
 		dir = g_dir_open (self->priv->dev_node, ((guint) (0)), &inner_error);
@@ -162,10 +157,10 @@ static GObject * input_constructor (GType type, guint n_construct_properties, GO
 				const char* _tmp3;
 				if (g_str_has_prefix (self->priv->dev_node, "event")) {
 					GPollFD _fd;
-					input_pollfd[i].fd = open(g_strdup_printf("/dev/input/event%d", i), O_RDONLY); 
-					input_pollfd[i].revents = 0;
-					input_pollfd[i].events = G_IO_IN | G_IO_HUP | G_IO_ERR;
-					_fd = input_pollfd[i];
+					input_space_pollfd[i].fd = open(g_strdup_printf("/dev/input/event%d", i), O_RDONLY);
+					input_space_pollfd[i].revents = 0;
+					input_space_pollfd[i].events = G_IO_IN | G_IO_HUP | G_IO_ERR;
+					_fd = input_space_pollfd[i];
 					g_source_add_poll (watcher, &_fd);
 					i++;
 				}
@@ -234,6 +229,7 @@ GType input_get_type (void) {
 	return input_type_id;
 }
 
+
 G_MODULE_EXPORT gboolean input_init (ODevicedPlugin *plugin) {
 
 	Input* inputobj;
@@ -246,7 +242,6 @@ G_MODULE_EXPORT gboolean input_init (ODevicedPlugin *plugin) {
 	return TRUE;
   
 }
-
 
 static void g_cclosure_user_marshal_VOID__STRING_STRING_INT (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
 	typedef void (*GMarshalFunc_VOID__STRING_STRING_INT) (gpointer data1, const char* arg_1, const char* arg_2, gint arg_3, gpointer data2);
