@@ -24,6 +24,8 @@
 /*
 #include <linux/rtc.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
+#include <unistd.h>
 */
 
 using DBus;
@@ -65,10 +67,7 @@ public class RealTimeClock: GLib.Object {
 	}
 
 	public string GetWakeupTime() {
-		string ret = ODeviced.read_string (this.node + "/wakealarm");
-		if(ret!=null)
-			return ret;
-
+		var ret = "Dummy";
 		/*	
 
 			int fd = 0;

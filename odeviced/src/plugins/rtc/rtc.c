@@ -108,23 +108,16 @@ char* real_time_clock_GetWakeupTime (RealTimeClock* self) {
 	int fd = 0;
 	struct rtc_wkalrm alarm;
 	g_return_val_if_fail (IS_REAL_TIME_CLOCK (self), NULL);
-	_tmp0 = NULL;
-	_tmp1 = NULL;
-	ret = (_tmp1 = odeviced_read_string ((_tmp0 = g_strconcat (self->priv->_node, "/wakealarm", NULL))), (_tmp0 = (g_free (_tmp0), NULL)), _tmp1);
-	if (ret != NULL) {
-		return ret;
-	}
-		
+			
 	fd = open("/dev/rtc", O_RDONLY);
 	if (fd == -1) {
 		g_message("Couldn't open rtc device");
 		return "0";
 	}
 	
-	g_message ("bleh");
 	if(ioctl(fd, RTC_WKALM_RD, &alarm) == 0)
 		ret = g_strdup_printf("%d", alarm.time.tm_sec);
-	fclose (fd);
+	close (fd);
 	
 	return ret;
 }

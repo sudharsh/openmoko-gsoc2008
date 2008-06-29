@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <linux/rtc.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 
 G_BEGIN_DECLS
 
