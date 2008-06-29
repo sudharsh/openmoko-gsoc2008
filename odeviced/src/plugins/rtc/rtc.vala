@@ -67,44 +67,58 @@ public class RealTimeClock: GLib.Object {
 	}
 
 	public string GetWakeupTime() {
-		var ret = "Dummy";
+		string ret;
+		int fd;
+		int res;
 		/*	
-			char* _tmp0;
-			char* _tmp1;
-			char* ret;
-			int fd = 0;
 			struct rtc_wkalrm alarm;
-			g_return_val_if_fail (IS_REAL_TIME_CLOCK (self), NULL);
 			
+			g_return_val_if_fail (IS_REAL_TIME_CLOCK (self), NULL);
+			ret = NULL;
+
 			fd = open("/dev/rtc", O_RDONLY);
-			if (fd == -1) {
+			if (fd < 0) {
 			g_message("Couldn't open rtc device");
+			close (fd);
 			return "0";
 			}
-	
-			if(ioctl(fd, RTC_WKALM_RD, &alarm) == 0) 		
-			ret = g_strdup_printf("%d", (alarm.time.tm_sec + (60 * alarm.time.tm_min) + (60 * 60 * alarm.time.tm_hour)));
-	
-			close (fd);
 			
+			res = ioctl(fd, RTC_WKALM_RD, &alarm);
+			if (res < 0) {
+			perror("ioctl(RTC_WKALM_RD) error");
+			g_message ("ioctl call unsuccessful");
+			close (fd);
+			return "0";
+			}
+		
+			ret = g_strdup_printf("%d", (alarm.time.tm_sec + (60 * alarm.time.tm_min) + (60 * 60 * alarm.time.tm_hour)));
+			
+			close (fd);
 			return ret;
+			
 		*/
 		return ret;
 	}
 
 	public void SetCurrentTime(string seconds) {
 		int fd;
+		int res;
 
 		/*
 		  struct rtc_time time;
 		  fd = open("/dev/rtc", O_RDONLY);
-		  if (fd == -1) 
+		  if (fd < 0) { 
 		  g_message ("Couldn't open rtc device");
+		  fclose (fd);
+		  return;
+		  }
 
 		  time.tm_sec = g_printf("%s", seconds);
 		  
-		  ioctl(fd, RTC_SET_TIME, &time);
-		  
+		  res = ioctl(fd, RTC_SET_TIME, &time);
+		  if (res < 1)
+		  perror ("ioctl(RTC_SET_TIME) unsuccessful");
+		  	  
 		  close (fd);
 		*/
 	}
