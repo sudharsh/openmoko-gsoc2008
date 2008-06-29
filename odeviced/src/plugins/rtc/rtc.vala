@@ -65,6 +65,10 @@ public class RealTimeClock: GLib.Object {
 	}
 
 	public string GetWakeupTime() {
+		string ret = ODeviced.read_string (this.node + "/wakealarm");
+		if(ret!=null)
+			return ret;
+
 		/*	
 
 			int fd = 0;
@@ -85,7 +89,7 @@ public class RealTimeClock: GLib.Object {
 			
 			return ret;
 		*/
-		return "o";
+		return ret;
 	}
 
 /*

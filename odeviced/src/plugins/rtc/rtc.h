@@ -26,10 +26,11 @@
 #include <glib-object.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <fcntl.h>
+#include <sys/types.h>
 #include <linux/rtc.h>
 #include <sys/ioctl.h>
-#include <fcntl.h>
+
 G_BEGIN_DECLS
 
 
@@ -46,6 +47,8 @@ typedef struct _RealTimeClockPrivate RealTimeClockPrivate;
 
 /* RTC plugin for odeviced 
 
+#include <linux/rtc.h>
+#include <sys/ioctl.h>
 */
 struct _RealTimeClock {
 	GObject parent_instance;
