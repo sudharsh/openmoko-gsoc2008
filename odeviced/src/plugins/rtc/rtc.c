@@ -51,11 +51,13 @@ static gpointer real_time_clock_parent_class = NULL;
 static gboolean _dbus_real_time_clock_GetName (RealTimeClock* self, char** result, GError** error);
 static gboolean _dbus_real_time_clock_GetCurrentTime (RealTimeClock* self, char** result, GError** error);
 static gboolean _dbus_real_time_clock_GetWakeupTime (RealTimeClock* self, char** result, GError** error);
+static gboolean _dbus_real_time_clock_SetCurrentTime (RealTimeClock* self, const char* seconds, GError** error);
 static void real_time_clock_dispose (GObject * obj);
 static void register_dbus (RealTimeClock* obj);
 
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
+static void g_cclosure_user_marshal_BOOLEAN__STRING_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 
 static RealTimeClock* real_time_clock_new (const char* node, const char* dbus_path) {
 	GParameter * __params;
@@ -102,25 +104,42 @@ char* real_time_clock_GetCurrentTime (RealTimeClock* self) {
 
 
 char* real_time_clock_GetWakeupTime (RealTimeClock* self) {
-	char* _tmp0;
-	char* _tmp1;
 	char* ret;
 	int fd = 0;
 	struct rtc_wkalrm alarm;
+	
 	g_return_val_if_fail (IS_REAL_TIME_CLOCK (self), NULL);
-			
+	ret = NULL;
+
 	fd = open("/dev/rtc", O_RDONLY);
 	if (fd == -1) {
 		g_message("Couldn't open rtc device");
 		return "0";
 	}
 	
-	if(ioctl(fd, RTC_WKALM_RD, &alarm) == 0) 		
+	if(ioctl(fd, RTC_WKALM_RD, &alarm) == 0) 
 		ret = g_strdup_printf("%d", (alarm.time.tm_sec + (60 * alarm.time.tm_min) + (60 * 60 * alarm.time.tm_hour)));
 	
 	close (fd);
-	
 	return ret;
+}
+
+
+void real_time_clock_SetCurrentTime (RealTimeClock* self, const char* seconds) {
+	gint fd;
+	g_return_if_fail (IS_REAL_TIME_CLOCK (self));
+	g_return_if_fail (seconds != NULL);
+	fd = 0;
+	struct rtc_time time;
+	fd = open("/dev/rtc", O_RDONLY);
+	if (fd == -1) 
+		g_message ("Couldn't open rtc device");
+	
+	time.tm_sec = g_printf("%s", seconds);
+	
+	ioctl(fd, RTC_SET_TIME, &time);
+	
+	close (fd);
 }
 
 
@@ -226,6 +245,12 @@ static gboolean _dbus_real_time_clock_GetWakeupTime (RealTimeClock* self, char**
 }
 
 
+static gboolean _dbus_real_time_clock_SetCurrentTime (RealTimeClock* self, const char* seconds, GError** error) {
+	real_time_clock_SetCurrentTime (self, seconds);
+	return !error || !*error;
+}
+
+
 static void real_time_clock_class_init (RealTimeClockClass * klass) {
 	real_time_clock_parent_class = g_type_class_peek_parent (klass);
 	g_type_class_add_private (klass, sizeof (RealTimeClockPrivate));
@@ -239,9 +264,10 @@ static void real_time_clock_class_init (RealTimeClockClass * klass) {
 { (GCallback) _dbus_real_time_clock_GetName, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 0 },
 { (GCallback) _dbus_real_time_clock_GetCurrentTime, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 66 },
 { (GCallback) _dbus_real_time_clock_GetWakeupTime, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 139 },
+{ (GCallback) _dbus_real_time_clock_SetCurrentTime, g_cclosure_user_marshal_BOOLEAN__STRING_POINTER, 211 },
 }
 ;
-	static const DBusGObjectInfo real_time_clock_dbus_object_info = { 0, real_time_clock_dbus_methods, 3, "org.freesmartphone.Device.RealTimeClock\0GetName\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.RealTimeClock\0GetCurrentTime\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.RealTimeClock\0GetWakeupTime\0S\0result\0O\0F\0N\0s\0\0", "", "" };
+	static const DBusGObjectInfo real_time_clock_dbus_object_info = { 0, real_time_clock_dbus_methods, 4, "org.freesmartphone.Device.RealTimeClock\0GetName\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.RealTimeClock\0GetCurrentTime\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.RealTimeClock\0GetWakeupTime\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.RealTimeClock\0SetCurrentTime\0S\0seconds\0I\0s\0\0", "", "" };
 	dbus_g_object_type_install_info (TYPE_REAL_TIME_CLOCK, &real_time_clock_dbus_object_info);
 }
 
@@ -276,11 +302,9 @@ GType real_time_clock_get_type (void) {
 }
 
 
-/*
-*/
 static void register_dbus (RealTimeClock* obj) {
 	g_return_if_fail (IS_REAL_TIME_CLOCK (obj));
-	g_message ("rtc.vala:114: Registering DBus object at %s", real_time_clock_get_dbus_path (obj));
+	g_message ("rtc.vala:134: Registering DBus object at %s", real_time_clock_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, real_time_clock_get_dbus_path (obj), G_OBJECT (obj));
 }
 
@@ -297,6 +321,7 @@ G_MODULE_EXPORT gboolean rtc_init (ODevicedPlugin *plugin) {
 	
 	return TRUE;
 }
+
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
 	typedef gboolean (*GMarshalFunc_BOOLEAN__POINTER_POINTER) (gpointer data1, gpointer arg_1, gpointer arg_2, gpointer data2);
@@ -316,6 +341,28 @@ static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure
 	}
 	callback = ((GMarshalFunc_BOOLEAN__POINTER_POINTER) ((marshal_data ? marshal_data : cc->callback)));
 	v_return = callback (data1, g_value_get_pointer (param_values + 1), g_value_get_pointer (param_values + 2), data2);
+	g_value_set_boolean (return_value, v_return);
+}
+
+
+static void g_cclosure_user_marshal_BOOLEAN__STRING_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
+	typedef gboolean (*GMarshalFunc_BOOLEAN__STRING_POINTER) (gpointer data1, const char* arg_1, gpointer arg_2, gpointer data2);
+	register GMarshalFunc_BOOLEAN__STRING_POINTER callback;
+	register GCClosure * cc;
+	register gpointer data1, data2;
+	gboolean v_return;
+	cc = ((GCClosure *) (closure));
+	g_return_if_fail (return_value != NULL);
+	g_return_if_fail (n_param_values == 3);
+	if (G_CCLOSURE_SWAP_DATA (closure)) {
+		data1 = closure->data;
+		data2 = param_values->data[0].v_pointer;
+	} else {
+		data1 = param_values->data[0].v_pointer;
+		data2 = closure->data;
+	}
+	callback = ((GMarshalFunc_BOOLEAN__STRING_POINTER) ((marshal_data ? marshal_data : cc->callback)));
+	v_return = callback (data1, g_value_get_string (param_values + 1), g_value_get_pointer (param_values + 2), data2);
 	g_value_set_boolean (return_value, v_return);
 }
 

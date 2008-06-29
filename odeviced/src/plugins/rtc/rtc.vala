@@ -69,9 +69,10 @@ public class RealTimeClock: GLib.Object {
 	public string GetWakeupTime() {
 		var ret = "Dummy";
 		/*	
-
+			char* _tmp0;
+			char* _tmp1;
+			char* ret;
 			int fd = 0;
-			char *ret;
 			struct rtc_wkalrm alarm;
 			g_return_val_if_fail (IS_REAL_TIME_CLOCK (self), NULL);
 			
@@ -80,16 +81,36 @@ public class RealTimeClock: GLib.Object {
 			g_message("Couldn't open rtc device");
 			return "0";
 			}
-			
-			g_message ("bleh");
-			if(ioctl(fd, RTC_WKALM_RD, &alarm) == 0)
-			ret = g_strdup_printf("%d", alarm.time.tm_sec);
-			fclose (fd);
+	
+			if(ioctl(fd, RTC_WKALM_RD, &alarm) == 0) 		
+			ret = g_strdup_printf("%d", (alarm.time.tm_sec + (60 * alarm.time.tm_min) + (60 * 60 * alarm.time.tm_hour)));
+	
+			close (fd);
 			
 			return ret;
 		*/
 		return ret;
 	}
+
+	public void SetCurrentTime(string seconds) {
+		int fd;
+
+		/*
+		  struct rtc_time time;
+		  fd = open("/dev/rtc", O_RDONLY);
+		  if (fd == -1) 
+		  g_message ("Couldn't open rtc device");
+
+		  time.tm_sec = g_printf("%s", seconds);
+		  
+		  ioctl(fd, RTC_SET_TIME, &time);
+		  
+		  close (fd);
+		*/
+	}
+		  
+		  
+		  
 
 /*
 G_MODULE_EXPORT gboolean rtc_init (ODevicedPlugin *plugin) {

@@ -26,10 +26,10 @@
 #include <glib-object.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-#include <sys/types.h>
+
 #include <linux/rtc.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 G_BEGIN_DECLS
@@ -50,6 +50,8 @@ typedef struct _RealTimeClockPrivate RealTimeClockPrivate;
 
 #include <linux/rtc.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
+#include <unistd.h>
 */
 struct _RealTimeClock {
 	GObject parent_instance;
@@ -64,6 +66,7 @@ struct _RealTimeClockClass {
 char* real_time_clock_GetName (RealTimeClock* self);
 char* real_time_clock_GetCurrentTime (RealTimeClock* self);
 char* real_time_clock_GetWakeupTime (RealTimeClock* self);
+void real_time_clock_SetCurrentTime (RealTimeClock* self, const char* seconds);
 const char* real_time_clock_get_node (RealTimeClock* self);
 const char* real_time_clock_get_dbus_path (RealTimeClock* self);
 GType real_time_clock_get_type (void);
