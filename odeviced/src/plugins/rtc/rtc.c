@@ -247,7 +247,7 @@ static void real_time_clock_class_init (RealTimeClockClass * klass) {
 { (GCallback) _dbus_real_time_clock_GetWakeupTime, g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER, 139 },
 }
 ;
-	static const DBusGObjectInfo real_time_clock_dbus_object_info = { 0, real_time_clock_dbus_methods, 3, "org.freesmartphone.Device.RealTimeClock\0GetName\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.RealTimeClock\0GetCurrentTime\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.RealTimeClock\0GetWakeupTime\0S\0result\0O\0F\0N\0s\0\0", "", "org.freesmartphone.Device.RealTimeClock\0Node\0org.freesmartphone.Device.RealTimeClock\0DbusPath\0" };
+	static const DBusGObjectInfo real_time_clock_dbus_object_info = { 0, real_time_clock_dbus_methods, 3, "org.freesmartphone.Device.RealTimeClock\0GetName\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.RealTimeClock\0GetCurrentTime\0S\0result\0O\0F\0N\0s\0\0org.freesmartphone.Device.RealTimeClock\0GetWakeupTime\0S\0result\0O\0F\0N\0s\0\0", "", "" };
 	dbus_g_object_type_install_info (TYPE_REAL_TIME_CLOCK, &real_time_clock_dbus_object_info);
 }
 
@@ -283,18 +283,6 @@ GType real_time_clock_get_type (void) {
 
 
 /*
-G_MODULE_EXPORT gboolean rtc_init (ODevicedPlugin *plugin) {
-GType type;
-GList *list = NULL;
-RealTimeClock *obj;
-type = real_time_clock_get_type();
-list = odeviced_compute_objects (plugin, type);
-if(!list)
-return FALSE;
-g_list_foreach(list, (GFunc)register_dbus, NULL);
-
-return TRUE;
-}
 */
 static void register_dbus (RealTimeClock* obj) {
 	g_return_if_fail (IS_REAL_TIME_CLOCK (obj));
@@ -303,6 +291,18 @@ static void register_dbus (RealTimeClock* obj) {
 }
 
 
+G_MODULE_EXPORT gboolean rtc_init (ODevicedPlugin *plugin) {
+	GType type;
+	GList *list = NULL;
+	RealTimeClock *obj;
+	type = real_time_clock_get_type();
+	list = odeviced_compute_objects (plugin, type);
+	if(!list)
+		return FALSE;
+	g_list_foreach(list, (GFunc)register_dbus, NULL);
+	
+	return TRUE;
+}
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
 	typedef gboolean (*GMarshalFunc_BOOLEAN__POINTER_POINTER) (gpointer data1, gpointer arg_1, gpointer arg_2, gpointer data2);
