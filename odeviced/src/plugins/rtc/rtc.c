@@ -104,20 +104,22 @@ char* real_time_clock_GetCurrentTime (RealTimeClock* self) {
 char* real_time_clock_GetWakeupTime (RealTimeClock* self) {
 	
 	int fd = 0;
+	char *ret;
 	struct rtc_wkalrm alarm;
 	g_return_val_if_fail (IS_REAL_TIME_CLOCK (self), NULL);
 		
 	fd = open("/dev/rtc", O_RDONLY);
 	if (fd == -1) {
 		g_message("Couldn't open rtc device");
+		return "0";
 	}
 
 	g_message ("bleh");
 	if(ioctl(fd, RTC_WKALM_RD, &alarm) == 0)
-		g_print(">> %d\n", alarm.time.tm_sec);
+		ret = g_strdup_printf("%d", alarm.time.tm_sec);
 	fclose (fd);
 	
-	return g_strdup ("o");
+	return ret;
 }
 
 
