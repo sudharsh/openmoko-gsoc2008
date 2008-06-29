@@ -92,7 +92,8 @@ public class Input: GLib.Object {
 			int i = 0;
 			while (dev_node!=null) {
 				if (dev_node.has_prefix ("event")) {
-					InputSpace.pollfd[i].fd = 0; /* input_pollfd[i].fd = open(g_strdup_printf("/dev/input/event%d", i), O_RDONLY); */
+					var filename = "/dev/input/event%d".printf(i);
+					InputSpace.pollfd[i].fd = 0; /* input_space_pollfd[i].fd = open(g_strdup_printf("/dev/input/event%d", i), O_RDONLY); */
 					InputSpace.pollfd[i].revents = 0;
 					InputSpace.pollfd[i].events = IOCondition.IN | IOCondition.HUP | IOCondition.ERR;
 					var _fd = InputSpace.pollfd[i];
@@ -101,6 +102,7 @@ public class Input: GLib.Object {
 				}
 				dev_node = dir.read_name();
 			}
+			watcher.attach (null);
 						
 		}
 		catch (GLib.Error error) {

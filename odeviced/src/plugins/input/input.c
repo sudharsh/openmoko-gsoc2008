@@ -26,7 +26,7 @@
 
 
 gint input_space_pollfd_length1;
-GPollFD* input_space_pollfd = NULL;
+GPollFD input_space_pollfd[10];
 struct _InputPrivate {
 	char* device;
 	char* dev_node;
@@ -80,6 +80,7 @@ static gboolean input_check (GSource* source) {
 
 static gboolean input_dispatch (GSource* source, GSourceFunc cback, void* cback_target) {
 	g_return_val_if_fail (source != NULL, FALSE);
+	g_message("Hi");
 	return TRUE;
 }
 
@@ -112,7 +113,7 @@ static GObject * input_constructor (GType type, guint n_construct_properties, GO
 			g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
 			g_clear_error (&inner_error);
 		}
-
+		
 		/* This is crappy, Must look for a way to do this in vala */
 		
 		static GSourceFuncs funcs = {
@@ -123,7 +124,6 @@ static GObject * input_constructor (GType type, guint n_construct_properties, GO
 		};
 		
 		watcher = g_source_new (&funcs, ((guint) (sizeof (GSource))));
-		
 		
 		{
 			char* _tmp0;
@@ -156,18 +156,27 @@ static GObject * input_constructor (GType type, guint n_construct_properties, GO
 				char* _tmp4;
 				const char* _tmp3;
 				if (g_str_has_prefix (self->priv->dev_node, "event")) {
+					char* filename;
 					GPollFD _fd;
-					input_space_pollfd[i].fd = open(g_strdup_printf("/dev/input/event%d", i), O_RDONLY);
+					filename = g_strdup_printf ("/dev/input/event%d", i);
+					/* input_space_pollfd[i].fd = 0; */
+					g_message(filename);
+					input_space_pollfd[i].fd = open("/dev/input/event1", O_RDONLY);
+					if(input_space_pollfd[i].fd < 0)
+						break;
+					g_message ("File descriptor created for %s", filename);
 					input_space_pollfd[i].revents = 0;
 					input_space_pollfd[i].events = G_IO_IN | G_IO_HUP | G_IO_ERR;
 					_fd = input_space_pollfd[i];
 					g_source_add_poll (watcher, &_fd);
 					i++;
+					filename = (g_free (filename), NULL);
 				}
 				_tmp4 = NULL;
 				_tmp3 = NULL;
 				self->priv->dev_node = (_tmp4 = (_tmp3 = g_dir_read_name (dir), (_tmp3 == NULL ? NULL : g_strdup (_tmp3))), (self->priv->dev_node = (g_free (self->priv->dev_node), NULL)), _tmp4);
 			}
+			g_source_attach (watcher, NULL);
 		}
 		goto __finally8;
 		__catch8_g_error:
@@ -230,6 +239,7 @@ GType input_get_type (void) {
 }
 
 
+
 G_MODULE_EXPORT gboolean input_init (ODevicedPlugin *plugin) {
 
 	Input* inputobj;
@@ -242,6 +252,7 @@ G_MODULE_EXPORT gboolean input_init (ODevicedPlugin *plugin) {
 	return TRUE;
   
 }
+
 
 static void g_cclosure_user_marshal_VOID__STRING_STRING_INT (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
 	typedef void (*GMarshalFunc_VOID__STRING_STRING_INT) (gpointer data1, const char* arg_1, const char* arg_2, gint arg_3, gpointer data2);

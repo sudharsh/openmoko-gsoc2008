@@ -6,4 +6,4 @@ dbus_object_path=/org/freesmartphone/Device/Input
 [FreeRunner]
 auxbutton=169
 powerbutton=116
-touchscreen=0x14a
+touchscreen=330
