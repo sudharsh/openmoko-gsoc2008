@@ -44,15 +44,18 @@ public class Power: GLib.Object {
 
 	private string curr_status;
 
+	[DBus (visible = false)]
 	public string node {
 		get;
 		construct;
 	}
 
+	[DBus (visible = false)]
 	public string dbus_path {
 		get;
 		construct;
 	}
+
 
 	Power(string node, string dbus_path) {
 		this.node = node;
@@ -162,28 +165,31 @@ public class Power: GLib.Object {
 		return true;
 	}
 
-/*
- * Uncomment this in the generated file
-
-G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
-	GType type;
-	GList *list = NULL;
-	Power *obj;
-	type = power_get_type();
-	list = odeviced_compute_objects (plugin, type);
-	if(!list)
-	return FALSE;
-	g_list_foreach(list, (GFunc)register_dbus, NULL);
-	
-	return TRUE;
-}
-
-*/
-
 }
 
 
 void register_dbus (Power obj) {
 	GLib.message("Registering DBus object at %s", obj.dbus_path);
 	ODeviced.connection.register_object(obj.dbus_path, obj);
+}
+
+
+/* Plugin init function */
+namespace power {
+
+	public static List<Power> list;
+
+	public bool init (ODeviced.Plugin plugin) {
+		Type type;
+		list = new List<Power>();
+		type = typeof (Power);
+		list = ODeviced.compute_objects (plugin, type);
+		if(list == null)
+			return false;
+		
+		foreach (Power _obj in list) {
+			register_dbus (_obj);
+		}
+		return true;
+	}
 }
