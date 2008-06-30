@@ -72,6 +72,7 @@ static gboolean _dbus_power_GetTechnology (Power* self, char** result, GError** 
 static gboolean _dbus_power_GetEnergyPercentage (Power* self, gint* result, GError** error);
 static void power_dispose (GObject * obj);
 static void register_dbus (Power* obj);
+static void _g_list_free_g_object_unref (GList* self);
 static int _vala_strcmp0 (const char * str1, const char * str2);
 
 
@@ -210,9 +211,9 @@ static gboolean power_poll_energy (Power* self) {
 		g_source_remove (self->priv->_energy_id);
 		return FALSE;
 	}
-	g_message ("power.vala:142: Current energy, %d", _curr);
+	g_message ("power.vala:145: Current energy, %d", _curr);
 	if (_curr < self->priv->low_energy_threshold) {
-		g_message ("power.vala:144: %s\tLow energy warning", self->priv->name);
+		g_message ("power.vala:147: %s\tLow energy warning", self->priv->name);
 		g_signal_emit_by_name (G_OBJECT (self), "low-battery", _curr);
 	}
 	return TRUE;
@@ -232,7 +233,7 @@ static gboolean power_poll_status (Power* self) {
 	if (_vala_strcmp0 (stat, self->priv->curr_status) != 0) {
 		char* _tmp2;
 		const char* _tmp1;
-		g_message ("power.vala:158: %s\tStatus changed, %s", self->priv->name, stat);
+		g_message ("power.vala:161: %s\tStatus changed, %s", self->priv->name, stat);
 		g_signal_emit_by_name (G_OBJECT (self), "battery-status-changed", stat);
 		_tmp2 = NULL;
 		_tmp1 = NULL;
@@ -329,7 +330,7 @@ static GObject * power_constructor (GType type, guint n_construct_properties, GO
 				_tmp2 = NULL;
 				self->priv->curr_status = (_tmp2 = power_GetBatteryStatus (self), (self->priv->curr_status = (g_free (self->priv->curr_status), NULL)), _tmp2);
 			} else {
-				g_warning ("power.vala:80: DBus path for %s couldn't be set up properly", self->priv->name);
+				g_warning ("power.vala:83: DBus path for %s couldn't be set up properly", self->priv->name);
 				g_source_remove (self->priv->_energy_id);
 			}
 			dev = (g_free (dev), NULL);
@@ -508,24 +509,49 @@ GType power_get_type (void) {
 
 static void register_dbus (Power* obj) {
 	g_return_if_fail (IS_POWER (obj));
-	g_message ("power.vala:187: Registering DBus object at %s", power_get_dbus_path (obj));
+	g_message ("power.vala:172: Registering DBus object at %s", power_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, power_get_dbus_path (obj), G_OBJECT (obj));
 }
 
 
-G_MODULE_EXPORT gboolean power_init (ODevicedPlugin *plugin) {
-	GType type;
-	GList *list = NULL;
-	Power *obj;
-	type = power_get_type();
-	list = odeviced_compute_objects (plugin, type);
-	if(!list)
-		return FALSE;
-	g_list_foreach(list, (GFunc)register_dbus, NULL);
-	
-	return TRUE;
+static void _g_list_free_g_object_unref (GList* self) {
+	g_list_foreach (self, ((GFunc) (g_object_unref)), NULL);
+	g_list_free (self);
 }
 
+
+gboolean power_init (ODevicedPlugin* plugin) {
+	GType type;
+	GList* list;
+	GList* _tmp0;
+	gboolean _tmp3;
+	g_return_val_if_fail (ODEVICED_IS_PLUGIN (plugin), FALSE);
+	type = 0UL;
+	list = NULL;
+	type = TYPE_POWER;
+	_tmp0 = NULL;
+	list = (_tmp0 = odeviced_compute_objects (plugin, type), (list == NULL ? NULL : (list = (_g_list_free_g_object_unref (list), NULL))), _tmp0);
+	if (list == NULL) {
+		gboolean _tmp1;
+		return (_tmp1 = FALSE, (list == NULL ? NULL : (list = (_g_list_free_g_object_unref (list), NULL))), _tmp1);
+	}
+	{
+		GList* _obj_collection;
+		GList* _obj_it;
+		_obj_collection = list;
+		for (_obj_it = _obj_collection; _obj_it != NULL; _obj_it = _obj_it->next) {
+			Power* _tmp2;
+			Power* _obj;
+			_tmp2 = NULL;
+			_obj = (_tmp2 = ((Power*) (_obj_it->data)), (_tmp2 == NULL ? NULL : g_object_ref (_tmp2)));
+			{
+				register_dbus (_obj);
+				(_obj == NULL ? NULL : (_obj = (g_object_unref (_obj), NULL)));
+			}
+		}
+	}
+	return (_tmp3 = TRUE, (list == NULL ? NULL : (list = (_g_list_free_g_object_unref (list), NULL))), _tmp3);
+}
 
 
 static int _vala_strcmp0 (const char * str1, const char * str2) {

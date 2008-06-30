@@ -34,7 +34,7 @@ odeviced_SOURCES = \
 
 
 src/daemon/odeviced.vala.stamp: $(odeviced_VALASOURCES)
-	$(VALAC) -C --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0 --basedir $(top_srcdir) $^
+	$(VALAC) -C --library ./vapi/odeviced --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0 --basedir $(top_srcdir) $^
 	touch $@
 
 odeviced_LDADD = \
