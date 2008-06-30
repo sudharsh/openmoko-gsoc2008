@@ -77,12 +77,23 @@ static int write_alarm (struct rtc_wkalrm *alarm) {
 
 char* rtc_get_wakeup () {
 
-	struct rtc_wkalrm alarm;			
+	struct rtc_wkalrm alarm;
+	struct tm time;
 	gchar ret[20];
 
 	/* FIXME: is this even right? */
-	if(read_alarm (&alarm))		
-		strftime (ret, sizeof (ret), "%s", (struct tm *)&alarm.time);
+	if(read_alarm (&alarm))	{
+		time.tm_year = alarm.time.tm_year - 1900;
+		time.tm_mon = alarm.time.tm_mon - 1;
+		time.tm_sec = alarm.time.tm_sec;
+		time.tm_min = alarm.time.tm_min;
+		time.tm_hour = alarm.time.tm_hour;
+		time.tm_mday = alarm.time.tm_mday;
+		time.tm_wday = alarm.time.tm_wday;
+		time.tm_yday = alarm.time.tm_yday;
+		time.tm_isdst = alarm.time.tm_isdst;
+		strftime (ret, sizeof (ret), "%s", &time);
+	}
 
 	g_print ("%s\n", ret);
 	return g_strdup(ret);
