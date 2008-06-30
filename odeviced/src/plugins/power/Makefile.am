@@ -38,3 +38,8 @@ power_la_DEPENDENCIES = $(top_builddir)/config.h
 EXTRA_DIST = \
 	$(power_VALASOURCES) \
 	power.vala.stamp
+
+CLEANFILES = \
+	power.c \
+	power.h \
+	power.vala.stamp

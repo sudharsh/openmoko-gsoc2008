@@ -38,3 +38,8 @@ display_la_DEPENDENCIES = $(top_builddir)/config.h
 EXTRA_DIST = \
 	$(display_VALASOURCES) \
 	display.vala.stamp
+
+CLEANFILES = \
+	display.c \
+	display.h \
+	display.vala.stamp

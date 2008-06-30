@@ -61,7 +61,6 @@ char* display_GetName (Display* self);
 const char* display_get_node (Display* self);
 const char* display_get_dbus_path (Display* self);
 GType display_get_type (void);
-extern Display* display_obj;
 extern GList* display_list;
 gboolean display_init (ODevicedPlugin* plugin);
 

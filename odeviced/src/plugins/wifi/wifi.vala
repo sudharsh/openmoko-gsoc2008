@@ -39,7 +39,7 @@ namespace wifi {
 
 	public static WifiPlugin obj;
 
-	public bool init (ODeviced.Plugin plugin) {
+	public bool init (ODeviced.Plugin plugin) {		
 		obj = new WifiPlugin();
 		if(obj == null)
 			return false;
@@ -48,6 +48,3 @@ namespace wifi {
 		return true;
 	}
 }
-
-
-		

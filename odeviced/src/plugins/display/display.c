@@ -54,7 +54,6 @@ static gboolean _dbus_display_GetBacklightPower (Display* self, gboolean* result
 static gboolean _dbus_display_SetBacklightPower (Display* self, gboolean power, GError** error);
 static gboolean _dbus_display_GetName (Display* self, char** result, GError** error);
 static void display_dispose (GObject * obj);
-Display* display_obj = NULL;
 GList* display_list = NULL;
 static void _g_list_free_g_object_unref (GList* self);
 static void register_dbus (Display* obj);
@@ -389,7 +388,7 @@ gboolean display_init (ODevicedPlugin* plugin) {
 
 static void register_dbus (Display* obj) {
 	g_return_if_fail (IS_DISPLAY (obj));
-	g_message ("display.vala:122: Registering DBus object at %s", display_get_dbus_path (obj));
+	g_message ("display.vala:121: Registering DBus object at %s", display_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, display_get_dbus_path (obj), G_OBJECT (obj));
 }
 

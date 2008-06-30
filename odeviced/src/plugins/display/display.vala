@@ -99,7 +99,6 @@ public class Display: GLib.Object {
 
 namespace display {
 
-	public static Display obj;
 	public static List<Display> list;
 
 	public bool init (ODeviced.Plugin plugin) {

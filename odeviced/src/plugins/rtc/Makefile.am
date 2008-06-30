@@ -39,3 +39,8 @@ rtc_la_DEPENDENCIES = $(top_builddir)/config.h
 EXTRA_DIST = \
 	$(rtc_VALASOURCES) \
 	rtc.vala.stamp
+
+CLEANFILE = \
+	rtc.c \
+	rtc.h \
+	rtc.vala.stamp

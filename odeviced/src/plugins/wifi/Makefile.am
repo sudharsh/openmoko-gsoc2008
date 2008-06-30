@@ -39,3 +39,8 @@ wifi_la_DEPENDENCIES = $(top_builddir)/config.h
 EXTRA_DIST = \
 	$(wifi_VALASOURCES) \
 	wifi.vala.stamp
+
+CLEANFILES = \
+	wifi.c \
+	wifi.h \
+	wifi.vala.stamp
