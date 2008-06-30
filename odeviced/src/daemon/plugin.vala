@@ -21,7 +21,7 @@ using DBus;
 namespace ODeviced {
 
 
-	errordomain PluginError {
+	public errordomain PluginError {
 		LOAD_ERROR;
 	}
 
@@ -59,7 +59,11 @@ namespace ODeviced {
 		  }
 		*/
 		
-		protected KeyFile conf = new KeyFile();		
+		private KeyFile _conf = new KeyFile();
+		public KeyFile conf {
+			get { return _conf; }
+		}
+
 		private delegate bool InitFunc(Plugin plugin);
 		
 	    public string path {
@@ -80,11 +84,11 @@ namespace ODeviced {
 		construct {
 			Rand rand = new Rand();
 			this._handle = rand.int_range(10, 99);
-			var _conf  = ODeviced.Service.conf_dir_plugins + "/" + this.name + ".plugin";
+			var _conf_path  = ODeviced.Service.conf_dir_plugins + "/" + this.name + ".plugin";
 			try {
-				this.conf.load_from_file(_conf, KeyFileFlags.NONE);
-				this.conf.set_list_separator(',');
-				this._dbus_iface = this.conf.get_string (this.name, "dbus_interface");
+				this._conf.load_from_file(_conf_path, KeyFileFlags.NONE);
+				this._conf.set_list_separator(',');
+				this._dbus_iface = this._conf.get_string (this.name, "dbus_interface");
 			}
 			catch (GLib.Error error) {
 				critical("Plugin configuration file for %s malformed/not found : %s", this.name, error.message);
