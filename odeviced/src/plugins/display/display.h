@@ -26,6 +26,7 @@
 #include <glib-object.h>
 #include <stdlib.h>
 #include <string.h>
+#include <src/daemon/plugin.h>
 
 G_BEGIN_DECLS
 
@@ -41,10 +42,6 @@ typedef struct _Display Display;
 typedef struct _DisplayClass DisplayClass;
 typedef struct _DisplayPrivate DisplayPrivate;
 
-/*
- * This file exists to generate the sources.
- * $ valac -C backlight.vala --pkg dbus-glib-1
- */
 struct _Display {
 	GObject parent_instance;
 	DisplayPrivate * priv;
@@ -64,6 +61,9 @@ char* display_GetName (Display* self);
 const char* display_get_node (Display* self);
 const char* display_get_dbus_path (Display* self);
 GType display_get_type (void);
+extern Display* display_obj;
+extern GList* display_list;
+gboolean display_init (ODevicedPlugin* plugin);
 
 
 G_END_DECLS

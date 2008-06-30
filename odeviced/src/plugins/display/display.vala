@@ -19,13 +19,9 @@
  *
  */ 
 
-/*
- * This file exists to generate the sources.
- * $ valac -C backlight.vala --pkg dbus-glib-1
- */
-
 using DBus;
 using ODeviced;
+
 
 [DBus (name = "org.freesmartphone.Device.Display")]
 public class Display: GLib.Object {
@@ -33,11 +29,13 @@ public class Display: GLib.Object {
 	private int max_brightness;
 	private string name = new string();
 
+	[DBus (visible=false)]
 	public string node {
 		get;
 		construct;
 	}
 
+	[DBus (visible=false)]
 	public string dbus_path {
 		get;
 		construct;
@@ -58,7 +56,7 @@ public class Display: GLib.Object {
 			this.max_brightness = ODeviced.read_integer(this.node + "/max_brightness");
 		}
 
-		catch (Error e) {
+		catch (GLib.Error e) {
 			GLib.critical(e.message);
 		}
 	}
@@ -95,28 +93,32 @@ public class Display: GLib.Object {
 		return this.name;
 	}
 
-/* Using auto-detected sysfs nodes
-
-
-G_MODULE_EXPORT gboolean display_init (ODevicedPlugin *plugin) {
-	GType type;
-	GList *list = NULL;
-	Display *obj;
-	type = display_get_type();
-	list = odeviced_compute_objects (plugin, type);
-	if(!list)
-	return FALSE;
-	g_list_foreach(list, (GFunc)register_dbus, NULL);
-		
-	return TRUE;
-}
-
-*/
 
 }
 
 
-void register_dbus (Display obj) {
+namespace display {
+
+	public static Display obj;
+	public static List<Display> list;
+
+	public bool init (ODeviced.Plugin plugin) {
+		Type type;
+		type = typeof (Display);
+		list = ODeviced.compute_objects (plugin, type);
+		if (list == null)
+			return false;
+
+		foreach (Display _obj in list) {
+			register_dbus (_obj);
+		}
+
+		return true;
+	}
+}
+
+
+static void register_dbus (Display obj) {
 	GLib.message("Registering DBus object at %s", obj.dbus_path);
 	ODeviced.connection.register_object(obj.dbus_path, obj);
 }

@@ -20,10 +20,10 @@
  */
 
 #include "display.h"
+#include <src/daemon/helpers.h>
+#include <src/daemon/odeviced.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <dbus/dbus-glib.h>
-#include "helpers.h"
-#include "odeviced.h"
 #include <dbus/dbus-glib.h>
 
 
@@ -54,6 +54,9 @@ static gboolean _dbus_display_GetBacklightPower (Display* self, gboolean* result
 static gboolean _dbus_display_SetBacklightPower (Display* self, gboolean power, GError** error);
 static gboolean _dbus_display_GetName (Display* self, char** result, GError** error);
 static void display_dispose (GObject * obj);
+Display* display_obj = NULL;
+GList* display_list = NULL;
+static void _g_list_free_g_object_unref (GList* self);
 static void register_dbus (Display* obj);
 
 
@@ -200,11 +203,7 @@ static GObject * display_constructor (GType type, guint n_construct_properties, 
 			_file = g_key_file_new ();
 			g_key_file_load_from_file (_file, "/usr/share/odeviced/plugins/display.plugin", G_KEY_FILE_NONE, &inner_error);
 			if (inner_error != NULL) {
-				if (inner_error->domain == DBUS_GERROR) {
-					goto __catch8_dbus_gerror;
-				}
-				g_critical ("file %s: line %d: uncaught error: %s", __FILE__, __LINE__, inner_error->message);
-				g_clear_error (&inner_error);
+				goto __catch0_g_error;
 			}
 			dev = odeviced_get_device ();
 			_tmp0 = NULL;
@@ -215,17 +214,18 @@ static GObject * display_constructor (GType type, guint n_construct_properties, 
 			(_file == NULL ? NULL : (_file = (g_key_file_free (_file), NULL)));
 			dev = (g_free (dev), NULL);
 		}
-		goto __finally8;
-		__catch8_dbus_gerror:
+		goto __finally0;
+		__catch0_g_error:
 		{
 			GError * e;
 			e = inner_error;
 			inner_error = NULL;
 			{
 				g_critical (e->message);
+				(e == NULL ? NULL : (e = (g_error_free (e), NULL)));
 			}
 		}
-		__finally8:
+		__finally0:
 		;
 	}
 	return obj;
@@ -351,25 +351,48 @@ GType display_get_type (void) {
 }
 
 
+static void _g_list_free_g_object_unref (GList* self) {
+	g_list_foreach (self, ((GFunc) (g_object_unref)), NULL);
+	g_list_free (self);
+}
+
+
+gboolean display_init (ODevicedPlugin* plugin) {
+	GType type;
+	GList* _tmp0;
+	g_return_val_if_fail (ODEVICED_IS_PLUGIN (plugin), FALSE);
+	type = 0UL;
+	type = TYPE_DISPLAY;
+	_tmp0 = NULL;
+	display_list = (_tmp0 = odeviced_compute_objects (plugin, type), (display_list == NULL ? NULL : (display_list = (_g_list_free_g_object_unref (display_list), NULL))), _tmp0);
+	if (display_list == NULL) {
+		return FALSE;
+	}
+	{
+		GList* _obj_collection;
+		GList* _obj_it;
+		_obj_collection = display_list;
+		for (_obj_it = _obj_collection; _obj_it != NULL; _obj_it = _obj_it->next) {
+			Display* _tmp2;
+			Display* _obj;
+			_tmp2 = NULL;
+			_obj = (_tmp2 = ((Display*) (_obj_it->data)), (_tmp2 == NULL ? NULL : g_object_ref (_tmp2)));
+			{
+				register_dbus (_obj);
+				(_obj == NULL ? NULL : (_obj = (g_object_unref (_obj), NULL)));
+			}
+		}
+	}
+	return TRUE;
+}
+
+
 static void register_dbus (Display* obj) {
 	g_return_if_fail (IS_DISPLAY (obj));
-	g_message ("display.vala:120: Registering DBus object at %s", display_get_dbus_path (obj));
+	g_message ("display.vala:122: Registering DBus object at %s", display_get_dbus_path (obj));
 	dbus_g_connection_register_g_object (odeviced_connection, display_get_dbus_path (obj), G_OBJECT (obj));
 }
 
-
-G_MODULE_EXPORT gboolean display_init (ODevicedPlugin *plugin) {
-	GType type;
-	GList *list = NULL;
-	Display *obj;
-	type = display_get_type();
-	list = odeviced_compute_objects (plugin, type);
-	if(!list)
-		return FALSE;
-	g_list_foreach(list, (GFunc)register_dbus, NULL);
-	
-	return TRUE;
-}
 
 
 static void g_cclosure_user_marshal_BOOLEAN__POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
