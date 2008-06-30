@@ -20,7 +20,9 @@
  */
 
 #include "wifi.h"
-#include <src/daemon/helpers.h>
+#include <dbus/dbus-glib-lowlevel.h>
+#include <dbus/dbus-glib.h>
+#include <stdio.h>
 #include <dbus/dbus-glib.h>
 
 
@@ -32,24 +34,76 @@ enum  {
 static gpointer wifi_plugin_parent_class = NULL;
 static gboolean _dbus_wifi_plugin_GetStatus (WifiPlugin* self, const char* iface, gboolean* result, GError** error);
 static gboolean _dbus_wifi_plugin_SetControl (WifiPlugin* self, const char* iface, gboolean enable, gboolean* result, GError** error);
-WifiPlugin* wifi_obj = NULL;
 
 
 static void g_cclosure_user_marshal_BOOLEAN__STRING_POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 static void g_cclosure_user_marshal_BOOLEAN__STRING_BOOLEAN_POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data);
 
+
 gboolean wifi_plugin_GetStatus (WifiPlugin* self, const char* iface) {
 	g_return_val_if_fail (IS_WIFI_PLUGIN (self), FALSE);
 	g_return_val_if_fail (iface != NULL, FALSE);
-	g_message ("wifi.vala:33: %b", wifi_get_status (iface));
-	return TRUE;
+	struct iwreq wrq;
+	int sock = socket (AF_INET, SOCK_DGRAM, 0);
+	if (!sock)
+	{
+		perror( "Unable to open socket" );
+		return 0;
+	}
+
+	memset (&wrq, 0, sizeof (struct iwreq));
+	strncpy ((char *)&wrq.ifr_name, iface, IFNAMSIZ);
+
+	if (ioctl (sock, SIOCGIWTXPOW, &wrq) != 0)
+	{
+		perror( "Error performing ioctl" );
+		close (sock);
+		return 0;
+	}
+	
+	close (sock);
+
+	return !wrq.u.txpower.disabled;
+
 }
 
 
 gboolean wifi_plugin_SetControl (WifiPlugin* self, const char* iface, gboolean enable) {
 	g_return_val_if_fail (IS_WIFI_PLUGIN (self), FALSE);
 	g_return_val_if_fail (iface != NULL, FALSE);
-	return wifi_set_control (iface, enable);
+	struct iwreq wrq;
+	int sock = socket (AF_INET, SOCK_DGRAM, 0);
+	if (!sock)
+	{
+		perror( "Unable to open socket" );
+		return 0;
+	}
+
+	memset (&wrq, 0, sizeof (struct iwreq));
+	strncpy ((char *)&wrq.ifr_name, iface, IFNAMSIZ);
+	
+	if (ioctl (sock, SIOCGIWTXPOW, &wrq) != 0)
+	{
+		perror( "Error performing ioctl" );
+		close (sock);
+		return 0;
+	}
+
+	if ( wrq.u.txpower.disabled != !enable )
+	{
+		wrq.u.txpower.disabled = !enable;
+
+		if (ioctl (sock, SIOCSIWTXPOW, &wrq) != 0)
+		{
+			perror( "Error performing ioctl" );
+			close (sock);
+			return 0;
+		}
+	}
+	
+	close (sock);
+	return 1;
+	
 }
 
 
@@ -100,19 +154,18 @@ GType wifi_plugin_get_type (void) {
 }
 
 
-gboolean wifi_init (ODevicedPlugin* plugin) {
-	WifiPlugin* _tmp0;
-	g_return_val_if_fail (ODEVICED_IS_PLUGIN (plugin), FALSE);
-	_tmp0 = NULL;
-	wifi_obj = (_tmp0 = wifi_plugin_new (), (wifi_obj == NULL ? NULL : (wifi_obj = (g_object_unref (wifi_obj), NULL))), _tmp0);
-	if (wifi_obj == NULL) {
+G_MODULE_EXPORT gboolean wifi_init (ODevicedPlugin *plugin) {
+
+	WifiPlugin* wifiobj;
+	wifiobj = wifi_plugin_new ();
+	if(wifiobj) 
+		odeviced_register_dbus_object (plugin, G_OBJECT(wifiobj));
+	else
 		return FALSE;
-	}
-	odeviced_register_dbus_object (plugin, G_OBJECT (wifi_obj));
+	
 	return TRUE;
-}
-
-
+  
+ }
 
 static void g_cclosure_user_marshal_BOOLEAN__STRING_POINTER_POINTER (GClosure * closure, GValue * return_value, guint n_param_values, const GValue * param_values, gpointer invocation_hint, gpointer marshal_data) {
 	typedef gboolean (*GMarshalFunc_BOOLEAN__STRING_POINTER_POINTER) (gpointer data1, const char* arg_1, gpointer arg_2, gpointer arg_3, gpointer data2);

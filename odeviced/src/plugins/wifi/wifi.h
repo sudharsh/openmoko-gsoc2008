@@ -22,11 +22,21 @@
 #ifndef __WIFI_H__
 #define __WIFI_H__
 
-#include <glib.h>
-#include <glib-object.h>
+#include "helpers.h"
+#include "plugin.h"
+
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <src/daemon/plugin.h>
+#include <netdb.h>
+#include <unistd.h>
+
+#include <linux/if.h>
+#include <linux/wireless.h>
+
 
 G_BEGIN_DECLS
 
@@ -58,8 +68,7 @@ gboolean wifi_plugin_GetStatus (WifiPlugin* self, const char* iface);
 gboolean wifi_plugin_SetControl (WifiPlugin* self, const char* iface, gboolean enable);
 WifiPlugin* wifi_plugin_new (void);
 GType wifi_plugin_get_type (void);
-extern WifiPlugin* wifi_obj;
-gboolean wifi_init (ODevicedPlugin* plugin);
+gint init (void);
 
 
 G_END_DECLS

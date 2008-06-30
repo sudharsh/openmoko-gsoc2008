@@ -26,7 +26,6 @@
 #include <glib-object.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plugin.h"
 
 G_BEGIN_DECLS
 
@@ -67,7 +66,6 @@ gint power_GetEnergyPercentage (Power* self);
 const char* power_get_node (Power* self);
 const char* power_get_dbus_path (Power* self);
 GType power_get_type (void);
-gboolean power_init (ODevicedPlugin* plugin);
 
 
 G_END_DECLS
