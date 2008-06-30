@@ -26,53 +26,102 @@
 
 #include <glib.h>
 
+#define RTC_DEV "/dev/rtc"
 
-char* rtc_get_wakeup () {
 
-	int fd, res;
-	struct rtc_wkalrm alarm;			
-	gchar* ret;
-
-	fd = open("/dev/rtc", O_RDONLY);
-	if (fd < 0) {
-		g_message("Couldn't open rtc device");
-		close (fd);
-		return "0";
-	}
+static int read_alarm (struct rtc_wkalrm *alarm) {
 	
-	res = ioctl(fd, RTC_WKALM_RD, &alarm);
+	int res;
+	int fd = open (RTC_DEV, O_RDONLY);
+	if (fd < 0) {
+		perror ("Couldn't open rtc device");
+		close (fd);
+		return 0;
+	}
+
+	res = ioctl(fd, RTC_WKALM_RD, alarm);
 	if (res < 0) {
 		perror("ioctl(RTC_WKALM_RD) error");
 		g_message ("ioctl call unsuccessful");
 		close (fd);
-		return "0";
+		return 0;
 	}
 	
-	ret = g_strdup_printf("%d", (alarm.time.tm_sec + (60 * alarm.time.tm_min) 
-			     + (60 * 60 * alarm.time.tm_hour)));
 	close (fd);
-	return ret;
+	return 1;
 }
 
 
-/* Not yet fully implemented..just exists for the sake of it */
+static int write_alarm (struct rtc_wkalrm *alarm) {
+
+	int res;
+	int fd = open (RTC_DEV, O_RDONLY);
+	if (fd < 0) {
+		perror ("Couldn't open rtc device");
+		close (fd);
+		return 0;
+	}
+
+	res = ioctl (fd, RTC_WKALM_SET, alarm);
+	if (res < 0) {
+		perror ("ioctl(RTC_WKALM_SET) error");
+		close (fd);
+		return 0;
+	}
+	
+	close (fd);
+	return 1;
+}
+
+
+
+char* rtc_get_wakeup () {
+
+	struct rtc_wkalrm alarm;			
+	gchar ret[20];
+
+	/* FIXME: is this even right? */
+	if(read_alarm (&alarm))		
+		strftime (ret, sizeof (ret), "%s", (struct tm *)&alarm.time);
+
+	g_print ("%s\n", ret);
+	return g_strdup(ret);
+}
+
+
+/* Not yet fully implemented..*/
 void rtc_set_currtime (const char* seconds) {
 
 	int fd, res;
-	struct rtc_time time;
-	fd = open("/dev/rtc", O_RDONLY);
+	unsigned long epoch;
+ 
+	fd = open(RTC_DEV, O_RDONLY);
 	if (fd < 0) { 
-		g_message ("Couldn't open rtc device");
+		perror ("Couldn't open rtc device");
 		close (fd);
 		return;
 	}
 	
-	time.tm_sec = g_printf("%s", seconds);
-	
-	res = ioctl(fd, RTC_SET_TIME, &time);
+	epoch = g_printf("%s", seconds);
+	g_print ("%d\n", epoch);
+	res = ioctl(fd, RTC_EPOCH_SET, &epoch);
 	if (res < 1)
-		perror ("ioctl(RTC_SET_TIME) unsuccessful");
+		perror ("ioctl(RTC_EPOCH_SET) unsuccessful");
 		  	  
 	close (fd);
 	
 }
+
+
+
+void rtc_disable_alarm () {
+	
+	struct rtc_wkalrm alarm;
+	
+	if (read_alarm (&alarm))
+		alarm.enabled = 0;
+
+	write_alarm (&alarm);
+
+}
+	

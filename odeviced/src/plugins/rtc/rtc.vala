@@ -68,10 +68,6 @@ public class RealTimeClock: GLib.Object {
 
 
 	public string GetWakeupTime() {
-		string ret;
-		int fd;
-		int res;
-
 		if (FileUtils.test (this.node + "/wakealarm", FileTest.EXISTS))
 			return ODeviced.read_string (this.node + "/wakealarm");
 		
