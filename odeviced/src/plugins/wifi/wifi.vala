@@ -19,9 +19,6 @@
  *
  */ 
 
-/* This file exists to generate wifi.[c/h], being the lazy bum I am
-   $ valac wifi.vala --pkg dbus-glib-1 -C */
-
 using GLib;
 using ODeviced;
 using WifiHelpers;
