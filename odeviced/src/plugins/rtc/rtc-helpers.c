@@ -83,6 +83,9 @@ char* rtc_get_wakeup () {
 
 	/* FIXME: is this even right? */
 	if(read_alarm (&alarm))	{
+		if (!alarm.enabled)
+			g_strdup ("0");
+			
 		time.tm_year = alarm.time.tm_year - 1900;
 		time.tm_mon = alarm.time.tm_mon - 1;
 		time.tm_sec = alarm.time.tm_sec;
