@@ -19,19 +19,10 @@
  *
  */ 
 
-/*
-#include <sys/types.h>
-#include <stdio.h>
-#include <fcntl.h>
-*/
 
 using DBus;
 using GLib;
 using ODeviced;
-
-namespace InputSpace {
-	public PollFD[] pollfd;
-}
 
 [DBus (name = "org.freesmartphone.Device.Input")]
 public class Input: GLib.Object {
@@ -41,88 +32,66 @@ public class Input: GLib.Object {
 	private int auxbutton_keycode;
 	private int powerbutton_keycode;
 	private int touchscreen_keycode;
+	private string[] ignore_list;
+	private List<IOChannel> channels = new List<IOChannel> ();
 
    	public signal void @event(string name, string action, int seconds);
 
-	private static bool prepare (Source source, ref int timeout) {
-		return false;
-	}
-	
-	private static bool check (Source source) {
 
-		foreach (PollFD _fd in InputSpace.pollfd) {
-			if ((_fd.revents & IOCondition.IN) != 0)
-				return true;
-		}
-		return false;
-	}
-	
-	private static bool dispatch (Source source, SourceFunc cback) {
-		return true;
-	}
-
-
-	construct {
+   	construct {
 		
 		KeyFile _conf = new KeyFile();
 		Dir dir = Dir.open(dev_node, 0);
 
-		SourceFuncs funcs = new SourceFuncs ();
-		/* This is crappy, Must look for a way to do this in vala */
-		/*
-		  static GSourceFuncs funcs = {
-		      input_prepare,
-			  input_check,
-			  input_dispatch,
-			  NULL,
-		  };
-
-		  watcher = g_source_new (&funcs, ((guint) (sizeof (GSource))));
-		*/   
-		  
-		Source watcher = new Source(funcs, (uint)sizeof(Source));
 		try {
 			
 			_conf.load_from_file("/usr/share/odeviced/plugins/input.plugin", KeyFileFlags.NONE);
+			_conf.set_list_separator (',');
 			this.device = ODeviced.get_device();
 			this.auxbutton_keycode = _conf.get_integer (device, "auxbutton");
 			this.powerbutton_keycode = _conf.get_integer (device, "powerbutton");
 			this.touchscreen_keycode = _conf.get_integer (device, "touchscreen");
-			dev_node = dir.read_name();
-			int i = 0;
-			while (dev_node!=null) {
-				if (dev_node.has_prefix ("event")) {
-					var filename = "/dev/input/event%d".printf(i);
-					InputSpace.pollfd[i].fd = 0; /* input_space_pollfd[i].fd = open(g_strdup_printf("/dev/input/event%d", i), O_RDONLY); */
-					InputSpace.pollfd[i].revents = 0;
-					InputSpace.pollfd[i].events = IOCondition.IN | IOCondition.HUP | IOCondition.ERR;
-					var _fd = InputSpace.pollfd[i];
-					watcher.add_poll (ref _fd);
-					i++;
+			this.ignore_list = _conf.get_string_list (device, "ignore_input");
+			
+			var name = dir.read_name ();
+			while (name!=null) {
+				/* Wait till vala has support for "in" operator in if clauses*/
+				if (name.has_prefix ("event") && !(name[5] == '2' || name[5] == '3')) {
+					var _temp = new IOChannel.file (dev_node+"/"+name, "r");
+					channels.append (_temp);
+					_temp.add_watch (IOCondition.IN, (IOFunc) this.onActivity);
 				}
-				dev_node = dir.read_name();
+				name = dir.read_name();
+
 			}
-			watcher.attach (null);
-						
 		}
+
 		catch (GLib.Error error) {
 			message (error.message);
 		}
+
 	}
 
-/*
-G_MODULE_EXPORT gboolean input_init (ODevicedPlugin *plugin) {
-
-	Input* inputobj;
-	inputobj = input_new ();
-	if(inputobj) 
-		odeviced_register_dbus_object (plugin, G_OBJECT(inputobj));
-	else
-		return FALSE;
 	
-	return TRUE;
-  
-}
-*/
+	static void onActivity (IOChannel source, IOCondition condition, string name) {
+		message ("Activity in %s", name);
+	}
 
 }
+
+
+namespace input {
+
+	public static Input obj;
+
+	public bool init (ODeviced.Plugin plugin) {		
+		obj = new Input();
+		if(obj == null)
+			return false;
+		
+		ODeviced.register_dbus_object (plugin, obj);
+		return true;
+	}
+}
+
+
