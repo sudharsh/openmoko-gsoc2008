@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # Just a dummy frameworkd service to keep up with zhone
 
+# (C) Sudharshan "Sup3rkiddo" S <sudharsh@gmail.com>
+# under GPL
+
 import dbus, dbus.service, dbus.glib, dbus.mainloop.glib
 from gobject import MainLoop
 
