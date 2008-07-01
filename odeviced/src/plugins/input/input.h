@@ -26,8 +26,8 @@
 #include <glib-object.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-#include <sys/types.h>
+#include <src/daemon/plugin.h>
+
 G_BEGIN_DECLS
 
 
@@ -54,6 +54,8 @@ struct _InputClass {
 
 Input* input_new (void);
 GType input_get_type (void);
+extern Input* input_obj;
+gboolean input_init (ODevicedPlugin* plugin);
 
 
 G_END_DECLS
