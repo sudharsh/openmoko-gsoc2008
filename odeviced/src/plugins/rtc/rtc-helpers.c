@@ -24,6 +24,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <time.h>
+
 #include <glib.h>
 
 #define RTC_DEV "/dev/rtc"
@@ -106,24 +108,14 @@ char* rtc_get_wakeup () {
 /* Not yet fully implemented..*/
 void rtc_set_currtime (const char* seconds) {
 
-	int fd, res;
+	time_t time;
 	unsigned long epoch;
  
-	fd = open(RTC_DEV, O_RDONLY);
-	if (fd < 0) { 
-		perror ("Couldn't open rtc device");
-		close (fd);
-		return;
-	}
-	
-	epoch = g_printf("%s", seconds);
-	g_print ("%d\n", epoch);
-	res = ioctl(fd, RTC_EPOCH_SET, &epoch);
-	if (res < 1)
-		perror ("ioctl(RTC_EPOCH_SET) unsuccessful");
+	epoch = atol (seconds);
+	time = (time_t) epoch;
+	g_print ("%ld\n", epoch);
+	stime (&time);
 		  	  
-	close (fd);
-	
 }
 
 
