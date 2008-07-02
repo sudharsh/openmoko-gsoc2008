@@ -74,7 +74,7 @@ public class Input: GLib.Object {
 
 	
 	static bool onActivity (IOChannel source, IOCondition condition) {
-		message ("Activity in %s", name);
+		message ("Activity");
 		return false;
 	}
 
