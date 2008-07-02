@@ -125,8 +125,16 @@ namespace ODeviced {
 		node_file.printf("%d", val);
 		return true;
 	}
- 
 
+	
+	public static bool write_string (string node, string data) {
+		FileStream node_file = FileStream.open (node, "w");
+		if (node_file == null)
+			return false;
+		node_file.printf ("%s", data);		
+		return true;
+	}
+		
 }
 
 

@@ -79,6 +79,12 @@ public class RealTimeClock: GLib.Object {
 		RTCHelpers.set_curr_time (seconds);	   
 	}
 
+
+	/* Move this to Power plugin? */
+	public void Suspend() {
+		ODeviced.write_string ("/sys/power/state", "mem");
+	}
+
 }
 
 
