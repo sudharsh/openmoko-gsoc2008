@@ -76,6 +76,27 @@ static int write_alarm (struct rtc_wkalrm *alarm) {
 }
 
 
+static int write_rtc_time (struct rtc_time *time) {
+	
+	int res;
+	int fd = open (RTC_DEV, O_RDONLY);
+	if (fd < 0) {
+		perror ("Couldn't open rtc device");
+		close (fd);
+		return 0;
+	}
+
+	res = ioctl (fd, RTC_SET_TIME, time);
+	if (res < 0) {
+		perror ("ioctl(RTC_SET_TIME) error");
+		close (fd);
+		return 0;
+	}
+
+	close (fd);
+	return 1;
+}
+
 
 char* rtc_get_wakeup () {
 
@@ -105,16 +126,17 @@ char* rtc_get_wakeup () {
 }
 
 
-/* Not yet fully implemented..*/
 void rtc_set_currtime (const char* seconds) {
 
-	time_t time;
+	struct tm *time;
 	unsigned long epoch;
- 
+	time_t _tt;
+
 	epoch = atol (seconds);
-	time = (time_t) epoch;
-	g_print ("%ld\n", epoch);
-	stime (&time);
+	_tt = (time_t)epoch;
+	time = gmtime (&_tt);
+		
+	write_rtc_time ((struct rtc_time *)time);
 		  	  
 }
 
