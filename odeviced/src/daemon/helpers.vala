@@ -63,7 +63,6 @@ namespace ODeviced {
 					var obj = GLib.Object.new(klass, "node", dev_node + "/" + node,
 											  "dbus_path", dbus_path + "/" + node);
 					plugin.dbus_object_paths.append(dbus_path + "/" + node);
-					message("Created object for sysfs node, %s", dev_node + "/" + node);
 					objList.append(obj);
 					node = dir.read_name();
 					
@@ -81,12 +80,22 @@ namespace ODeviced {
 	}
 
 
+
 	public static string compute_name (string path) {
 		string[] split_list = path.split("/", 0);
 		var _length = strv_length(split_list);
 		return split_list[_length - 1];
 	}
 
+
+
+	public static string cleanup_dbus_path (string dbus_path) {
+		Regex regex = new Regex ("-|:", RegexCompileFlags.CASELESS, RegexMatchFlags.NOTEMPTY);
+		var foo = regex.replace_literal (dbus_path, -1, 0, "_", RegexMatchFlags.NOTEMPTY);
+		message (foo);
+		return foo;
+	}		
+	
 
 	/* I know =(, Ideally these should have been a single function */
 	public static int read_integer(string node) {

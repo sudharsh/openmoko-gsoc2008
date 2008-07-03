@@ -63,4 +63,5 @@ src/plugins/rtc/Makefile
 src/plugins/display/Makefile
 src/plugins/power/Makefile
 src/plugins/input/Makefile
+src/plugins/led/Makefile
 ])

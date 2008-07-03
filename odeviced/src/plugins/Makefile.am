@@ -3,5 +3,6 @@ SUBDIRS = \
 	display \
 	rtc \
 	power \
-	input
+	input \
+	led
 
