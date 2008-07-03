@@ -63,7 +63,7 @@ static int write_alarm (struct rtc_wkalrm *alarm) {
 		close (fd);
 		return 0;
 	}
-
+	
 	res = ioctl (fd, RTC_WKALM_SET, alarm);
 	if (res < 0) {
 		perror ("ioctl(RTC_WKALM_SET) error");
@@ -140,6 +140,30 @@ void rtc_set_currtime (const char* seconds) {
 		  	  
 }
 
+
+void rtc_set_wakeup (const char* seconds) {
+	
+	struct rtc_wkalrm alarm;
+	struct tm *time;	
+	unsigned long epoch;
+	time_t _tt;
+
+	epoch = atol (seconds);
+	_tt = (time_t)epoch;
+	time = gmtime (&_tt);
+	alarm.time.tm_year = time->tm_year;
+	alarm.time.tm_mon = time->tm_mon;
+	alarm.time.tm_sec = time->tm_sec;
+	alarm.time.tm_min = time->tm_min;
+	alarm.time.tm_hour = time->tm_hour;
+	alarm.time.tm_mday = time->tm_mday;
+	alarm.time.tm_wday = time->tm_wday;
+	alarm.time.tm_yday = time->tm_yday;
+	alarm.time.tm_isdst = time->tm_isdst;
+	alarm.enabled = 1;
+
+	write_alarm (&alarm);
+}
 
 
 void rtc_disable_alarm () {
