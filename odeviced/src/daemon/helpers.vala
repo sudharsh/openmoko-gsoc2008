@@ -60,6 +60,7 @@ namespace ODeviced {
 				string node = dir.read_name();
 				var i = 0;
 				while(node!=null) {
+					node = ODeviced.cleanup_dbus_path (node);
 					var obj = GLib.Object.new(klass, "node", dev_node + "/" + node,
 											  "dbus_path", dbus_path + "/" + node);
 					plugin.dbus_object_paths.append(dbus_path + "/" + node);
@@ -68,7 +69,6 @@ namespace ODeviced {
 					
 				}
 			}
-
 			catch (GLib.FileError e) {
 				message ("Device class: %s doesn't exist", dev_class);
 			}
@@ -80,7 +80,7 @@ namespace ODeviced {
 	}
 
 
-
+	/* plugins using sysfs could use this to create DBus object paths automatically */
 	public static string compute_name (string path) {
 		string[] split_list = path.split("/", 0);
 		var _length = strv_length(split_list);
@@ -89,6 +89,7 @@ namespace ODeviced {
 
 
 
+	/* DBus doesn't like ':' or '-' in object paths */
 	public static string cleanup_dbus_path (string dbus_path) {
 		Regex regex = new Regex ("-|:", RegexCompileFlags.CASELESS, RegexMatchFlags.NOTEMPTY);
 		var foo = regex.replace_literal (dbus_path, -1, 0, "_", RegexMatchFlags.NOTEMPTY);
