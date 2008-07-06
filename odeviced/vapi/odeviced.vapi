@@ -37,9 +37,13 @@ namespace ODeviced {
 	[CCode (cheader_filename = "src/daemon/helpers.h")]
 	public static string compute_name (string path);
 	[CCode (cheader_filename = "src/daemon/helpers.h")]
+	public static string cleanup_dbus_path (string dbus_path);
+	[CCode (cheader_filename = "src/daemon/helpers.h")]
 	public static int read_integer (string node);
 	[CCode (cheader_filename = "src/daemon/helpers.h")]
 	public static string? read_string (string node);
 	[CCode (cheader_filename = "src/daemon/helpers.h")]
 	public static bool write_integer (string node, int val);
+	[CCode (cheader_filename = "src/daemon/helpers.h")]
+	public static bool write_string (string node, string data);
 }

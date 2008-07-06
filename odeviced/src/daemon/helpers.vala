@@ -91,10 +91,14 @@ namespace ODeviced {
 
 	/* DBus doesn't like ':' or '-' in object paths */
 	public static string cleanup_dbus_path (string dbus_path) {
-		Regex regex = new Regex ("-|:", RegexCompileFlags.CASELESS, RegexMatchFlags.NOTEMPTY);
-		var foo = regex.replace_literal (dbus_path, -1, 0, "_", RegexMatchFlags.NOTEMPTY);
-		message (foo);
-		return foo;
+		try {
+			Regex regex = new Regex ("-|:", RegexCompileFlags.CASELESS, RegexMatchFlags.NOTEMPTY);
+			return regex.replace_literal (dbus_path, -1, 0, "_", RegexMatchFlags.NOTEMPTY);
+		}
+		catch (GLib.RegexError error) {
+			message ("Couldn't cleanup dbus_path: %s", error.message);
+		}
+		return dbus_path;
 	}		
 	
 
