@@ -104,19 +104,23 @@ namespace ODeviced {
 				throw new PluginError.LOAD_ERROR("_library is null");
 			}
 			
-			this._library.make_resident();
-			
 			var _symbol = null;
 			if(!this._library.symbol(name + "_init", out _symbol)) {
 				throw new PluginError.LOAD_ERROR("Malformed odeviced plugin");
 			}
 
 			InitFunc func = (InitFunc)_symbol;
-			return func(this);
+			var success = func(this);
+			if (!success) {
+				message (Module.error());
+			}
+			else
+				this._library.make_resident();
+			
+			return success;
 									
 		}
-		
-				
+						
 	}
 
 
