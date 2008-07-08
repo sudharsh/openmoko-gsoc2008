@@ -32,7 +32,7 @@ public class Power: GLib.Object {
 	
 	private string status = new string();
 	private KeyFile conf = new KeyFile();
-	private int max_energy;
+	private int max_energy = 0;
 	private int low_energy_threshold;
 	private int status_poll_interval;
 	private uint _energy_id;
@@ -68,62 +68,66 @@ public class Power: GLib.Object {
 		try {
 			var dev = ODeviced.get_device();
 			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
-			var _min = conf.get_integer(dev, "low_energy_threshold");
 			this.status_poll_interval = conf.get_integer(dev, "status_poll_interval");
-			/*this.power_supply_node = conf.get_string(dev, "power_supply_node");*/
+			this.low_energy_threshold = conf.get_integer(dev, "low_energy_threshold");
+
+			this._status_id = Timeout.add_seconds(this.status_poll_interval, poll_status);
 			this.name = ODeviced.compute_name (this.dbus_path);
-			this.max_energy = ODeviced.read_integer (this.node + "/energy_full");
-			if(this.max_energy != -1) {
-				/* Prolly use this for warning during low battery */
-				this.low_energy_threshold = this.max_energy * (_min/100);
-				this._status_id = Timeout.add_seconds(this.status_poll_interval, poll_status);
-				this.curr_status = GetBatteryStatus();
-			}
-			else {
-				warning("DBus path for %s couldn't be set up properly", this.name);
-				Source.remove(this._energy_id);
-			}
+			this.curr_status = GetBatteryStatus();
+			
+			if (!FileUtils.test (this.node + "/capacity", FileTest.EXISTS))
+				this.max_energy = ODeviced.read_integer (this.node + "/energy_full");
 		}
-		catch (GLib.Error error) {
+		catch (GLib.KeyFileError error) {
 			critical(error.message);
 		}
 	}
+
 
 	public int GetCurrentEnergy() {
 		return ODeviced.read_integer(this.node + "/energy_now");
 	}
 
+
 	public int GetMaxEnergy() {
 		return this.max_energy;
 	}
+
 
 	public int GetEnergyFullDesign() {
 		return ODeviced.read_integer(this.node + "/energy_full_design");
 	}
 
+
 	public string GetBatteryStatus() {
 		return ODeviced.read_string(this.node + "/status");
 	}
+
 
 	public string GetName() {
 		return this.name;
 	}
 
+
 	public string GetType() {
 		return ODeviced.read_string(this.node + "/type");
 	}
+
 
 	public string GetModel() {
 		return ODeviced.read_string(this.node + "/model_name");
 	}
 
+
 	public string GetManufacturer() {
 		return ODeviced.read_string(this.node + "/manufacturer");
 	}
 
+
 	public string GetTechnology() {
 		return ODeviced.read_string(this.node + "/technology");
 	}
+
 
 	public int GetEnergyPercentage() {
 		/* Some devices have capacity, just return that */
@@ -135,20 +139,22 @@ public class Power: GLib.Object {
 		return (int)(100.0 * ((float)_curr / (float)this.max_energy));
 	}
 
+
 	private bool poll_energy() {
-		var _curr = GetCurrentEnergy();
+		var _curr = GetEnergyPercentage();
 		if (_curr == -1) { 
 			Source.remove(_energy_id);
 			return false;
 		}
 
-		message("Current energy, %d", _curr);
+		message("Current capacity, %d", _curr);
 		if(_curr < this.low_energy_threshold) {
 			message("%s\tLow energy warning", this.name);
 			this.low_battery(_curr);
 		}
 		return true;
 	}
+
 
 	private bool poll_status() {
 		var stat = GetBatteryStatus();
@@ -158,7 +164,7 @@ public class Power: GLib.Object {
 		}
 
 		if(stat != this.curr_status) {
-			message("%s\tStatus changed, %s", this.name, stat);
+			message("%s\tStatus changed, %s ->", this.name, stat);
 			this.battery_status_changed(stat);
 			this.curr_status = stat;
 		}
