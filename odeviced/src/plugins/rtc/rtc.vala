@@ -78,8 +78,8 @@ public class RealTimeClock: GLib.Object {
 	public void SetWakeupTime(string seconds) {
 		if (FileUtils.test (this.node + "/wakealarm", FileTest.EXISTS))
 			ODeviced.write_string (this.node + "/wakealarm", seconds);
-
-		RTCHelpers.set_wakeup_time(seconds);
+		else
+			RTCHelpers.set_wakeup_time(seconds);
 	}
 
 		
