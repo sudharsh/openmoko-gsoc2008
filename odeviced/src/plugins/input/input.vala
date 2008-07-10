@@ -28,10 +28,10 @@ using ODeviced;
 public class Input: GLib.Object {
 
 	private string device = new string();
+	private KeyFile conf = new KeyFile();
 	private string dev_node = "/dev/input";
-	private int auxbutton_keycode;
-	private int powerbutton_keycode;
-	private int touchscreen_keycode;
+	private HashTable<int, string> watches = new HashTable<int, string> ((HashFunc)str_hash, (EqualFunc)int_equal);
+
 	private string[] ignore_list;
 	private List<IOChannel> channels = new List<IOChannel> ();
 
@@ -40,18 +40,16 @@ public class Input: GLib.Object {
 
    	construct {
 		
-		KeyFile _conf = new KeyFile();
 		Dir dir = Dir.open(dev_node, 0);
 
 		try {
 			
-			_conf.load_from_file("/usr/share/odeviced/plugins/input.plugin", KeyFileFlags.NONE);
-			_conf.set_list_separator (',');
+			conf.load_from_file("/usr/share/odeviced/plugins/input.plugin", KeyFileFlags.NONE);
+			conf.set_list_separator (',');
 			this.device = ODeviced.get_device();
-			this.auxbutton_keycode = _conf.get_integer (device, "auxbutton");
-			this.powerbutton_keycode = _conf.get_integer (device, "powerbutton");
-			this.touchscreen_keycode = _conf.get_integer (device, "touchscreen");
-			this.ignore_list = _conf.get_string_list (device, "ignore_input");
+			this.ignore_list = conf.get_string_list (device, "ignore_input");
+			var _watchfor = conf.get_string_list (device, "watchfor");
+			compute_watches (_watchfor);
 			
 			var name = dir.read_name ();
 			while (name!=null) {
@@ -73,10 +71,18 @@ public class Input: GLib.Object {
 	}
 
 	
-	static bool onActivity (IOChannel source, IOCondition condition) {
+	private static bool onActivity (IOChannel source, IOCondition condition) {
 		message ("Activity");
 		return false;
 	}
+
+
+	private void compute_watches (string[] watchfor) {
+		foreach (string key in watchfor) {
+			int keycode = conf.get_integer (device, key);
+			this.watches.insert (keycode, key);
+		}
+	}		
 
 }
 

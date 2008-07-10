@@ -7,4 +7,10 @@ dbus_object_path=/org/freesmartphone/Device/Input
 auxbutton=169
 powerbutton=116
 touchscreen=330
+
+#FIXME: Hardcoded in input.vala
 ignore_input=2,3
+
+watchfor=auxbutton,powerbutton
+
+
