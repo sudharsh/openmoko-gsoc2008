@@ -30,7 +30,7 @@ public class Input: GLib.Object {
 	private string device = new string();
 	private KeyFile conf = new KeyFile();
 	private string dev_node = "/dev/input";
-	private HashTable<int, string> watches = new HashTable<int, string> ((HashFunc)str_hash, (EqualFunc)int_equal);
+	private HashTable<string, string> watches = new HashTable<int, string> ((HashFunc)str_hash, (EqualFunc)str_equal);
 
 	private string[] ignore_list;
 	private List<IOChannel> channels = new List<IOChannel> ();
@@ -79,7 +79,7 @@ public class Input: GLib.Object {
 
 	private void compute_watches (string[] watchfor) {
 		foreach (string key in watchfor) {
-			int keycode = conf.get_integer (device, key);
+			string keycode = conf.get_string (device, key);
 			this.watches.insert (keycode, key);
 		}
 	}		
