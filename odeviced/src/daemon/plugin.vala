@@ -98,16 +98,24 @@ namespace ODeviced {
 
 		public bool register() throws PluginError {
 
-			this._library = Module.open(this.path, ModuleFlags.BIND_LOCAL);
-				
+			this._library = Module.open(this.path, ModuleFlags.BIND_LOCAL);				
 			if(this._library == null) {
 				throw new PluginError.LOAD_ERROR("_library is null");
 			}
 			
+			/* If the plugin uses sysfs, check if the device class exists */
+			if(this.conf.has_key (name, "device_class")) {
+				var _dev = this.conf.get_string (name, "device_class");
+				if (!FileUtils.test ("/sys/class/" + _dev, FileTest.IS_DIR)) 
+					throw new PluginError.LOAD_ERROR("Device class %s doesn't exist".printf(name));
+			}				
+
 			var _symbol = null;
 			if(!this._library.symbol(name + "_init", out _symbol)) {
 				throw new PluginError.LOAD_ERROR("Malformed odeviced plugin");
 			}
+
+			message (name);
 
 			InitFunc func = (InitFunc)_symbol;
 			var success = func(this);

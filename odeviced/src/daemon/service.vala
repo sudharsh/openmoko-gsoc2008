@@ -93,8 +93,6 @@ namespace ODeviced {
 			var plugin_path = this.plugins_location + "/" + plugin_name + ".so";
 			string[] _deps;
 			
-			debug("No of plugins already loaded: %u", this.loadedTable.size());
-			
 			/* Check the hash table if the plugin exists */
 			if(this.is_loaded(plugin_name)) {
 				message("Plugin already loaded");
@@ -120,6 +118,7 @@ namespace ODeviced {
 					   plugin.depends = _deps; */
 					this.loadedTable.insert(plugin_name, plugin);
 					message("Successfully loaded %s\n", plugin_name);
+					debug("No of plugins loaded: %u", this.loadedTable.size());
 					return true;
 				}
 			
