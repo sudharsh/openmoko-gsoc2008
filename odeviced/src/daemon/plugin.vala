@@ -33,11 +33,6 @@ namespace ODeviced {
 			get { return _library; }
 		}
 		
-		private int _handle;
-		public int handle {
-			get { return _handle; }
-		}
-
 		private string _dbus_iface;
 		public string dbus_iface {
 			get { return _dbus_iface; }
@@ -82,8 +77,6 @@ namespace ODeviced {
 		}
 		
 		construct {
-			Rand rand = new Rand();
-			this._handle = rand.int_range(10, 99);
 			var _conf_path  = ODeviced.Service.conf_dir_plugins + "/" + this.name + ".plugin";
 			try {
 				this._conf.load_from_file(_conf_path, KeyFileFlags.NONE);
@@ -114,8 +107,6 @@ namespace ODeviced {
 			if(!this._library.symbol(name + "_init", out _symbol)) {
 				throw new PluginError.LOAD_ERROR("Malformed odeviced plugin");
 			}
-
-			message (name);
 
 			InitFunc func = (InitFunc)_symbol;
 			var success = func(this);
