@@ -29,7 +29,7 @@ using ODeviced;
 
 [DBus (name = "org.freesmartphone.Device.PowerSupply")]
 public class Power: GLib.Object {
-	
+
 	private string status = new string();
 	private KeyFile conf = new KeyFile();
 	private int max_energy = 0;
@@ -64,7 +64,7 @@ public class Power: GLib.Object {
 	
 	construct {
 		
-		this._energy_id = Timeout.add_seconds(300, poll_energy);
+		this._energy_id = Timeout.add_seconds(30, poll_energy);
 		try {
 			var dev = ODeviced.get_device();
 			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
