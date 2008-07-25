@@ -23,40 +23,40 @@ using GLib;
 
 namespace ODeviced {
 
-	public static DBus.Connection connection;
-	
+	protected static DBus.Connection connection;
+		
 	void main(string[] args) {
-
+		
 		try {
 			connection = DBus.Bus.get(DBus.BusType.SYSTEM);		
 			dynamic DBus.Object bus =
-				connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
-			uint result = bus.RequestName ("org.freesmartphone.odeviced", (uint) 0);
-
-			if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
-
-				print("Starting ODeviced Server....\n");
-				var service = new Service();
-				ODeviced.connection.register_object ("/org/freesmartphone/Device", service);
-			
-				if(!GLib.Module.supported()) {
-					critical("Modules are not supported in the current system");
-				}		
+			connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
+				uint result = bus.RequestName ("org.freesmartphone.odeviced", (uint) 0);
+				
+				if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
+					
+					print("Starting ODeviced Server....\n");
+					var service = new Service();
+					ODeviced.connection.register_object ("/org/freesmartphone/Device", service);
+					
+					if(!GLib.Module.supported()) {
+						critical("Modules are not supported in the current system");
+					}		
        				
-				service.run();
+					service.run();
+					
+				}
+				else {
+					/* If odeviced is already running */
+					print("ODeviced already running!\n");			       
+				}
 				
 			}
-			else {
-				/* If odeviced is already running */
-				print("ODeviced already running!\n");			       
+			catch (Error error) {
+			stderr.printf("%s\n", error.message);
 			}
 			
 		}
-		catch (Error error) {
-			stderr.printf("%s\n", error.message);
-		}
-		
-	}
-
+	
 }
 
