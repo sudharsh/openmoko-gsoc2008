@@ -12,7 +12,6 @@ namespace ODeviced {
 		public Plugin (string name, string path);
 		public bool register () throws ODeviced.PluginError;
 		public GLib.Module library { get; }
-		public int handle { get; }
 		public string dbus_iface { get; }
 		public GLib.KeyFile conf { get; }
 		public string path { get; construct; }
@@ -27,7 +26,7 @@ namespace ODeviced {
 		public Service ();
 	}
 	[CCode (cheader_filename = "src/daemon/odeviced.h")]
-	public DBus.Connection connection;
+	protected DBus.Connection connection;
 	[CCode (cheader_filename = "src/daemon/helpers.h")]
 	public static void register_dbus_object (ODeviced.Plugin plugin, GLib.Object interface_obj);
 	[CCode (cheader_filename = "src/daemon/helpers.h")]
