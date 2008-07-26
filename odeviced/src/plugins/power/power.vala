@@ -31,7 +31,6 @@ using ODeviced;
 public class Power: GLib.Object {
 
 	private string status = new string();
-	private KeyFile conf = new KeyFile();
 	private int max_energy = 0;
 	private int low_energy_threshold;
 	private int status_poll_interval;
@@ -56,10 +55,17 @@ public class Power: GLib.Object {
 		construct;
 	}
 
+	[DBus (visible = false)]
+	public ODeviced.Plugin plugin {
+		get;
+		construct;
+	}
 
-	Power(string node, string dbus_path) {
+
+	Power(string node, string dbus_path, ODeviced.Plugin plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
+		this.plugin = plugin;
 	}
 	
 	construct {
@@ -67,9 +73,8 @@ public class Power: GLib.Object {
 		this._energy_id = Timeout.add_seconds(30, poll_energy);
 		try {
 			var dev = ODeviced.get_device();
-			conf.load_from_file("/usr/share/odeviced/plugins/power.plugin", KeyFileFlags.NONE);
-			this.status_poll_interval = conf.get_integer(dev, "status_poll_interval");
-			this.low_energy_threshold = conf.get_integer(dev, "low_energy_threshold");
+			this.status_poll_interval = plugin.conf.get_integer(dev, "status_poll_interval");
+			this.low_energy_threshold = plugin.conf.get_integer(dev, "low_energy_threshold");
 
 			this._status_id = Timeout.add_seconds(this.status_poll_interval, poll_status);
 			this.name = ODeviced.compute_name (this.dbus_path);

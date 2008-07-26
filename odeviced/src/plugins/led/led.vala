@@ -40,24 +40,24 @@ public class LED:GLib.Object {
 		construct;
 	}
 
-	LED(string node, string dbus_path) {
+	[DBus (visible=false)]
+	public ODeviced.Plugin plugin {
+		get;
+		construct;
+	}
+
+
+	LED(string node, string dbus_path, ODeviced.Plugin plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
+		this.plugin = plugin;
 	}
+
 		
 	construct {
-		try {
-			GLib.KeyFile _file = new GLib.KeyFile();
-			_file.load_from_file("/usr/share/odeviced/plugins/led.plugin", GLib.KeyFileFlags.NONE);
-		
-			var dev = ODeviced.get_device();
-			this.name = ODeviced.compute_name(dbus_path);
-			this.dbus_path = ODeviced.cleanup_dbus_path (this.dbus_path);
-		}
-
-		catch (GLib.Error e) {
-			GLib.critical(e.message);
-		}
+		var dev = ODeviced.get_device();
+		this.name = ODeviced.compute_name(dbus_path);
+		this.dbus_path = ODeviced.cleanup_dbus_path (this.dbus_path);
 	}
 		
 

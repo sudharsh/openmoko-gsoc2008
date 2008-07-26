@@ -45,10 +45,17 @@ public class RealTimeClock: GLib.Object {
 		construct;
 	}
 
+	[DBus (visible=false)]
+	public ODeviced.Plugin plugin {
+		get;
+		construct;
+	}
 
-	RealTimeClock (string node, string dbus_path) {
+
+	RealTimeClock (string node, string dbus_path, ODeviced.Plugin plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
+		this.plugin = plugin;
 	}
 
 
