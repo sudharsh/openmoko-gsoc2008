@@ -83,9 +83,9 @@ public class Display: GLib.Object {
 	public void SetBacklightPower(bool power) {
 		int _val;
 		if (power)
-			_val = 1;
-		else
 			_val = 0;
+		else
+			_val = 1;
 		ODeviced.write_integer(this.node + "/bl_power", _val);
 	}
 
