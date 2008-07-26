@@ -37,6 +37,16 @@ public class Input: GLib.Object {
 
    	public signal void @event(string name, string action, int seconds);
 
+	[DBus (visible = false)]
+	public ODeviced.Plugin plugin {
+		get;
+		construct;
+	}
+
+	Input (ODeviced.Plugin plugin) {
+		this.plugin = plugin;
+	}
+
 
    	construct {
 		
@@ -44,11 +54,9 @@ public class Input: GLib.Object {
 
 		try {
 			
-			conf.load_from_file("/usr/share/odeviced/plugins/input.plugin", KeyFileFlags.NONE);
-			conf.set_list_separator (',');
 			this.device = ODeviced.get_device();
-			this.ignore_list = conf.get_string_list (device, "ignore_input");
-			var _watchfor = conf.get_string_list (device, "watchfor");
+			this.ignore_list = plugin.conf.get_string_list (device, "ignore_input");
+			var _watchfor = plugin.conf.get_string_list (device, "watchfor");
 			compute_watches (_watchfor);
 			
 			var name = dir.read_name ();
@@ -79,8 +87,13 @@ public class Input: GLib.Object {
 
 	private void compute_watches (string[] watchfor) {
 		foreach (string key in watchfor) {
-			string keycode = conf.get_string (device, key);
-			this.watches.insert (keycode, key);
+			try {
+				string keycode = plugin.conf.get_string (device, key);
+				this.watches.insert (keycode, key);
+			}
+			catch (GLib.Error error) {
+				message (error.message);
+			}
 		}
 	}		
 
@@ -92,7 +105,7 @@ namespace input {
 	public static Input obj;
 
 	public bool init (ODeviced.Plugin plugin) {		
-		obj = new Input();
+		obj = new Input(plugin);
 		if(obj == null)
 			return false;
 		
