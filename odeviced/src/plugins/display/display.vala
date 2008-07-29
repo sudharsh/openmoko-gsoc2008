@@ -41,24 +41,22 @@ public class Display: GLib.Object {
 		construct;
 	}
 
-	Display(string node, string dbus_path) {
+	[DBus (visible=false)]
+	public ODeviced.PluginManager plugin {
+		get;
+		construct;
+	}
+
+	Display(string node, string dbus_path, ODeviced.PluginManager plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
+		this.plugin = plugin;
 	}
 		
 	construct {
-		try {
-			GLib.KeyFile _file = new GLib.KeyFile();
-			_file.load_from_file("/usr/share/odeviced/plugins/display.plugin", GLib.KeyFileFlags.NONE);
-		
-			var dev = ODeviced.get_device();
-			this.name = ODeviced.compute_name(dbus_path);
-			this.max_brightness = ODeviced.read_integer(this.node + "/max_brightness");
-		}
-
-		catch (GLib.Error e) {
-			GLib.critical(e.message);
-		}
+		var dev = ODeviced.get_device();
+		this.name = ODeviced.compute_name(dbus_path);
+		this.max_brightness = ODeviced.read_integer(this.node + "/max_brightness");
 	}
 		
 	public int GetMaximumBrightness() {
@@ -101,7 +99,7 @@ namespace display {
 
 	public static List<Display> list;
 
-	public bool init (ODeviced.Plugin plugin) {
+	public bool init (ODeviced.PluginManager plugin) {
 		Type type;
 		type = typeof (Display);
 		list = ODeviced.compute_objects (plugin, type);

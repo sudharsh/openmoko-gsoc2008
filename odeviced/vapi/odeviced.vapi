@@ -7,9 +7,9 @@ namespace ODeviced {
 		LOAD_ERROR,
 	}
 	[CCode (cheader_filename = "src/daemon/plugin.h")]
-	public class Plugin : GLib.Object {
+	public class PluginManager : GLib.Object {
 		public GLib.List<string> dbus_object_paths;
-		public Plugin (string name, string path);
+		public PluginManager (string name, string path);
 		public bool register () throws ODeviced.PluginError;
 		public GLib.Module library { get; }
 		public string dbus_iface { get; }
@@ -28,11 +28,11 @@ namespace ODeviced {
 	[CCode (cheader_filename = "src/daemon/odeviced.h")]
 	protected DBus.Connection connection;
 	[CCode (cheader_filename = "src/daemon/helpers.h")]
-	public static void register_dbus_object (ODeviced.Plugin plugin, GLib.Object interface_obj);
+	public static void register_dbus_object (ODeviced.PluginManager plugin, GLib.Object interface_obj);
 	[CCode (cheader_filename = "src/daemon/helpers.h")]
 	public static string get_device ();
 	[CCode (cheader_filename = "src/daemon/helpers.h")]
-	public static GLib.List? compute_objects (ODeviced.Plugin plugin, GLib.Type klass);
+	public static GLib.List? compute_objects (ODeviced.PluginManager plugin, GLib.Type klass);
 	[CCode (cheader_filename = "src/daemon/helpers.h")]
 	public static string compute_name (string path);
 	[CCode (cheader_filename = "src/daemon/helpers.h")]

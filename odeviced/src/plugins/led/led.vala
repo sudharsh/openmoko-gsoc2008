@@ -41,13 +41,13 @@ public class LED:GLib.Object {
 	}
 
 	[DBus (visible=false)]
-	public ODeviced.Plugin plugin {
+	public ODeviced.PluginManager plugin {
 		get;
 		construct;
 	}
 
 
-	LED(string node, string dbus_path, ODeviced.Plugin plugin) {
+	LED(string node, string dbus_path, ODeviced.PluginManager plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -85,7 +85,7 @@ namespace led {
 
 	public static List<LED> list;
 
-	public bool init (ODeviced.Plugin plugin) {
+	public bool init (ODeviced.PluginManager plugin) {
 		Type type;
 		type = typeof (LED);
 		list = ODeviced.compute_objects (plugin, type);

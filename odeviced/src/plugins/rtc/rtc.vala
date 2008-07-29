@@ -46,13 +46,13 @@ public class RealTimeClock: GLib.Object {
 	}
 
 	[DBus (visible=false)]
-	public ODeviced.Plugin plugin {
+	public ODeviced.PluginManager plugin {
 		get;
 		construct;
 	}
 
 
-	RealTimeClock (string node, string dbus_path, ODeviced.Plugin plugin) {
+	RealTimeClock (string node, string dbus_path, ODeviced.PluginManager plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -113,7 +113,7 @@ namespace rtc {
 
 	public static List<RealTimeClock> list;
 
-	public bool init (ODeviced.Plugin plugin) {
+	public bool init (ODeviced.PluginManager plugin) {
 		Type type;
 		list = new List<RealTimeClock>();
 		type = typeof (RealTimeClock);

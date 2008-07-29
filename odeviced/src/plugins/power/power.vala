@@ -56,13 +56,13 @@ public class Power: GLib.Object {
 	}
 
 	[DBus (visible = false)]
-	public ODeviced.Plugin plugin {
+	public ODeviced.PluginManager plugin {
 		get;
 		construct;
 	}
 
 
-	Power(string node, string dbus_path, ODeviced.Plugin plugin) {
+	Power(string node, string dbus_path, ODeviced.PluginManager plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -185,12 +185,12 @@ void register_dbus (Power obj) {
 }
 
 
-/* Plugin init function */
+/* PluginManager init function */
 namespace power {
 
 	public static List<Power> list;
 
-	public bool init (ODeviced.Plugin plugin) {
+	public bool init (ODeviced.PluginManager plugin) {
 		Type type;
 		list = new List<Power>();
 		type = typeof (Power);

@@ -23,7 +23,7 @@ using DBus;
 
 namespace ODeviced {
 
-	public static void register_dbus_object(Plugin plugin, GLib.Object interface_obj) {
+	public static void register_dbus_object(PluginManager plugin, GLib.Object interface_obj) {
 		try {
 			if(plugin.conf.has_group(plugin.name)) {
 				var at_path = plugin.conf.get_string(plugin.name, "dbus_object_path");
@@ -43,7 +43,7 @@ namespace ODeviced {
 	}
 
 
-	public static List? compute_objects(Plugin plugin, GLib.Type klass) {
+	public static List? compute_objects(PluginManager plugin, GLib.Type klass) {
 	
 		List<GLib.Object> objList = new List<GLib.Object>();
 		string dev_class;

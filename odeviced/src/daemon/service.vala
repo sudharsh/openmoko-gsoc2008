@@ -24,8 +24,8 @@ namespace ODeviced {
 	public class Service: Object {
 
 		MainLoop loop = new MainLoop (null, false);		
-		HashTable<string, Plugin> loadedTable = new HashTable<string, Plugin>((HashFunc)str_hash, (EqualFunc)str_equal);
-		List<Plugin> obj_list = new List<Plugin> ();
+		HashTable<string, PluginManager> loadedTable = new HashTable<string, PluginManager>((HashFunc)str_hash, (EqualFunc)str_equal);
+		List<PluginManager> obj_list = new List<PluginManager> ();
 			   
 		protected static string dev_name = new string();
 		protected static string conf_dir_plugins = new string();
@@ -69,7 +69,7 @@ namespace ODeviced {
 		/* Turn away now if you teach algorithms */
 		public string[]? ListObjectsByInterface (string iface) {
 		
-			foreach (ODeviced.Plugin plugin in this.obj_list) {
+			foreach (ODeviced.PluginManager plugin in this.obj_list) {
 				uint length = plugin.dbus_object_paths.length();
 				string[] ret = new string[length];
 				uint i = 0;
@@ -111,7 +111,7 @@ namespace ODeviced {
 					print("\tDone handling dependencies for %s\n", plugin_name);
 				}
 
-				Plugin plugin = new ODeviced.Plugin(plugin_name, plugin_path);
+				PluginManager plugin = new ODeviced.PluginManager(plugin_name, plugin_path);
 			
 				if(plugin.register()) {
 					/* This throws up an error in valac atm 

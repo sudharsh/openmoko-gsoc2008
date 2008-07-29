@@ -26,7 +26,7 @@ namespace ODeviced {
 	}
 
 
-	public class Plugin: GLib.Object {
+	public class PluginManager: GLib.Object {
 
 		private Module _library;
 		public Module library {
@@ -59,7 +59,7 @@ namespace ODeviced {
 			get { return _conf; }
 		}
 
-		private delegate bool InitFunc(Plugin plugin);
+		private delegate bool InitFunc(PluginManager plugin);
 		
 	    public string path {
 			public get;
@@ -71,7 +71,7 @@ namespace ODeviced {
 			construct;
 		}
 		
-		public Plugin(string name, string path) {
+		public PluginManager(string name, string path) {
 			this.name = name;		
 			this.path = path;
 		}

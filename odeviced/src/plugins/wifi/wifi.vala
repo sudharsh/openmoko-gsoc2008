@@ -23,8 +23,11 @@ using GLib;
 using ODeviced;
 using WifiHelpers;
 
-[DBus (name = "org.freesmartphone.Device.Wifi") ]
+[DBus (name = "org.freesmartphone.Device.PowerControl.Wifi") ]
 public class WifiPlugin: Object {
+
+	ODeviced.PluginManager plugin;
+
 	public bool GetStatus(string iface) {
 		return WifiHelpers.get_status (iface);
 	}
@@ -39,7 +42,7 @@ namespace wifi {
 
 	public static WifiPlugin obj;
 
-	public bool init (ODeviced.Plugin plugin) {		
+	public bool init (ODeviced.PluginManager plugin) {		
 		obj = new WifiPlugin();
 		if(obj == null)
 			return false;

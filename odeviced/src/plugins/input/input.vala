@@ -38,12 +38,12 @@ public class Input: GLib.Object {
    	public signal void @event(string name, string action, int seconds);
 
 	[DBus (visible = false)]
-	public ODeviced.Plugin plugin {
+	public ODeviced.PluginManager plugin {
 		get;
 		construct;
 	}
 
-	Input (ODeviced.Plugin plugin) {
+	Input (ODeviced.PluginManager plugin) {
 		this.plugin = plugin;
 	}
 
@@ -104,7 +104,7 @@ namespace input {
 
 	public static Input obj;
 
-	public bool init (ODeviced.Plugin plugin) {		
+	public bool init (ODeviced.PluginManager plugin) {		
 		obj = new Input(plugin);
 		if(obj == null)
 			return false;
