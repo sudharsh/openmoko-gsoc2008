@@ -4,5 +4,6 @@ SUBDIRS = \
 	rtc \
 	power \
 	input \
-	led
+	led \
+	idlenotifier
 
