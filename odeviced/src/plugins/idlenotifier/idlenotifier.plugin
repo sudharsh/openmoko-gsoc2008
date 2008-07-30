@@ -1,0 +1,17 @@
+[idlenotifier]
+dbus_interface=org.freesmartphone.Device.IdleNotifier
+
+# FIXME: Set this at runtime?
+dbus_object_path=/org/freesmartphone/Device/IdleNotifier/0
+
+
+# Timouts in seconds, -1 to disable
+[FreeRunner]
+IDLE = 2
+IDLE_DIM = 2
+IDLE_PRELOCK = 2
+LOCK = 2
+SUSPEND = 10
+AWAKE = -1
+BUSY = -1
+ 
