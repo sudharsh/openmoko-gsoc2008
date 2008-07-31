@@ -28,7 +28,6 @@ using ODeviced;
 public class Input: GLib.Object {
 
 	private string device = new string();
-	private KeyFile conf = new KeyFile();
 	private string dev_node = "/dev/input";
 	private HashTable<string, string> watches = new HashTable<int, string> ((HashFunc)str_hash, (EqualFunc)str_equal);
 
