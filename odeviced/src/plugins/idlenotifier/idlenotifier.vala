@@ -30,13 +30,14 @@ public class IdleNotifier: Object {
 
 	private virtual void emit_signal (string _state) {
 		this.state (_state);
+		this.current_state = _state;
 	}
 	private string current_state = "AWAKE";
 	private string dev_node = "/dev/input";
 	private string device = new string();
 	   
 	private HashTable<string, int> timeouts = new HashTable<string, int>((HashFunc)str_hash, (EqualFunc)str_equal);
-	private static uint tag;
+	private uint tag;
 	
 	[DBus (visible=false)]
 	public ODeviced.PluginManager plugin {
