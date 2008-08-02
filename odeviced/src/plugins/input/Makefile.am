@@ -15,6 +15,7 @@ pkg_LTLIBRARIES	= input.la
 input_VALASOURCES = input.vala
 
 input_la_SOURCES = \
+	input-helpers.c \
 	$(input_VALASOURCES:.vala=.c) \
 	$(input_VALASOURCES:.vala=.h)
 
@@ -22,7 +23,7 @@ BUILT_SOURCES = input.vala.stamp
 
 
 input.vala.stamp: $(input_VALASOURCES)
-	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg odeviced --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
+	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg odeviced --vapidir ./ --pkg input-helpers --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
 	$^
 	touch $@
 

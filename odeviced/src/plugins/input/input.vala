@@ -23,6 +23,7 @@
 using DBus;
 using GLib;
 using ODeviced;
+using InputHelpers;
 
 [DBus (name = "org.freesmartphone.Device.Input")]
 public class Input: GLib.Object {
@@ -80,6 +81,8 @@ public class Input: GLib.Object {
 	
 	private static bool onActivity (IOChannel source, IOCondition condition) {
 		message ("Activity");
+		int fd = source.unix_get_fd();
+		InputHelpers.unpack (fd);
 		return false;
 	}
 
