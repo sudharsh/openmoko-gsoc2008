@@ -81,12 +81,12 @@ public class IdleNotifier: Object {
 	}
 
 
-	private bool onActivity () {
+	private bool onActivity (IOChannel source, IOCondition condition) {
 		message ("IdleNotifier, Activity");
 		if (current_state != "BUSY") {
 			if (tag > 0) /* add_timeout_seconds returns a uint on success */
 				GLib.Source.remove (tag);
-			onBusy();
+			this.onBusy();
 		}
 		return true;
 	}
