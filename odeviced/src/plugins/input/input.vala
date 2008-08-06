@@ -83,7 +83,7 @@ public class Input: GLib.Object {
 		message ("Activity");
 		int fd = source.unix_get_fd();
 		InputHelpers.unpack (fd);
-		return false;
+		return true;
 	}
 
 

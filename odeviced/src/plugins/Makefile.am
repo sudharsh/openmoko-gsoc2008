@@ -5,5 +5,6 @@ SUBDIRS = \
 	power \
 	input \
 	led \
-	idlenotifier
+	idlenotifier \
+	audio
 

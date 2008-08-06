@@ -28,6 +28,7 @@ GLIB_REQUIRED=2.12.0
 PKG_CHECK_MODULES(GLIB, glib-2.0 >= $GLIB_REQUIRED gobject-2.0 >= $GLIB_REQUIRED gio-2.0)
 PKG_CHECK_MODULES(DBUS, dbus-1 dbus-glib-1)
 PKG_CHECK_MODULES(GMODULE, gmodule-2.0)
+PKG_CHECK_MODULES(GSTREAMER, gstreamer-0.10) 
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
@@ -37,6 +38,8 @@ AC_SUBST(DBUS_LIBS)
 AC_SUBST(GMODULE_CFLAGS)
 AC_SUBST(GMODULE_LIBS)
 
+AC_SUBST(GSTREAMER_CFLAGS)
+AC_SUBST(GSTREAMER_LIBS)
 
 dnl dbus
 DBUS_GLIB_BIN="`$PKG_CONFIG --variable=exec_prefix dbus-glib-1`/bin"
@@ -65,4 +68,5 @@ src/plugins/power/Makefile
 src/plugins/input/Makefile
 src/plugins/led/Makefile
 src/plugins/idlenotifier/Makefile
+src/plugins/audio/Makefile
 ])

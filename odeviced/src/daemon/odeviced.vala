@@ -53,7 +53,7 @@ namespace ODeviced {
 				
 			}
 			catch (Error error) {
-			stderr.printf("%s\n", error.message);
+				stderr.printf("%s\n", error.message);
 			}
 			
 		}
