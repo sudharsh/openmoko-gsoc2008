@@ -80,7 +80,6 @@ public class Input: GLib.Object {
 
 	
 	private static bool onActivity (IOChannel source, IOCondition condition) {
-		message ("Activity");
 		int fd = source.unix_get_fd();
 		InputHelpers.unpack (fd);
 		return true;

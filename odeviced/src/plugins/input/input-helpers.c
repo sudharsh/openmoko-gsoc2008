@@ -30,9 +30,11 @@ gboolean on_activity (int fd) {
 	struct input_event event;
 	read (fd, &event, sizeof(event));
 
-	/*while (event.type == EV_SYN)
-	  ;*/
-	
+	/* Ignore EV_SYN */
+	if (event.type == EV_SYN) {
+		g_print ("\tGot a SYN event, Ignoring\n");
+		return FALSE;
+	}
 	g_message ("Got value %d", event.value);
 	return FALSE;
 }
