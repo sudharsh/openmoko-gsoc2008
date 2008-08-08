@@ -28,12 +28,12 @@
 gboolean on_activity (int fd) {
 	
 	struct input_event event;
-	g_message ("yo");
-	printf("I am in on_Activity");
 	read (fd, &event, sizeof(event));
+
+	/*while (event.type == EV_SYN)
+	  ;*/
 	
-	printf ("> -- %hu\n", event.value);
-	g_message ("I am here");
+	g_message ("Got value %d", event.value);
 	return FALSE;
 }
 
