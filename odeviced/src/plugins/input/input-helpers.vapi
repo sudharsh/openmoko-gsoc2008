@@ -1,5 +1,5 @@
 namespace InputHelpers {
-	[CCode (cname = "on_activity")]
-	public bool unpack (int fd);
+	[CCode (cname = "process_event")]
+	public bool process_event (int fd);
 }
 
