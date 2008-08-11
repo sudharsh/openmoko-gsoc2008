@@ -93,6 +93,7 @@ namespace ODeviced {
 
 			this._library = Module.open(this.path, ModuleFlags.BIND_LOCAL);				
 			if(this._library == null) {
+				warning ("library is null, possibly some symbol error");
 				throw new PluginError.LOAD_ERROR("_library is null");
 			}
 			

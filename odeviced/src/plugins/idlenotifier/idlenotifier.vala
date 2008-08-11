@@ -22,6 +22,7 @@
 
 using GLib;
 using ODeviced;
+using IdleHelpers;
 
 [DBus (name = "org.freesmartphone.Device.IdleNotifier") ]
 public class IdleNotifier: Object {
@@ -30,6 +31,7 @@ public class IdleNotifier: Object {
 
 	private virtual void emit_signal (string _state) {
 		this.state (_state);
+		message ("Switching to %s state", _state);
 		this.current_state = _state;
 	}
 	private string current_state = "AWAKE";
@@ -37,7 +39,11 @@ public class IdleNotifier: Object {
 	private string device = new string();
 	   
 	private HashTable<string, int> timeouts = new HashTable<string, int>((HashFunc)str_hash, (EqualFunc)str_equal);
-	private uint tag;
+
+	private uint _tag;
+	public uint tag {
+		get { return _tag; }
+	}
 	
 	[DBus (visible=false)]
 	public ODeviced.PluginManager plugin {
@@ -69,11 +75,12 @@ public class IdleNotifier: Object {
 				/* Wait till vala has support for "in" operator in if clauses
 				 /dev/input/event2 and event3 are accelerometers in the FreeRunner */
 				if (name.has_prefix ("event") && !(name[5] == '2' || name[5] == '3')) {
-					var _temp = new IOChannel.file (dev_node+"/"+name, "r");
-					_temp.add_watch (IOCondition.IN, (IOFunc) this.onActivity);
+					var node = dev_node+"/"+name;
+					IdleHelpers.start_timers (node, this);
 				}
 				name = dir.read_name();
 			}
+			_tag = Timeout.add_seconds (2, this.onIdle);
 		}
 		catch (GLib.Error error) {
 			message (error.message);
@@ -81,43 +88,33 @@ public class IdleNotifier: Object {
 	}
 
 
-	private bool onActivity (IOChannel source, IOCondition condition) {
-		message ("IdleNotifier, Activity");
-		if (current_state != "BUSY") {
-			if (tag > 0) /* add_timeout_seconds returns a uint on success */
-				GLib.Source.remove (tag);
-			this.onBusy();
-		}
-		return true;
-	}
-
 	private bool onBusy() {
 		this.emit_signal ("BUSY");
-		tag = Timeout.add_seconds (this.timeouts.lookup("IDLE"), this.onIdle);
+		_tag = Timeout.add_seconds (this.timeouts.lookup("IDLE"), this.onIdle);
 		return false;
 	}
 		
 	private bool onIdle() {
 		this.emit_signal ("IDLE");
-		tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_DIM"), this.onIdleDim);
+		_tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_DIM"), this.onIdleDim);
 		return false;
 	}
 
 	private bool onIdleDim() {
 		this.emit_signal ("IDLE_DIM");
-		tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_PRELOCK"), this.onIdlePrelock);
+		_tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_PRELOCK"), this.onIdlePrelock);
 		return false;
 	}
 
 	private bool onIdlePrelock() {
 		this.emit_signal ("IDLE_PRELOCK");
-		tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_LOCK"), this.onLock);
+		_tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_LOCK"), this.onLock);
 		return false;
 	}
 
 	private bool onLock() {
 		this.emit_signal ("LOCK");
-		tag = Timeout.add_seconds (this.timeouts.lookup("SUSPEND"), this.onSuspend);
+		_tag = Timeout.add_seconds (this.timeouts.lookup("SUSPEND"), this.onSuspend);
 		return false;
 	}
 

@@ -81,7 +81,7 @@ public class Input: GLib.Object {
 	
 	private static bool onActivity (IOChannel source, IOCondition condition) {
 		int fd = source.unix_get_fd();
-		InputHelpers.unpack (fd);
+		InputHelpers.process_event (fd);
 		return true;
 	}
 
