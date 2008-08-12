@@ -25,7 +25,7 @@ using ODeviced;
 using IdleHelpers;
 
 [DBus (name = "org.freesmartphone.Device.IdleNotifier") ]
-public class IdleNotifier: Object {
+public class IdleNotifier: GLib.Object {
 
 	public signal void state (string curr_state);
 
@@ -75,8 +75,8 @@ public class IdleNotifier: Object {
 				/* Wait till vala has support for "in" operator in if clauses
 				 /dev/input/event2 and event3 are accelerometers in the FreeRunner */
 				if (name.has_prefix ("event") && !(name[5] == '2' || name[5] == '3')) {
-					var node = dev_node+"/"+name;
-					IdleHelpers.start_timers (node, this);
+					IOChannel channel = new IOChannel.file (dev_node+"/"+name, "r");
+					IdleHelpers.start_timers (channel, this);
 				}
 				name = dir.read_name();
 			}

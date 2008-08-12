@@ -22,7 +22,7 @@
 #include <glib.h>
 #include "idlenotifier.h"
 
-gboolean on_activity (GIOChannel *source, GIOCondition condition, IdleNotifier *self) {
+static gboolean on_activity (GIOChannel *source, GIOCondition condition, IdleNotifier *self) {
 	gchar *curr_state = idle_notifier_GetState(self);
 	uint tag = idle_notifier_get_tag(self);
 	if (g_strcmp0(curr_state, "BUSY")!=0) {
@@ -34,9 +34,7 @@ gboolean on_activity (GIOChannel *source, GIOCondition condition, IdleNotifier *
 }
 
 
-void start_timers (gchar* node, IdleNotifier *self) {
-	GIOChannel *channel;
-	channel = g_io_channel_new_file (node, "r", NULL);
+void start_timers (GIOChannel *channel, IdleNotifier *self) {
 	g_io_add_watch (channel, G_IO_IN, (GIOFunc)on_activity, self);
 	g_message ("IdleNotifier: INFO: Started Timers");	
 }
