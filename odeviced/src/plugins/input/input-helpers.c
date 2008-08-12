@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include <linux/input.h>
 
-gboolean on_activity (int fd) {
+gboolean process_event (int fd, ushort *type, ushort *code, int *value) {
 	
 	struct input_event event;
 	read (fd, &event, sizeof(event));
@@ -35,6 +35,9 @@ gboolean on_activity (int fd) {
 		g_print ("\tGot a SYN event, Ignoring\n");
 		return FALSE;
 	}
+	*type = event.type;
+	*value = event.value;
+	*code = event.code;
 	g_message ("Got value %d", event.value);
 	return FALSE;
 }

@@ -11,4 +11,5 @@ POWER = 116
 ignore_input = 2,3
 
 watchfor = AUX,POWER
+reportheld = AUX,POWER
  

@@ -31,9 +31,11 @@ public class Input: GLib.Object {
 	private string device = new string();
 	private string dev_node = "/dev/input";
 	private HashTable<string, string> watches = new HashTable<int, string> ((HashFunc)str_hash, (EqualFunc)str_equal);
+	private Queue<int> event_q = new Queue<int> ();
 
 	private string[] ignore_list;
 	private List<IOChannel> channels = new List<IOChannel> ();
+	private string[] reportheld;
 
    	public signal void @event(string name, string action, int seconds);
 
@@ -56,6 +58,7 @@ public class Input: GLib.Object {
 			
 			this.device = ODeviced.get_device();
 			this.ignore_list = plugin.conf.get_string_list (device, "ignore_input");
+			this.reportheld = plugin.conf.get_string_list (device, "reportheld");
 			var _watchfor = plugin.conf.get_string_list (device, "watchfor");
 			compute_watches (_watchfor);
 			
@@ -70,6 +73,7 @@ public class Input: GLib.Object {
 				name = dir.read_name();
 
 			}
+			
 		}
 
 		catch (GLib.Error error) {
@@ -81,7 +85,11 @@ public class Input: GLib.Object {
 	
 	private static bool onActivity (IOChannel source, IOCondition condition) {
 		int fd = source.unix_get_fd();
-		InputHelpers.process_event (fd);
+		ushort type, code;
+		int value;
+		InputHelpers.process_event (fd, ref type, ref code, ref value);
+		if (value == 0x01) /* Got a press */
+			message  ("Key Press");
 		return true;
 	}
 
@@ -103,7 +111,7 @@ public class Input: GLib.Object {
 
 namespace input {
 
-	public static Input obj;
+	public static input obj;
 
 	public bool init (ODeviced.PluginManager plugin) {		
 		obj = new Input(plugin);
