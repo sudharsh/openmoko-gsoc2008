@@ -27,7 +27,8 @@
 
 #include "input.h"
 
-gboolean on_activity (GIOChannel *source, GIOCondition *condition, Input *self) {
+/* FIXME: make this asynchronous, use idle processing */
+static gboolean on_activity (GIOChannel *source, GIOCondition *condition, Input *self) {
 	struct input_event event;
 	int fd = g_io_channel_unix_get_fd (source);
 	
@@ -39,12 +40,19 @@ gboolean on_activity (GIOChannel *source, GIOCondition *condition, Input *self) 
 		return TRUE;
 	}
 
-	if (event.value == 0x01) 
+	if (event.value == 0x01) {
 		g_print ("\tInput: INFO: Got a keypress\n");
+		g_signal_emit_by_name (self, "event", "Unknown", "pressed", 0);
+	}
+	if (event.value == 0x00) {
+		g_print ("\tInput: INFO: Release Key\n");
+		g_signal_emit_by_name (self, "event", "Unknown", "released", 0);
+	}	
 
-	g_message ("Got regular input event, value:%d code:%u type:%u", event.value, event.code, event.type);
+	g_print ("Input: event, value:%d code:%u type:%u\n", event.value, event.code, event.type);
 	return TRUE;
 }
+
 
 void process_watch (GIOChannel *channel, Input *self) {
 	g_io_add_watch (channel, G_IO_IN, (GIOFunc)on_activity, self);

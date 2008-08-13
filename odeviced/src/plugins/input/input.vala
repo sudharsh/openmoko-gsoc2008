@@ -65,7 +65,7 @@ public class Input: GLib.Object {
 			var name = dir.read_name ();
 			while (name!=null) {
 				/* Wait till vala has support for "in" operator in if clauses*/
-				if (name.has_prefix ("event") && !(name[5] == '2' || name[5] == '3')) {
+				if (name.has_prefix ("event") && !(name[5] == '1' || name[5] == '2' || name[5] == '3')) {
 					var channel = new IOChannel.file (dev_node+"/"+name, "r");
 					/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
 					InputHelpers.process_watch (channel, this);;
