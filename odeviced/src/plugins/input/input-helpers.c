@@ -38,6 +38,10 @@ gboolean on_activity (GIOChannel *source, GIOCondition *condition, Input *self) 
 		g_print ("\tInput: INFO: Got a SYN event, Ignoring\n");
 		return TRUE;
 	}
+
+	if (event.value == 0x01) 
+		g_print ("\tInput: INFO: Got a keypress\n");
+
 	g_message ("Got regular input event, value:%d code:%u type:%u", event.value, event.code, event.type);
 	return TRUE;
 }
