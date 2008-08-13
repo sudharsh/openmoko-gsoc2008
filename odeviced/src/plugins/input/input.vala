@@ -32,6 +32,7 @@ public class Input: GLib.Object {
 	private string dev_node = "/dev/input";
 
 	private HashTable<int, string> _watches = new HashTable<int, string> ((HashFunc)direct_hash, (EqualFunc)direct_equal);
+	[DBus (visible = false)]
 	public HashTable<int, string> watches {
 		get { return _watches; }
 	}

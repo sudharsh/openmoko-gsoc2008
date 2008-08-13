@@ -41,6 +41,7 @@ public class IdleNotifier: GLib.Object {
 	private HashTable<string, int> timeouts = new HashTable<string, int>((HashFunc)str_hash, (EqualFunc)str_equal);
 
 	private uint _tag;
+	[DBus (visible=false)]
 	public uint tag {
 		get { return _tag; }
 	}

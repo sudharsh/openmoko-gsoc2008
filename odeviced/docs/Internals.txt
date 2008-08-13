@@ -8,7 +8,7 @@ odeviced consists of two important parts
 -----------
 Modules
 
-* provide vala support
+* provide vala support [Done]
 -----------
 
 Issues

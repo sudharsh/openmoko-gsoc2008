@@ -44,6 +44,8 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 	}
 
 	event_source = g_hash_table_lookup (watches, (void *)&event.code);
+	if (!event_source)
+		g_print ("\tNo watch added for event code %u", event.code);
 
 	if (event.value == 0x01) { /* Press */
 		g_print ("\tInput: INFO: Got a keypress from %s\n", event_source);
