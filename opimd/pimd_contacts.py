@@ -36,8 +36,6 @@ from dbus.service import method as dbus_method
 
 from difflib import SequenceMatcher
 
-from shlex import shlex
-
 from syslog import syslog, LOG_ERR, LOG_WARNING, LOG_INFO, LOG_DEBUG
 
 from domain_manager import DomainManager
@@ -84,11 +82,8 @@ class ContactQueryMatcher(object):
 	def __init__(self, query):
 		"""Evaluate a query
 		
-		@param query The query to evaluate, can be either a string or a dict query"""
-		if isinstance(query, str) or isinstance(query, unicode):
-			self.query_obj = self.query_to_object_query(query)
-		else:
-			self.query_obj = query
+		@param query Query to evaluate, must be a dict"""
+		self.query_obj = query
 
 
 	def match(self, contacts):
@@ -125,58 +120,6 @@ class ContactQueryMatcher(object):
 				results.append(kv_list[i][1])
 		
 		return results
-
-
-	def query_to_object_query(self, query):
-		query_obj = {}
-		
-		handlers = {
-			"FIND": self.parse_FIND_to_object,
-			"FROM": self.parse_FROM_to_object,
-			"WHERE": self.parse_WHERE_to_object
-		}
-		
-		#TODO shlex is not unicode compatible yet
-		tokenizer = shlex(str(query), posix=True)
-		tokenizer.whitespace_split = True
-		tokenizer.quotes = True
-		
-		while True:
-			try:
-				token = tokenizer.get_token()
-				if token == tokenizer.eof: break
-				handler = handlers[token]
-			
-			except KeyError:
-				msg = "Error parsing query at %s: %s" % (token, query)
-				syslog(LOG_ERR, msg)
-				return None
-		
-		return query_obj
-
-
-	def parse_FIND_to_object(self, tokenizer, query_obj):
-		"""Parses the FIND query compound and converts it into an object query
-		
-		@param tokenizer Tokenizer to get the next token(s) from
-		@param query_obj The query object we can modify"""
-		return
-
-
-	def parse_FROM_to_object(self, tokenizer, query_obj):
-		"""Parses the FIND query compound and converts it into an object query
-		
-		@param tokenizer Tokenizer to get the next token(s) from
-		@param query_obj The query object we can modify"""
-		return
-
-
-	def parse_WHERE_to_object(self, tokenizer, query_obj):
-		"""Parses the FIND query compound and converts it into an object query
-		
-		@param tokenizer Tokenizer to get the next token(s) from
-		@param query_obj The query object we can modify"""
-		return
 
 
 
