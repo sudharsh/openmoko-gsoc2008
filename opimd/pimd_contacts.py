@@ -23,11 +23,7 @@
 #
 
 """pypimd Contacts Domain Plugin
-
-Establishes the contact PIM domain and handles all related requests
-Exports:
- - register_backend .......... Registers a backend we can use
-"""
+Establishes the 'contact' PIM domain and handles all related requests"""
 
 from dbus import SystemBus
 from dbus.service import FallbackObject as DBusFBObject
@@ -46,10 +42,6 @@ from settings_manager import *
 _DOMAIN_NAME = "Contacts"
 
 _MIN_MATCH_TRESHOLD = 0.75
-
-_QUERY_TOKENS = [
-	"FIND", "FROM", "WHERE", "AND", "LIMIT"
-]
 
 
 # D-Bus constant initialization, *must* be done before any D-Bus method decorators are declared
@@ -73,6 +65,7 @@ _DIN_ENTRY = _DIN_CONTACTS_BASE + '.' + 'Contact'
 _DIN_QUERY = _DIN_CONTACTS_BASE + '.' + 'ContactQuery'
 
 
+
 #----------------------------------------------------------------------------#
 class ContactQueryMatcher(object):
 #----------------------------------------------------------------------------#
@@ -80,17 +73,19 @@ class ContactQueryMatcher(object):
 #----------------------------------------------------------------------------#
 
 	def __init__(self, query):
-		"""Evaluate a query
+		"""Evaluates a query
 		
 		@param query Query to evaluate, must be a dict"""
+		
 		self.query_obj = query
 
 
 	def match(self, contacts):
 		"""Tries to match a given set of contacts to the current query
 		
-		@param contacts A list of ContactEntry objects
+		@param contacts List of Contact objects
 		@return List of contact IDs that match"""
+		
 		assert(self.query_obj, "Query object is empty, cannot match!")
 		
 		result_count = 0
@@ -124,7 +119,7 @@ class ContactQueryMatcher(object):
 
 
 #----------------------------------------------------------------------------#
-class ContactEntry():
+class Contact():
 #----------------------------------------------------------------------------#
 	"""Represents one single contact with all the data fields it consists of.
 	
@@ -141,6 +136,10 @@ class ContactEntry():
 #----------------------------------------------------------------------------#
 
 	def __init__(self, uri):
+		"""Creates a new Contact instance
+		
+		@param uri URI of the contact itself"""
+		
 		self._fields = []
 		self._field_idx = {}
 		self._used_backends = []
@@ -153,8 +152,9 @@ class ContactEntry():
 	def __getitem__(self, field_name):
 		"""Finds all field values for field_name
 		
-		@param field_name The name of the field whose data we return
-		@return The field value if there's just one result, a list of values otherwise; None if field_name is unknown"""
+		@param field_name Name of the field whose data we return
+		@return Value of the field if there's just one result, a list of values otherwise; None if field_name is unknown"""
+		
 		try:
 			field_ids = self._field_idx[field_name]
 		except KeyError:
@@ -180,7 +180,9 @@ class ContactEntry():
 
 
 	def rebuild_index(self):
-		"""Rebuilds the field index, thereby ensuring consistency"""
+		"""Rebuilds the field index, thereby ensuring consistency
+		@note Should only be performed when absolutely necessary"""
+		
 		self._field_idx = {}
 		for (field_idx, field) in enumerate(self._fields):
 			(field_name, field_data, field_source) = field
@@ -198,6 +200,7 @@ class ContactEntry():
 		@param backend_name Name of the backend to which those fields belong"""
 		
 		# We add all fields as they come, not checking for duplicate data
+		
 		self._used_backends.append(backend_name)
 		
 		for field in contact_fields:
@@ -224,6 +227,11 @@ class ContactEntry():
 
 
 	def export_fields(self, backend_name):
+		"""Extracts all fields belonging to a certain backend
+		
+		@param backend_name Name of the backend whose data we want to extract from this contract
+		@return List of (field_name, field_data) tuples"""
+		
 		entry = []
 		for field in self._fields:
 			(field_name, field_data, field_source) = field
@@ -234,11 +242,12 @@ class ContactEntry():
 
 	def get_fields(self, fields):
 		"""Returns a dict containing the fields whose names are listed in the fields parameter
-		Backend information is omitted.
-		Fields that have more than one occurence are concatenated using a separation character of ','.
+		@note Backend information is omitted.
+		@note Fields that have more than one occurence are concatenated using a separation character of ','.
 		
 		@param fields List of field names to include in the resulting dict
-		@return Dict containing the field_name:field_value pairs that were requested"""
+		@return Dict containing the field_name/field_value pairs that were requested"""
+		
 		result = {}
 		separator = ','
 		
@@ -265,10 +274,11 @@ class ContactEntry():
 
 	def get_content(self):
 		"""Creates and returns a complete representation of the contact
-		Backend information is omitted.
-		Fields that have more than one occurence are concatenated using a separation character of ','.
+		@note Backend information is omitted.
+		@note Fields that have more than one occurence are concatenated using a separation character of ','.
 		
 		@return Contact data, in {Field_name:Field_value} notation"""
+		
 		return self.get_fields(self._field_idx)
 
 
@@ -276,26 +286,29 @@ class ContactEntry():
 		"""Attempts to merge the given contact into the contact list and returns its ID
 		
 		@param contact_fields Contact data; format: ((Key,Val), (Key,Val), ...)
-		@param backend_name The backend that owns the contact data
+		@param backend_name Backend that owns the contact data
 		@return True on successful merge, False otherwise"""
 		
 		# Don't merge if we already have data from $backend_name as one backend can't contain two mergeable contacts
+		# TODO Implement this method
 		return False
 
 
 	def incorporates_data_from(self, backend_name):
 		"""Determines whether this contact entry has data from a specific backend saved
 		
-		@param backend_name The backend to look for
+		@param backend_name Name of backend to look for
 		@return True if we have data belonging to that backend, False otherwise"""
+		
 		return backend_name in self._used_backends
 
 
 	def match_query(self, query_obj):
 		"""Checks whether this contact matches the given query
 		
-		@param query_obj A dict containing key/value pairs of the required matches
-		@return The accuracy of the match, ranging from 0.0 (no match) to 1.0 (complete match)"""
+		@param query_obj Dict containing key/value pairs of the required matches
+		@return Accuracy of the match, ranging from 0.0 (no match) to 1.0 (complete match)"""
+		
 		overall_match = 1.0
 		matcher = SequenceMatcher()
 		
@@ -356,11 +369,12 @@ class SingleQueryHandler(object):
 #----------------------------------------------------------------------------#
 
 	def __init__(self, query, contacts, dbus_sender):
-		"""Instantiate a new query handler
+		"""Creates a new SingleQueryHandler instance
 		
-		@param query The query to evaluate
-		@param contacts The set of contacts we can use
-		@param dbus_sender The unique name of the query sender on the bus"""
+		@param query Query to evaluate
+		@param contacts Set of Contact objects to use
+		@param dbus_sender Sender's unique name on the bus"""
+		
 		matcher = ContactQueryMatcher(query)
 		
 		self._contacts = contacts
@@ -374,13 +388,13 @@ class SingleQueryHandler(object):
 
 
 	def dispose(self):
-		"""Unregister from all contact entries to allow this instance to be eaten by GC"""
+		"""Unregisters from all contact entries to allow this instance to be eaten by GC"""
 		# TODO Unregister from all contacts
 		pass
 
 
 	def sanitize_query(self):
-		"""Make sure the query meets the criteria that related code uses to omit wasteful sanity checks"""
+		"""Makes sure the query meets the criteria that related code uses to omit wasteful sanity checks"""
 		
 		# For get_result_and_advance():
 		# Make sure the _result_fields list has no whitespaces, e.g. "a, b, c" should be "a,b,c"
@@ -402,19 +416,37 @@ class SingleQueryHandler(object):
 
 
 	def get_result_count(self):
+		"""Determines the number of results for this query
+		
+		@return Number of result entries"""
+		
 		return len(self.entries)
 
 
 	def rewind(self, dbus_sender):
+		"""Resets the cursor for a given d-bus sender to the first result entry
+		
+		@param dbus_sender Sender's unique name on the bus"""
+		
 		self.cursors[dbus_sender] = 0
 
 
 	def skip(self, dbus_sender, num_entries):
+		"""Skips n result entries of the result set
+		
+		@param dbus_sender Sender's unique name on the bus
+		@param num_entries Number of result entries to skip"""
+		
 		if not self.cursors.has_key(dbus_sender): self.cursors[dbus_sender] = 0
 		self.cursors[dbus_sender] += num_entries
 
 
 	def get_contact_uri(self, dbus_sender):
+		"""Determines the URI of the next contact that the cursor points at and advances to the next result entry
+		
+		@param dbus_sender Sender's unique name on the bus
+		@return URI of the contact"""
+		
 		# If the sender is not in the list of cursors it just means that it is starting to iterate
 		if not self.cursors.has_key(dbus_sender): self.cursors[dbus_sender] = 0
 		
@@ -432,6 +464,11 @@ class SingleQueryHandler(object):
 
 
 	def get_result(self, dbus_sender):
+		"""Extracts the requested fields from the next contact entry in the result set and advances the cursor
+		
+		@param dbus_sender Sender's unique name on the bus
+		@return Dict containing field_name/field_value pairs"""
+		
 		# If the sender is not in the list of cursors it just means that it is starting to iterate
 		if not self.cursors.has_key(dbus_sender): self.cursors[dbus_sender] = 0
 		
@@ -456,6 +493,13 @@ class SingleQueryHandler(object):
 
 
 	def get_multiple_results(self, dbus_sender, num_entries):
+		"""Creates a list containing n dicts which represent the corresponding entries from the result set
+		@note If there are less entries than num_entries, only the available entries will be returned
+		
+		@param dbus_sender Sender's unique name on the bus
+		@param num_entries Number of result set entries to return
+		@return List of dicts with field_name/field_value pairs"""
+		
 		result = {}
 		
 		for i in range(0, num_entries):
@@ -468,6 +512,7 @@ class SingleQueryHandler(object):
 		return result
 
 
+
 #----------------------------------------------------------------------------#
 class QueryManager(DBusFBObject):
 #----------------------------------------------------------------------------#
@@ -477,6 +522,10 @@ class QueryManager(DBusFBObject):
 #----------------------------------------------------------------------------#
 
 	def __init__(self, contacts):
+		"""Creates a new QueryManager instance
+		
+		@param contacts Set of Contact objects to use"""
+		
 		self._contacts = contacts
 		self._queries = {}
 		self._next_query_id = 0
@@ -496,9 +545,10 @@ class QueryManager(DBusFBObject):
 	def process_query(self, query, dbus_sender):
 		"""Handles a query and returns the URI of the newly created query result
 		
-		@param query The query to evaluate
-		@param dbus_sender The unique name of the query sender on the bus
-		@return The URI of the query result"""
+		@param query Query to evaluate
+		@param dbus_sender Sender's unique name on the bus
+		@return URI of the query result"""
+		
 		query_handler = SingleQueryHandler(query, self._contacts, dbus_sender)
 		
 		query_id = self._next_query_id
@@ -594,6 +644,8 @@ class ContactDomain(DBusFBObject):
 #----------------------------------------------------------------------------#
 
 	def __init__(self):
+		"""Creates a new ContactDomain instance"""
+		
 		self._backends = {}
 		self._contacts = []
 		self.query_manager = QueryManager(self._contacts)
@@ -605,7 +657,7 @@ class ContactDomain(DBusFBObject):
 			object_path=_DBUS_PATH_CONTACTS
 			)
 		
-		# Keep frameworkd happy
+		# Keep frameworkd happy, pyneo won't care
 		self.interface = _DIN_CONTACTS
 		self.path = _DBUS_PATH_CONTACTS
 
@@ -613,7 +665,8 @@ class ContactDomain(DBusFBObject):
 	def get_dbus_objects(self):
 		"""Returns a list of all d-bus objects we manage
 		
-		@return A list of d-bus objects"""
+		@return List of d-bus objects"""
+		
 		return (self, self.query_manager)
 
 
@@ -621,14 +674,16 @@ class ContactDomain(DBusFBObject):
 		"""Registers a backend for usage with this domain
 		
 		@param backend Backend plugin object to register"""
+		
 		self._backends[backend.name] = backend
 
 
 	def register_contact(self, backend, contact_fields):
 		"""Merges/inserts the given contact into the contact list and returns its ID
 		
-		@param backend The backend that requests the registration
+		@param backend Backend objects that requests the registration
 		@param contact_fields Contact data; format: ((Key,Val), (Key,Val), ...)"""
+		
 		contact_id = -1
 		merge_success = False
 
@@ -648,7 +703,7 @@ class ContactDomain(DBusFBObject):
 			contact_id = len(self._contacts)
 			
 			uri = 'dbus://' + _DBUS_PATH_CONTACTS+ '/' + str(contact_id)
-			contact = ContactEntry(uri)
+			contact = Contact(uri)
 			contact.import_fields(contact_fields, backend.name)
 			
 			self._contacts.append(contact)
@@ -659,7 +714,9 @@ class ContactDomain(DBusFBObject):
 	def enumerate_contacts(self, backend):
 		"""Enumerates all contact data belonging to a specific backend
 		
-		@param backend The backend whose contacts to enumerate"""
+		@param backend Backend object whose contacts should be enumerated
+		@return Lists of (field_name,field_value) tuples of all contacts that have data from this particular backend"""
+		
 		for contact in self._contacts:
 			if contact.incorporates_data_from(backend.name):
 				yield contact.export_fields(backend.name)
@@ -669,8 +726,9 @@ class ContactDomain(DBusFBObject):
 	def Add(self, contact_info):
 		"""Adds a contact to the list, assigning it to the default backend and saving it
 		
-		@param contact_info A list of fields; format either [(Key,Val), (Key,Val), ...] or [Key: Val, Key: Val, ...]
-		@return The ID of the newly created contact"""
+		@param contact_info List of fields; format either [(Key,Val), (Key,Val), ...] or [Key: Val, Key: Val, ...]
+		@return URI of the newly created d-bus contact object"""
+		
 		raise NotImplementedError()
 
 
@@ -681,6 +739,7 @@ class ContactDomain(DBusFBObject):
 		@param query The query object
 		@param field_name The name of the field to return
 		@return The requested data"""
+		
 		result = ""
 		
 		query['_limit'] = 1
@@ -703,9 +762,10 @@ class ContactDomain(DBusFBObject):
 	def Query(self, query, sender):
 		"""Processes a query and returns the URI of the resulting query object
 		
-		@param query The query in the form of a dict
-		@param sender The unique name of the query sender on the bus
-		@return The URI of the query object, e.g. dbus://org.pyneo.PIM/Contacts/Queries/4"""
+		@param query Query
+		@param sender Unique name of the query sender on the bus
+		@return URI of the query object, e.g. dbus://org.pyneo.PIM/Contacts/Queries/4"""
+		
 		return self.query_manager.process_query(query, sender)
 
 
