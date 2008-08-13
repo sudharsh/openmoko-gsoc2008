@@ -59,17 +59,21 @@ try:
 	import framework.config
 	
 	_DBUS_PATH_CONTACTS = DBUS_PATH_BASE_FSO + '/' + _DOMAIN_NAME
-	_DIN_CONTACTS = DIN_BASE_FSO + '.' + _DOMAIN_NAME
+	_DIN_CONTACTS_BASE = DIN_BASE_FSO
 	ENV_MODE = 'FSO'
 
 except ImportError:
 	_DBUS_PATH_CONTACTS = DBUS_PATH_BASE_PYNEO + '/' + _DOMAIN_NAME
-	_DIN_CONTACTS = DIN_BASE_PYNEO + '.' + _DOMAIN_NAME
+	_DIN_CONTACTS_BASE = DIN_BASE_PYNEO
 	ENV_MODE = 'pyneo'
 
+
 _DBUS_PATH_QUERIES = _DBUS_PATH_CONTACTS + '/Queries'
-_DIN_QUERY = _DIN_CONTACTS + 'Query'
-_DIN_ENTRY = _DIN_CONTACTS + 'Entry'
+
+_DIN_CONTACTS = _DIN_CONTACTS_BASE + '.' + 'Contacts'
+_DIN_ENTRY = _DIN_CONTACTS_BASE + '.' + 'Contact'
+_DIN_QUERY = _DIN_CONTACTS_BASE + '.' + 'ContactQuery'
+
 
 #----------------------------------------------------------------------------#
 class ContactQueryMatcher(object):
@@ -173,6 +177,7 @@ class ContactQueryMatcher(object):
 		@param tokenizer Tokenizer to get the next token(s) from
 		@param query_obj The query object we can modify"""
 		return
+
 
 
 #----------------------------------------------------------------------------#
@@ -453,7 +458,7 @@ class SingleQueryHandler(object):
 			pass
 
 
-	def get_entry_count(self):
+	def get_result_count(self):
 		return len(self.entries)
 
 
@@ -461,12 +466,12 @@ class SingleQueryHandler(object):
 		self.cursors[dbus_sender] = 0
 
 
-	def skip(self, dbus_sender):
+	def skip(self, dbus_sender, num_entries):
 		if not self.cursors.has_key(dbus_sender): self.cursors[dbus_sender] = 0
-		self.cursors[dbus_sender] += 1
+		self.cursors[dbus_sender] += num_entries
 
 
-	def get_contact_uri_and_advance(self, dbus_sender):
+	def get_contact_uri(self, dbus_sender):
 		# If the sender is not in the list of cursors it just means that it is starting to iterate
 		if not self.cursors.has_key(dbus_sender): self.cursors[dbus_sender] = 0
 		
@@ -483,7 +488,7 @@ class SingleQueryHandler(object):
 		return contact['URI']
 
 
-	def get_result_and_advance(self, dbus_sender):
+	def get_result(self, dbus_sender):
 		# If the sender is not in the list of cursors it just means that it is starting to iterate
 		if not self.cursors.has_key(dbus_sender): self.cursors[dbus_sender] = 0
 		
@@ -506,6 +511,18 @@ class SingleQueryHandler(object):
 		
 		return result
 
+
+	def get_multiple_results(self, dbus_sender, num_entries):
+		result = {}
+		
+		for i in range(0, num_entries):
+			try:
+				entry = self.get_result(dbus_sender)
+				result[i] = entry
+			except NoMoreContactsError:
+				break
+		
+		return result
 
 
 #----------------------------------------------------------------------------#
@@ -550,13 +567,13 @@ class QueryManager(DBusFBObject):
 
 
 	@dbus_method(_DIN_QUERY, "", "i", rel_path_keyword="rel_path")
-	def GetEntryCount(self, rel_path):
+	def GetResultCount(self, rel_path):
 		num_id = int(rel_path[1:])
 		
 		# Make sure the requested query exists
 		if not self._queries.has_key(num_id): raise InvalidQueryIDError()
 		
-		return self._queries[num_id].get_entry_count()
+		return self._queries[num_id].get_result_count()
 
 
 	@dbus_method(_DIN_QUERY, "", "", rel_path_keyword="rel_path", sender_keyword="sender")
@@ -569,34 +586,44 @@ class QueryManager(DBusFBObject):
 		self._queries[num_id].rewind(sender)
 
 
-	@dbus_method(_DIN_QUERY, "", "", rel_path_keyword="rel_path", sender_keyword="sender")
-	def Skip(self, rel_path, sender):
+	@dbus_method(_DIN_QUERY, "i", "", rel_path_keyword="rel_path", sender_keyword="sender")
+	def Skip(self, num_entries, rel_path, sender):
 		num_id = int(rel_path[1:])
 		
 		# Make sure the requested query exists
 		if not self._queries.has_key(num_id): raise InvalidQueryIDError()
 		
-		self._queries[num_id].skip(sender)
+		self._queries[num_id].skip(sender, num_entries)
 
 
 	@dbus_method(_DIN_QUERY, "", "s", rel_path_keyword="rel_path", sender_keyword="sender")
-	def GetContactURIAndAdvance(self, rel_path, sender):
+	def GetContactURI(self, rel_path, sender):
 		num_id = int(rel_path[1:])
 		
 		# Make sure the requested query exists
 		if not self._queries.has_key(num_id): raise InvalidQueryIDError()
 		
-		return self._queries[num_id].get_contact_uri_and_advance(sender)
+		return self._queries[num_id].get_contact_uri(sender)
 
 
 	@dbus_method(_DIN_QUERY, "", "a{sv}", rel_path_keyword="rel_path", sender_keyword="sender")
-	def GetResultAndAdvance(self, rel_path, sender):
+	def GetResult(self, rel_path, sender):
 		num_id = int(rel_path[1:])
 		
 		# Make sure the requested query exists
 		if not self._queries.has_key(num_id): raise InvalidQueryIDError()
 		
-		return self._queries[num_id].get_result_and_advance(sender)
+		return self._queries[num_id].get_result(sender)
+
+
+	@dbus_method(_DIN_QUERY, "i", "a{ia{sv}}", rel_path_keyword="rel_path", sender_keyword="sender")
+	def GetMultipleResults(self, num_entries, rel_path, sender):
+		num_id = int(rel_path[1:])
+		
+		# Make sure the requested query exists
+		if not self._queries.has_key(num_id): raise InvalidQueryIDError()
+		
+		return self._queries[num_id].get_multiple_results(sender, num_entries)
 
 
 	@dbus_method(_DIN_QUERY, "", "", rel_path_keyword="rel_path")
@@ -701,7 +728,7 @@ class ContactDomain(DBusFBObject):
 		
 		@param contact_info A list of fields; format either [(Key,Val), (Key,Val), ...] or [Key: Val, Key: Val, ...]
 		@return The ID of the newly created contact"""
-		raise NotImplementedError
+		raise NotImplementedError()
 
 
 	@dbus_method(_DIN_CONTACTS, "a{sv}s", "s")
@@ -744,9 +771,28 @@ class ContactDomain(DBusFBObject):
 		num_id = int(rel_path[1:])
 		
 		# Make sure the requested contact exists
-		if num_id >= len(self._contacts): return ""
+		if num_id >= len(self._contacts): raise InvalidContactIDError()
 		
 		return self._contacts[num_id].get_content()
+
+
+	@dbus_method(_DIN_ENTRY, "s", "a{sv}", rel_path_keyword="rel_path")
+	def GetMultipleFields(self, field_list, rel_path):
+		num_id = int(rel_path[1:])
+		
+		# Make sure the requested contact exists
+		if num_id >= len(self._contacts): raise InvalidContactIDError()
+		
+		# Break the string up into a list
+		fields = field_list.split(',')
+		new_field_list = []
+			
+		for field_name in fields:
+			# Make sure the field list entries contain no spaces and aren't empty
+			field_name = field_name.strip()
+			if field_name: new_field_list.append(field_name)
+			
+		return self._contacts[num_id].get_fields(new_field_list)
 
 
 

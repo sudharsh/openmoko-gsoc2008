@@ -64,7 +64,7 @@ class InvalidQueryIDError(PIMException):
 	pass
 
 #----------------------------------------------------------------------------#
-class InvalidEntryIDError(PIMException):
+class InvalidContactIDError(PIMException):
 #----------------------------------------------------------------------------#
-	"""Raised when a submitted entry ID is invalid / out of range"""
+	"""Raised when a submitted contact ID is invalid / out of range"""
 	pass
