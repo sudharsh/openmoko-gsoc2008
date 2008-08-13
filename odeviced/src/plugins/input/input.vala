@@ -30,7 +30,12 @@ public class Input: GLib.Object {
 
 	private string device = new string();
 	private string dev_node = "/dev/input";
-	private HashTable<string, int> watches = new HashTable<string, int> ((HashFunc)str_hash, (EqualFunc)str_equal);
+
+	private HashTable<int, string> _watches = new HashTable<int, string> ((HashFunc)direct_hash, (EqualFunc)direct_equal);
+	public HashTable<int, string> watches {
+		get { return _watches; }
+	}
+
 	private Queue<int> event_q = new Queue<int> ();
 
 	private string[] ignore_list;
@@ -87,7 +92,7 @@ public class Input: GLib.Object {
 		foreach (string key in watchfor) {
 			try {
 				int keycode = plugin.conf.get_integer (device, key);
-				this.watches.insert (key, keycode);
+				this._watches.insert (keycode, key);
 			}
 			catch (GLib.Error error) {
 				message (error.message);

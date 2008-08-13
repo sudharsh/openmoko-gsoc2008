@@ -28,9 +28,12 @@
 #include "input.h"
 
 /* FIXME: make this asynchronous, use idle processing */
-static gboolean on_activity (GIOChannel *source, GIOCondition *condition, Input *self) {
+static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input *self) {
 	struct input_event event;
-	int fd = g_io_channel_unix_get_fd (source);
+	gchar *event_source;
+	GHashTable *watches = input_get_watches (self);
+	
+	int fd = g_io_channel_unix_get_fd (channel);
 	
 	read (fd, &event, sizeof(event));
 
@@ -40,13 +43,15 @@ static gboolean on_activity (GIOChannel *source, GIOCondition *condition, Input 
 		return TRUE;
 	}
 
+	event_source = g_hash_table_lookup (watches, (void *)&event.code);
+
 	if (event.value == 0x01) { /* Press */
-		g_print ("\tInput: INFO: Got a keypress\n");
-		g_signal_emit_by_name (self, "event", "Unknown", "pressed", 0);
+		g_print ("\tInput: INFO: Got a keypress from %s\n", event_source);
+		g_signal_emit_by_name (self, "event", event_source, "pressed", 0);
 	}
 	if (event.value == 0x00) { /* Release */
-		g_print ("\tInput: INFO: Release Key\n");
-		g_signal_emit_by_name (self, "event", "Unknown", "released", 0);
+		g_print ("\tInput: INFO: Released %s Key\n", event_source);
+		g_signal_emit_by_name (self, "event", event_source, "released", 0);
 	}	
 
 	g_print ("Input: event, value:%d code:%u type:%u\n", event.value, event.code, event.type);
