@@ -40,11 +40,11 @@ static gboolean on_activity (GIOChannel *source, GIOCondition *condition, Input 
 		return TRUE;
 	}
 
-	if (event.value == 0x01) {
+	if (event.value == 0x01) { /* Press */
 		g_print ("\tInput: INFO: Got a keypress\n");
 		g_signal_emit_by_name (self, "event", "Unknown", "pressed", 0);
 	}
-	if (event.value == 0x00) {
+	if (event.value == 0x00) { /* Release */
 		g_print ("\tInput: INFO: Release Key\n");
 		g_signal_emit_by_name (self, "event", "Unknown", "released", 0);
 	}	
