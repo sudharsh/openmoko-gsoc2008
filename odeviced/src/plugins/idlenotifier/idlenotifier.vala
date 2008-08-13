@@ -76,6 +76,7 @@ public class IdleNotifier: GLib.Object {
 				 /dev/input/event2 and event3 are accelerometers in the FreeRunner */
 				if (name.has_prefix ("event") && !(name[5] == '2' || name[5] == '3')) {
 					IOChannel channel = new IOChannel.file (dev_node+"/"+name, "r");
+					/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
 					IdleHelpers.start_timers (channel, this);
 				}
 				name = dir.read_name();

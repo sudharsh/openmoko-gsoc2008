@@ -66,9 +66,9 @@ public class Input: GLib.Object {
 			while (name!=null) {
 				/* Wait till vala has support for "in" operator in if clauses*/
 				if (name.has_prefix ("event") && !(name[5] == '2' || name[5] == '3')) {
-					var _temp = new IOChannel.file (dev_node+"/"+name, "r");
-					channels.append (_temp);
-					_temp.add_watch (IOCondition.IN, (IOFunc) this.onActivity);
+					var channel = new IOChannel.file (dev_node+"/"+name, "r");
+					/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
+					InputHelpers.process_watch (channel, this);;
 				}
 				name = dir.read_name();
 
@@ -83,17 +83,6 @@ public class Input: GLib.Object {
 	}
 
 	
-	private static bool onActivity (IOChannel source, IOCondition condition) {
-		int fd = source.unix_get_fd();
-		ushort type, code;
-		int value;
-		InputHelpers.process_event (fd, ref type, ref code, ref value);
-		if (value == 0x01) /* Got a press */
-			message  ("Key Press");
-		return true;
-	}
-
-
 	private void compute_watches (string[] watchfor) {
 		foreach (string key in watchfor) {
 			try {
@@ -111,7 +100,7 @@ public class Input: GLib.Object {
 
 namespace input {
 
-	public static input obj;
+	public static Input obj;
 
 	public bool init (ODeviced.PluginManager plugin) {		
 		obj = new Input(plugin);

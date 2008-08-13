@@ -25,21 +25,24 @@
 #include <unistd.h>
 #include <linux/input.h>
 
-gboolean process_event (int fd, ushort *type, ushort *code, int *value) {
-	
+#include "input.h"
+
+gboolean on_activity (GIOChannel *source, GIOCondition *condition, Input *self) {
 	struct input_event event;
+	int fd = g_io_channel_unix_get_fd (source);
+	
 	read (fd, &event, sizeof(event));
 
 	/* Ignore EV_SYN */
 	if (event.type == EV_SYN) {
-		g_print ("\tGot a SYN event, Ignoring\n");
-		return FALSE;
+		g_print ("\tInput: INFO: Got a SYN event, Ignoring\n");
+		return TRUE;
 	}
-	*type = event.type;
-	*value = event.value;
-	*code = event.code;
-	g_message ("Got value %d", event.value);
-	return FALSE;
+	g_message ("Got regular input event, value:%d code:%u type:%u", event.value, event.code, event.type);
+	return TRUE;
 }
 
-		
+void process_watch (GIOChannel *channel, Input *self) {
+	g_io_add_watch (channel, G_IO_IN, (GIOFunc)on_activity, self);
+	g_message ("Input: INFO: Added watch");	
+}
