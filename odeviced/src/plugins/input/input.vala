@@ -30,10 +30,18 @@ public class Input: GLib.Object {
 
 	private string device = new string();
 	private string dev_node = "/dev/input";
-	private HashTable<string, string> watches = new HashTable<int, string> ((HashFunc)str_hash, (EqualFunc)str_equal);
+
+	private HashTable<int, string> _watches = new HashTable<int, string> ((HashFunc)direct_hash, (EqualFunc)direct_equal);
+	[DBus (visible = false)]
+	public HashTable<int, string> watches {
+		get { return _watches; }
+	}
+
+	private Queue<int> event_q = new Queue<int> ();
 
 	private string[] ignore_list;
 	private List<IOChannel> channels = new List<IOChannel> ();
+	private string[] reportheld;
 
    	public signal void @event(string name, string action, int seconds);
 
@@ -56,20 +64,22 @@ public class Input: GLib.Object {
 			
 			this.device = ODeviced.get_device();
 			this.ignore_list = plugin.conf.get_string_list (device, "ignore_input");
+			this.reportheld = plugin.conf.get_string_list (device, "reportheld");
 			var _watchfor = plugin.conf.get_string_list (device, "watchfor");
 			compute_watches (_watchfor);
 			
 			var name = dir.read_name ();
 			while (name!=null) {
 				/* Wait till vala has support for "in" operator in if clauses*/
-				if (name.has_prefix ("event") && !(name[5] == '2' || name[5] == '3')) {
-					var _temp = new IOChannel.file (dev_node+"/"+name, "r");
-					channels.append (_temp);
-					_temp.add_watch (IOCondition.IN, (IOFunc) this.onActivity);
+				if (name.has_prefix ("event") && !(name[5] == '1' || name[5] == '2' || name[5] == '3')) {
+					var channel = new IOChannel.file (dev_node+"/"+name, "r");
+					/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
+					InputHelpers.process_watch (channel, this);;
 				}
 				name = dir.read_name();
 
 			}
+			
 		}
 
 		catch (GLib.Error error) {
@@ -79,18 +89,11 @@ public class Input: GLib.Object {
 	}
 
 	
-	private static bool onActivity (IOChannel source, IOCondition condition) {
-		int fd = source.unix_get_fd();
-		InputHelpers.process_event (fd);
-		return true;
-	}
-
-
 	private void compute_watches (string[] watchfor) {
 		foreach (string key in watchfor) {
 			try {
-				string keycode = plugin.conf.get_string (device, key);
-				this.watches.insert (keycode, key);
+				int keycode = plugin.conf.get_integer (device, key);
+				this._watches.insert (keycode, key);
 			}
 			catch (GLib.Error error) {
 				message (error.message);

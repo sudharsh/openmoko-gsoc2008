@@ -1,5 +1,5 @@
 namespace InputHelpers {
-	[CCode (cname = "process_event")]
-	public bool process_event (int fd);
+	[CCode (cname = "process_watch")]
+	public void process_watch (GLib.IOChannel channel, Input self);
 }
 
