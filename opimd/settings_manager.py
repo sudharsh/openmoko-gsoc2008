@@ -50,6 +50,7 @@ _SETTINGS_DEFAULTS = {
 }
 
 
+
 #----------------------------------------------------------------------------#
 class SettingsManager():
 #----------------------------------------------------------------------------#
@@ -79,12 +80,14 @@ class SettingsManager():
 
 	def load_settings(self):
 		"""Loads all entries from disk"""
+		
 		try:
 			file = open(self._file_name, "r")
 			
 			for line in file:
 				# One setting per line, key=value format
 				if line.find('=') > 0:
+					line = line.rstrip()
 					(key, value) = line.split("=")
 					self._settings[key] = value
 			
@@ -96,6 +99,7 @@ class SettingsManager():
 
 	def save_settings(self):
 		"""Saves all entries on disk"""
+		
 		file = open(self._file_name, "w")
 		
 		for key in self._settings.keys():
@@ -103,5 +107,8 @@ class SettingsManager():
 		
 		file.close()
 
+
+
+###  Initialization  ###
 
 settings = SettingsManager()
