@@ -37,6 +37,7 @@ public class IdleNotifier: GLib.Object {
 	private string current_state = "AWAKE";
 	private string dev_node = "/dev/input";
 	private string device = new string();
+	private string[] watches;
 	   
 	private HashTable<string, int> timeouts = new HashTable<string, int>((HashFunc)str_hash, (EqualFunc)str_equal);
 
@@ -68,19 +69,13 @@ public class IdleNotifier: GLib.Object {
 		this.timeouts.insert ("AWAKE", plugin.conf.get_integer (this.device, "AWAKE"));
 		this.timeouts.insert ("BUSY", plugin.conf.get_integer (this.device, "BUSY"));
 
-		Dir dir = Dir.open(dev_node, 0);
-
+		this.watches  = plugin.conf.get_string_list (device, "watchfor");
+		
 		try {			
-			var name = dir.read_name ();
-			while (name!=null) {
-				/* Wait till vala has support for "in" operator in if clauses
-				 /dev/input/event2 and event3 are accelerometers in the FreeRunner */
-				if (name.has_prefix ("event") && !(name[5] == '2' || name[5] == '3')) {
-					IOChannel channel = new IOChannel.file (dev_node+"/"+name, "r");
-					/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
-					IdleHelpers.start_timers (channel, this);
-				}
-				name = dir.read_name();
+			foreach (string node in this.watches) {
+				IOChannel channel = new IOChannel.file (dev_node+"/"+node, "r");
+				/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
+				IdleHelpers.start_timers (channel, this);
 			}
 			_tag = Timeout.add_seconds (2, this.onIdle);
 		}
