@@ -85,8 +85,10 @@ public class Input: GLib.Object {
 			try {
 				string[] settings = plugin.conf.get_string_list (device, key);
 				this._watches.insert (settings[0].to_int(), settings[1]);
-				if(settings[3] == "true")
+				if(settings[3] == "true") {
+					message ("\tConfig wants to report held seconds for %s", settings[1]);
 					this._reportheld.append(settings[1]);
+				}
 			}
 			catch (GLib.Error error) {
 				message (error.message);

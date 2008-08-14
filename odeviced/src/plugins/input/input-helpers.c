@@ -41,8 +41,9 @@ static gboolean held_key_timeout (Input *self, struct held_key_payload *hk);
 static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input *self) {
 
 	struct input_event event;
-	struct held_key_payload *hk;
+	struct held_key_payload hk;
 	gchar *event_source;
+
 	GHashTable *watches = input_get_watches (self);
 	GList *reportheld = input_get_reportheld (self);
 	
@@ -56,7 +57,7 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 		return TRUE;
 	}
 
-	event_source = g_hash_table_lookup (watches, (void *)&event.code);
+	event_source = g_hash_table_lookup (watches, event.code);
 	if (!event_source) {
 		g_print ("\tNo watch added for event code %u\n", event.code);
 		return TRUE;
@@ -64,14 +65,16 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 
 	if (event.value == 0x01) { /* Press */
 		g_print ("\tInput: INFO: Got a keypress from %s\n", event_source);
-		if (!g_list_find (reportheld, event_source)) {
-		    g_signal_emit_by_name (self, "event", event_source, "pressed", 0);
-		    return TRUE;
+		if (g_list_find (reportheld, event_source)) {
+			hk.obj = self;
+			hk.event_source = event_source;
+			hk.event = &event;
+			g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, &hk);
 		}
-		hk->obj = self;
-		hk->event_source = event_source;
-		hk->event = &event;
-		g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, hk);
+		else {
+			g_print ("\treportheld set to something other than true\n");
+			g_signal_emit_by_name (self, "event", event_source, "pressed", 0);
+		}
 		
 	}
 	if (event.value == 0x00) { /* Release */
@@ -85,8 +88,11 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 
 static gboolean held_key_timeout (Input *self, struct held_key_payload *hk) {
 	GTimeVal currtime;
+	int held_secs;
 	g_get_current_time (&currtime);
-	g_signal_emit_by_name (self, "event", hk->event_source, "pressed", (int)(currtime.tv_sec - hk->event->time.tv_sec));
+	held_secs = (int)(currtime.tv_sec - hk->event->time.tv_sec);
+	g_print ("\tInput: INFO: Held key for %d secs", held_secs);
+	g_signal_emit_by_name (self, "event", hk->event_source, "pressed", held_secs);
 	return TRUE; /* Call me again */
 }
 
