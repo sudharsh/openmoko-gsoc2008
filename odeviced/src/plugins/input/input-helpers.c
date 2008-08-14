@@ -36,7 +36,7 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 	int fd = g_io_channel_unix_get_fd (channel);
 	
 	read (fd, &event, sizeof(event));
-
+	g_print ("Input: event, value:%d code:%u type:%u\n", event.value, event.code, event.type);
 	/* Ignore EV_SYN */
 	if (event.type == EV_SYN) {
 		g_print ("\tInput: INFO: Got a SYN event, Ignoring\n");
@@ -44,8 +44,10 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 	}
 
 	event_source = g_hash_table_lookup (watches, (void *)&event.code);
-	if (!event_source)
-		g_print ("\tNo watch added for event code %u", event.code);
+	if (!event_source) {
+		g_print ("\tNo watch added for event code %u\n", event.code);
+		return TRUE;
+	}
 
 	if (event.value == 0x01) { /* Press */
 		g_print ("\tInput: INFO: Got a keypress from %s\n", event_source);
@@ -56,7 +58,6 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 		g_signal_emit_by_name (self, "event", event_source, "released", 0);
 	}	
 
-	g_print ("Input: event, value:%d code:%u type:%u\n", event.value, event.code, event.type);
 	return TRUE;
 }
 

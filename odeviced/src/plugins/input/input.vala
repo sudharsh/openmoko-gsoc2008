@@ -31,15 +31,15 @@ public class Input: GLib.Object {
 	private string device = new string();
 	private string dev_node = "/dev/input";
 
-	private HashTable<int, string> _watches = new HashTable<int, string> ((HashFunc)direct_hash, (EqualFunc)direct_equal);
+	private HashTable<uint, string> _watches = new HashTable<uint, string> ((HashFunc)direct_hash, (EqualFunc)direct_equal);
 	[DBus (visible = false)]
-	public HashTable<int, string> watches {
+	public HashTable<uint, string> watches {
 		get { return _watches; }
 	}
 
 	private Queue<int> event_q = new Queue<int> ();
 
-	private string[] ignore_list;
+	private string[] watchfor;
 	private List<IOChannel> channels = new List<IOChannel> ();
 	private string[] reportheld;
 
@@ -58,30 +58,17 @@ public class Input: GLib.Object {
 
    	construct {
 		
-		Dir dir = Dir.open(dev_node, 0);
-
 		try {
-			
 			this.device = ODeviced.get_device();
-			this.ignore_list = plugin.conf.get_string_list (device, "ignore_input");
-			this.reportheld = plugin.conf.get_string_list (device, "reportheld");
-			var _watchfor = plugin.conf.get_string_list (device, "watchfor");
-			compute_watches (_watchfor);
+			this.watchfor = plugin.conf.get_string_list (device, "watchfor");
+			compute_watches (this.watchfor);
 			
-			var name = dir.read_name ();
-			while (name!=null) {
-				/* Wait till vala has support for "in" operator in if clauses*/
-				if (name.has_prefix ("event") && !(name[5] == '1' || name[5] == '2' || name[5] == '3')) {
-					var channel = new IOChannel.file (dev_node+"/"+name, "r");
-					/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
-					InputHelpers.process_watch (channel, this);;
-				}
-				name = dir.read_name();
-
+			foreach (string input_node in this.watchfor) {
+				var channel = new IOChannel.file (dev_node+"/"+input_node, "r");
+				/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
+				InputHelpers.process_watch (channel, this);;
 			}
-			
 		}
-
 		catch (GLib.Error error) {
 			message (error.message);
 		}
@@ -92,8 +79,8 @@ public class Input: GLib.Object {
 	private void compute_watches (string[] watchfor) {
 		foreach (string key in watchfor) {
 			try {
-				int keycode = plugin.conf.get_integer (device, key);
-				this._watches.insert (keycode, key);
+				string[] settings = plugin.conf.get_string_list (device, key);
+				this._watches.insert (settings[0].to_int(), settings[1]);
 			}
 			catch (GLib.Error error) {
 				message (error.message);

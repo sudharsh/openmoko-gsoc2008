@@ -4,12 +4,8 @@ dbus_object_path=/org/freesmartphone/Device/Input
 
 # Device specific keycodes
 [FreeRunner]
-AUX = 169
-POWER = 116
-
-#FIXME: Hardcoded in input.vala
-ignore_input = 2,3
-
-watchfor = AUX,POWER
+event0 = 169,AUX,key,true
+event4 = 116,POWER,key,true
+watchfor = event0,event4
 reportheld = AUX,POWER
  
