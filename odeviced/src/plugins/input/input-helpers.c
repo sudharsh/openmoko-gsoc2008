@@ -27,11 +27,24 @@
 
 #include "input.h"
 
+
+struct held_key_payload {
+	Input *obj;
+	gchar *event_source;
+	struct input_event *event;
+};
+	
+
+static gboolean held_key_timeout (Input *self, struct held_key_payload *hk);
+
 /* FIXME: make this asynchronous, use idle processing */
 static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input *self) {
+
 	struct input_event event;
+	struct held_key_payload *hk;
 	gchar *event_source;
 	GHashTable *watches = input_get_watches (self);
+	GList *reportheld = input_get_reportheld (self);
 	
 	int fd = g_io_channel_unix_get_fd (channel);
 	
@@ -51,7 +64,15 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 
 	if (event.value == 0x01) { /* Press */
 		g_print ("\tInput: INFO: Got a keypress from %s\n", event_source);
-		g_signal_emit_by_name (self, "event", event_source, "pressed", 0);
+		if (!g_list_find (reportheld, event_source)) {
+		    g_signal_emit_by_name (self, "event", event_source, "pressed", 0);
+		    return TRUE;
+		}
+		hk->obj = self;
+		hk->event_source = event_source;
+		hk->event = &event;
+		g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, hk);
+		
 	}
 	if (event.value == 0x00) { /* Release */
 		g_print ("\tInput: INFO: Released %s Key\n", event_source);
@@ -59,6 +80,14 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 	}	
 
 	return TRUE;
+}
+
+
+static gboolean held_key_timeout (Input *self, struct held_key_payload *hk) {
+	GTimeVal currtime;
+	g_get_current_time (&currtime);
+	g_signal_emit_by_name (self, "event", hk->event_source, "pressed", (int)(currtime.tv_sec - hk->event->time.tv_sec));
+	return TRUE; /* Call me again */
 }
 
 

@@ -37,11 +37,15 @@ public class Input: GLib.Object {
 		get { return _watches; }
 	}
 
-	private Queue<int> event_q = new Queue<int> ();
-
 	private string[] watchfor;
 	private List<IOChannel> channels = new List<IOChannel> ();
-	private string[] reportheld;
+
+	private List<string> _reportheld = new List<string> ();
+	[DBus (visible = false)]
+	public List<string> reportheld {
+		get {return _reportheld; }
+	}
+		
 
    	public signal void @event(string name, string action, int seconds);
 
@@ -81,6 +85,8 @@ public class Input: GLib.Object {
 			try {
 				string[] settings = plugin.conf.get_string_list (device, key);
 				this._watches.insert (settings[0].to_int(), settings[1]);
+				if(settings[3] == "true")
+					this._reportheld.append(settings[1]);
 			}
 			catch (GLib.Error error) {
 				message (error.message);

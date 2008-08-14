@@ -7,5 +7,5 @@ dbus_object_path=/org/freesmartphone/Device/Input
 event0 = 169,AUX,key,true
 event4 = 116,POWER,key,true
 watchfor = event0,event4
-reportheld = AUX,POWER
+
  
