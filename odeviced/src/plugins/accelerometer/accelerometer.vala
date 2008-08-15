@@ -82,9 +82,10 @@ public class Accelerometer: Object {
 		int i = 0;
 		while (i<3) {
 			int val = AccelHelpers.retrieve_xyz (fd);			
-			if (val == -1) /* Syn Event */
+			if (val == -1) /* read() failed or EV_SYN */
 				continue;
-			values[i++] = val;
+			values[i] = val;
+			i++;
 		}
 		return values;
 	}

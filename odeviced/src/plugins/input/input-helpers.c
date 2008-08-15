@@ -21,6 +21,7 @@
 
 /* Internal helpers for the input plugin */
 
+#include <stdio.h>
 #include <glib.h>
 #include <unistd.h>
 #include <linux/input.h>
@@ -49,7 +50,11 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 	
 	int fd = g_io_channel_unix_get_fd (channel);
 	
-	read (fd, &event, sizeof(event));
+	if (read (fd, &event, sizeof(event)) < 0) {
+		perror ("read");
+		return TRUE;
+	}
+		
 	g_print ("Input: event, value:%d code:%u type:%u\n", event.value, event.code, event.type);
 	/* Ignore EV_SYN */
 	if (event.type == EV_SYN) {
