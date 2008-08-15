@@ -32,7 +32,7 @@ from gobject import timeout_add
 from logging import getLogger as get_logger
 
 from backend_manager import BackendManager
-from backend_manager import PIMB_CAP_ADD_ENTRY, PIMB_CAP_DEL_ENTRY, PIMB_CAP_UPD_ENTRY
+from backend_manager import PIMB_CAN_ADD_ENTRY, PIMB_CAN_DEL_ENTRY, PIMB_CAN_UPD_ENTRY
 from domain_manager import DomainManager
 from helpers import *
 
@@ -41,11 +41,12 @@ _DOMAINS = ('Contacts', )
 _OGSMD_POLL_INTERVAL = 7500
 
 
+
 #----------------------------------------------------------------------------#
 class SIMContactBackendFSO(object):
 #----------------------------------------------------------------------------#
 	name = 'SIM-Contacts-FSO'
-	properties = ()
+	properties = []
 
 	_domain_handlers = None           # Map of the domain handler objects we support
 	_entry_ids = None                 # List of all entry IDs that have data from us
@@ -83,9 +84,9 @@ class SIMContactBackendFSO(object):
 			name = name.encode('ascii', 'ignore')
 #			name.translate({"\xbf":None, "$":None})
 			
-			entry = []
-			entry.append( ['Phone', phone_number_to_tel_uri(number)] )
-			entry.append( ['Name', name] )
+			entry = {}
+			entry['Phone'] = phone_number_to_tel_uri(number)
+			entry['Name'] = name
 			
 			entry_id = self._domain_handlers['Contacts'].register_contact(self, entry)
 			self._entry_ids.append(entry_id)
@@ -106,6 +107,7 @@ class SIMContactBackendFSO(object):
 		except DBusException, e:
 			syslog(LOG_WARNING, "%s: Could not request SIM phonebook from ogsmd, scheduling retry (%s)" % (self.name, e))
 			timeout_add(_OGSMD_POLL_INTERVAL, self.load_entries)
+
 
 
 ###  Initalization  ###

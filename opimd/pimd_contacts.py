@@ -34,6 +34,9 @@ from difflib import SequenceMatcher
 
 from syslog import syslog, LOG_ERR, LOG_WARNING, LOG_INFO, LOG_DEBUG
 
+from backend_manager import BackendManager
+from backend_manager import PIMB_CAN_ADD_ENTRY
+
 from domain_manager import DomainManager
 from helpers import *
 from settings_manager import *
@@ -145,7 +148,7 @@ class Contact():
 		self._used_backends = []
 		
 		# Add URI field
-		self._fields.append( ['URI', uri, ''] )
+		self._fields.append( ['URI', uri, '', ''] )
 		self.rebuild_index()
 
 
@@ -185,7 +188,7 @@ class Contact():
 		
 		self._field_idx = {}
 		for (field_idx, field) in enumerate(self._fields):
-			(field_name, field_data, field_source) = field
+			(field_name, field_data, comp_value, field_source) = field
 			
 			try:
 				self._field_idx[field_name].append(field_idx)
@@ -193,18 +196,18 @@ class Contact():
 				self._field_idx[field_name] = [field_idx]
 
 
-	def import_fields(self, contact_fields, backend_name):
+	def import_fields(self, contact_data, backend_name):
 		"""Adds an array of contact data fields to this contact
 		
-		@param contact_fields Contact data; format: ((Key,Val), (Key,Val), ...)
+		@param contact_data Contact data; format: ((Key,Value), (Key,Value), ...)
 		@param backend_name Name of the backend to which those fields belong"""
 		
 		# We add all fields as they come, not checking for duplicate data
 		
 		self._used_backends.append(backend_name)
 		
-		for field in contact_fields:
-			(field_name, field_value) = field
+		for field_name in contact_data:
+			field_value = contact_data[field_name]
 			
 			# We only generate compare values for specific fields
 			compare_value = ""
@@ -233,10 +236,13 @@ class Contact():
 		@return List of (field_name, field_data) tuples"""
 		
 		entry = []
+		
 		for field in self._fields:
-			(field_name, field_data, field_source) = field
+			(field_name, field_data, comp_value, field_source) = field
+			
 			if field_source == backend_name:
 				entry.append((field_name, field_data))
+		
 		return entry
 
 
@@ -285,7 +291,7 @@ class Contact():
 	def attempt_merge(self, contact_fields, backend_name):
 		"""Attempts to merge the given contact into the contact list and returns its ID
 		
-		@param contact_fields Contact data; format: ((Key,Val), (Key,Val), ...)
+		@param contact_fields Contact data; format: ((Key,Value), (Key,Value), ...)
 		@param backend_name Backend that owns the contact data
 		@return True on successful merge, False otherwise"""
 		
@@ -329,19 +335,19 @@ class Contact():
 				
 				for field_id in field_ids:
 					
-					# A field is (Key,Value,Comp_Val,Source), so [2] is the value we usually use for comparison
-					comp_val = self._fields[field_id][2]
-					if not comp_val:
-						comp_val = self._fields[field_id][1]   # We use the true value if no comparison value given
+					# A field is (Key,Value,Comp_Value,Source), so [2] is the value we usually use for comparison
+					comp_value = self._fields[field_id][2]
+					if not comp_value:
+						comp_value = self._fields[field_id][1]   # We use the true value if no comparison value given
 					
 					# Compare and determine the best match ratio
-					matcher.set_seq1(comp_val)
-					match = matcher.find_longest_match(0, len(comp_val), 0, seq2_len)
+					matcher.set_seq1(comp_value)
+					match = matcher.find_longest_match(0, len(comp_value), 0, seq2_len)
 					match_len = match[2]
 					field_match = float(match_len) / seq2_len
 					
 					if field_match > best_field_match: best_field_match = field_match
-					syslog(LOG_DEBUG, "Contacts: Field match for %s / %s: %f" % (comp_val, field_value, field_match))
+					syslog(LOG_DEBUG, "Contacts: Field match for %s / %s: %f" % (comp_value, field_value, field_match))
 			
 			except KeyError:
 				# Contact has no data for this field contained in the query, so this entry cannot match
@@ -375,14 +381,14 @@ class SingleQueryHandler(object):
 		@param contacts Set of Contact objects to use
 		@param dbus_sender Sender's unique name on the bus"""
 		
-		matcher = ContactQueryMatcher(query)
+		self.query = query
+		self.sanitize_query()
+		
+		matcher = ContactQueryMatcher(self.query)
 		
 		self._contacts = contacts
-		self.query = query
 		self.entries = matcher.match(self._contacts)
 		self.cursors = {}
-		
-		self.sanitize_query()
 		
 		# TODO Register with all contacts to receive updates
 
@@ -512,6 +518,33 @@ class SingleQueryHandler(object):
 		return result
 
 
+		def check_new_contact(self, contact_id):
+			"""Checks whether a newly added contact matches this so it can signal clients
+			
+			@param contact_id Contact ID of the contact that was added
+			@return True if contact matches this query, False otherwise
+			
+			@todo Currently this messes up the order of the result set if a specific order was desired"""
+			
+			result = False
+			
+			matcher = ContactQueryMatcher(self.query)
+			if matcher.single_contact_matches():
+				self.entries = matcher.match(self._contacts)
+				
+				# TODO Register with the new contact to receive changes
+				
+				# We *should* reset all cursors *if* the result set is ordered, however
+				# in order to prevent confusion, this is left for the client to do.
+				# Rationale: clients with unordered queries can just use get_result()
+				# and be done with it. For those, theres's no need to re-read all results.
+				
+				# Let clients know that this result set changed
+				result = True
+			
+			return result
+
+
 
 #----------------------------------------------------------------------------#
 class QueryManager(DBusFBObject):
@@ -527,7 +560,7 @@ class QueryManager(DBusFBObject):
 		@param contacts Set of Contact objects to use"""
 		
 		self._contacts = contacts
-		self._queries = {}
+		self._queries = {}    # Must be a dict so we can remove queries without messing up query IDs
 		self._next_query_id = 0
 		
 		# Initialize the D-Bus-Interface
@@ -557,6 +590,19 @@ class QueryManager(DBusFBObject):
 		self._queries[query_id] = query_handler
 		
 		return 'dbus://' + _DBUS_PATH_QUERIES + '/' + str(query_id)
+
+
+	def check_new_contact(self, contact_id):
+		"""Checks whether a newly added contact matches one or more queries so they can signal clients
+		
+		@param contact_id Contact ID of the contact that was added"""
+		
+		for (query_id, query_handler) in self._queries.items():
+			if query_handler.check_new_contact(contact_id):
+				contact = self._contacts[contact_id]
+				contact_uri = contact['URI']
+				# TODO Figure out how relative signals really work
+				# self.ContactAdded(query_id, contact_uri)
 
 
 	@dbus_method(_DIN_QUERY, "", "i", rel_path_keyword="rel_path")
@@ -682,11 +728,11 @@ class ContactDomain(DBusFBObject):
 		"""Merges/inserts the given contact into the contact list and returns its ID
 		
 		@param backend Backend objects that requests the registration
-		@param contact_fields Contact data; format: ((Key,Val), (Key,Val), ...)"""
+		@param contact_fields Contact data; format: [Key:Value, Key:Value, ...]"""
 		
 		contact_id = -1
 		merge_success = False
-
+		
 		# Check if the contact can be merged with one we already know of
 		for entry in self._contacts:
 			if entry.attempt_merge(contact_fields, backend.name):
@@ -723,13 +769,31 @@ class ContactDomain(DBusFBObject):
 
 
 	@dbus_method(_DIN_CONTACTS, "a{sv}", "s")
-	def Add(self, contact_info):
+	def Add(self, contact_data):
 		"""Adds a contact to the list, assigning it to the default backend and saving it
 		
-		@param contact_info List of fields; format either [(Key,Val), (Key,Val), ...] or [Key: Val, Key: Val, ...]
+		@param contact_data List of fields; format is [Key:Value, Key:Value, ...]
 		@return URI of the newly created d-bus contact object"""
 		
-		raise NotImplementedError()
+		# We use the default backend for now
+		backend = BackendManager.get_default_backend(_DOMAIN_NAME)
+		result = ""
+		
+		if not PIMB_CAN_ADD_ENTRY in backend.properties:
+			raise InvalidBackendError()
+		
+		try:
+			contact_id = backend.add_contact(contact_data)
+		except AttributeError:
+			raise InvalidBackendError()
+		
+		contact = self._contacts[contact_id]
+		result = contact['URI']
+		
+		# As we just added a new contact, we check it against all queries to see if it matches
+		self.query_manager.check_new_contact(contact_id)
+		
+		return result
 
 
 	@dbus_method(_DIN_CONTACTS, "a{sv}s", "s")
@@ -742,6 +806,7 @@ class ContactDomain(DBusFBObject):
 		
 		result = ""
 		
+		# Only return one contact
 		query['_limit'] = 1
 		matcher = ContactQueryMatcher(query)
 		res = matcher.match(self._contacts)

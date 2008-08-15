@@ -68,3 +68,10 @@ class InvalidContactIDError(PIMException):
 #----------------------------------------------------------------------------#
 	"""Raised when a submitted contact ID is invalid / out of range"""
 	pass
+
+#----------------------------------------------------------------------------#
+class InvalidBackendError(PIMException):
+#----------------------------------------------------------------------------#
+	"""Raised when a backend is either invalid or unsuited for a certain function call"""
+	pass
+

@@ -44,10 +44,10 @@ from domain_manager import DomainManager
 from settings_manager import *
 
 
-PIMB_CAP_ADD_ENTRY = 'add_entry'
-PIMB_CAP_DEL_ENTRY = 'del_entry'
-PIMB_CAP_UPD_ENTRY = 'upd_entry'
-PIMB_CAP_NEEDS_LOGIN = 'needs_login'
+PIMB_CAN_ADD_ENTRY = 'add_entry'
+PIMB_CAN_DEL_ENTRY = 'del_entry'
+PIMB_CAN_UPD_ENTRY = 'upd_entry'
+PIMB_CAN_NEEDS_LOGIN = 'needs_login'
 
 PIMB_STATUS_DISCONNECTED = 0
 PIMB_STATUS_CONNECTED = 1
@@ -65,6 +65,7 @@ except ImportError:
 	_DBUS_PATH_BACKENDMNG = DBUS_PATH_BASE_PYNEO + '/Sources'
 	_DIN_BACKENDMNG = DIN_BASE_PYNEO + '.Sources'
 	ENV_MODE = 'pyneo'
+
 
 
 #----------------------------------------------------------------------------#
@@ -125,13 +126,21 @@ class BackendManager(DBusFBObject):
 		
 		@param domain The name of the domain to get the default backend for
 		@return The backend to use"""
+		
+		backend = None
+		
 		try:
-			key = domain.lower() + "_default_handler"
+			key = domain.lower() + "_default_backend"
 			backend_name = settings[key]
-			backend = self._backends[backend_name]
-		except KeyError:
-			backend = None
 			
+			for b in class_._backends:
+				if b.name == backend_name:
+					backend = b
+					break
+				
+		except KeyError:
+			pass
+		
 		return backend
 
 

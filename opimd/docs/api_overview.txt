@@ -1,0 +1,53 @@
+Object path / method				Interface name
+
+PIM/
+ + Messages/				--	.PIM.Messages
+   - Query()				--
+   + Queries/				--	.PIM.MessageQuery
+     + n				--
+       - GetResultCount()		--
+       - Rewind()			--
+       - Skip()				--			
+       - GetMessageURI()		--
+       - GetResult()			--
+       - GetMultipleResults()		--
+       - Dispose()			--
+       * MessageAdded			--
+       * MessageDeleted			--
+       * MessageChanged			--
+   + n					--	.PIM.Message
+     - GetContent()			--
+     - GetReadStatus()			--
+     - Delete()				--
+   * NewMessage				--
+
+ + Contacts/				OK	.PIM.Contacts
+   - Add()				--
+   - GetSingleContactSingleField()	OK
+   - Query()				OK
+   + Queries/				OK	.PIM.ContactQuery
+     + n				OK
+       - GetResultCount()		OK
+       - Rewind()			OK
+       - Skip()				OK
+       - GetContactURI()		OK
+       - GetResult()			OK
+       - GetMultipleResults()		OK
+       - Dispose()			OK
+       * ContactAdded			--
+       * ContactDeleted			--
+       * ContactChanged			--
+   + n					OK	.PIM.Contact
+     - GetContent()			OK
+     - GetMultipleFields()		OK
+     - Update()				--
+     - Delete()				--
+
+ + Sources/				OK	.PIM.Sources
+   - GetEntryCount()			OK
+   + n					OK
+     - GetName()			OK
+     - GetSupportedPIMDomains()		OK
+     - GetStatus()			OK
+     - Connect()			--
+     - Disconnect()			--
