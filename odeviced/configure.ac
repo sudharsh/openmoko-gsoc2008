@@ -69,4 +69,5 @@ src/plugins/input/Makefile
 src/plugins/led/Makefile
 src/plugins/idlenotifier/Makefile
 src/plugins/audio/Makefile
+src/plugins/accelerometer/Makefile
 ])

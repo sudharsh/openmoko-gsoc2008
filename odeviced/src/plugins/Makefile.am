@@ -6,5 +6,6 @@ SUBDIRS = \
 	input \
 	led \
 	idlenotifier \
-	audio
+	audio \
+	accelerometer
 

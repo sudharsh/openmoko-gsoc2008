@@ -38,16 +38,13 @@ public class WifiPlugin: Object {
 }
 
 
-namespace wifi {
+public bool wifi_init(ODeviced.PluginManager plugin) { 
+	WifiPlugin obj;
 
-	public static WifiPlugin obj;
-
-	public bool init (ODeviced.PluginManager plugin) {		
-		obj = new WifiPlugin();
-		if(obj == null)
-			return false;
-
-		ODeviced.register_dbus_object (plugin, obj);
-		return true;
-	}
+	obj = new WifiPlugin();
+	if(obj == null)
+		return false;
+	
+	ODeviced.register_dbus_object (plugin, obj);
+	return true;
 }

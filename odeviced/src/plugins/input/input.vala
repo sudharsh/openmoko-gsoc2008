@@ -38,7 +38,6 @@ public class Input: GLib.Object {
 	}
 
 	private string[] watchfor;
-	private List<IOChannel> channels = new List<IOChannel> ();
 
 	private List<string> _reportheld = new List<string> ();
 	[DBus (visible = false)]

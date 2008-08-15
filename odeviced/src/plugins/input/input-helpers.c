@@ -65,7 +65,7 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 
 	if (event.value == 0x01) { /* Press */
 		g_print ("\tInput: INFO: Got a keypress from %s\n", event_source);
-		if (g_list_find (reportheld, event_source)) {
+		if (g_list_find (reportheld, (void *)&event_source)) {
 			hk.obj = self;
 			hk.event_source = event_source;
 			hk.event = &event;
@@ -99,5 +99,4 @@ static gboolean held_key_timeout (Input *self, struct held_key_payload *hk) {
 
 void process_watch (GIOChannel *channel, Input *self) {
 	g_io_add_watch (channel, G_IO_IN, (GIOFunc)on_activity, self);
-	g_message ("Input: INFO: Added watch");	
 }
