@@ -43,25 +43,132 @@ public abstract class GenericPowerControl: GLib.Object {
 	public virtual signal void power (string device, bool enable);
 	 
 	[DBus (visible = false)]
-	public int get_power () {
-		return ODeviced.read_integer (this.powernode);
+	public virtual bool get_power () {
+		var val =  ODeviced.read_integer (this.powernode);
+		if (val == 1)
+			return true;
+		return false;
 	}
 	
 	[DBus (visible = false)]
-	public void set_power (bool enable) {
+	public virtual void set_power (bool enable) {
 		if(enable)
 			ODeviced.write_integer (this.powernode, 1);
 		else
 			ODeviced.write_integer (this.powernode, 0);
 	}
-	
+
+	[DBus (visible = false)]
+	public virtual void reset () {
+		ODeviced.write_integer (this.resetnode, 1);
+	}
 		
-	public abstract string GetName ();		
-	public abstract bool GetPower();
-	public abstract bool SetPower(bool enable);
-	public abstract void Reset();
+	public string GetName () {
+		return this.name;
+	}
+
+	public bool GetPower() {
+		return this.get_power();
+	}
+
+	public void SetPower(bool enable) {
+		if (enable!=this.get_power())
+			this.set_power (enable);
+	}
+
+	public void Reset() {
+		message ("Not implemented yet");
+	}
 		
 }
+
+
+public class Bluetooth: GenericPowerControl {
+	
+	private string _bluetooth_node = new string();
+
+	private string _dbus_path = "/org/freesmartphone/Device/PowerControl/Bluetooth";
+	public string dbus_path {
+		get { return _dbus_path; }
+	}
+
+	public ODeviced.PluginManager plugin {
+		get;
+		construct;
+	}
+
+	Bluetooth (ODeviced.PluginManager plugin) {
+		this.plugin = plugin;
+	}
+
+	construct {
+		var device = ODeviced.get_device();
+		this.name = "Bluetooth";
+		this._bluetooth_node = plugin.conf.get_string (device, "bluetooth_node");
+		this.powernode = "/sys/class/platform/" + this._bluetooth_node + "/power_on";
+		this.resetnode = "/sys/class/platform/" + this._bluetooth_node + "/reset";
+	}
+
+}
+
+
+public class GSM: GenericPowerControl {
+	
+	private string _gsm_node = new string();
+
+	private string _dbus_path = "/org/freesmartphone/Device/PowerControl/GSM";
+	public string dbus_path {
+		get { return _dbus_path; }
+	}
+
+	public ODeviced.PluginManager plugin {
+		get;
+		construct;
+	}
+
+	GSM (ODeviced.PluginManager plugin) {
+		this.plugin = plugin;
+	}
+
+	construct {
+		var device = ODeviced.get_device();
+		this.name = "GSM";
+		this._gsm_node = plugin.conf.get_string (device, "gsm_node");
+		this.powernode = "/sys/class/platform/" + this._gsm_node + "/power_on";
+		this.resetnode = "/sys/class/platform/" + this._gsm_node + "/reset";
+	}
+
+}
+
+
+public class GPS: GenericPowerControl {
+	
+	private string _gps_node = new string();
+
+	private string _dbus_path = "/org/freesmartphone/Device/PowerControl/GPS";
+	public string dbus_path {
+		get { return _dbus_path; }
+	}
+
+	public ODeviced.PluginManager plugin {
+		get;
+		construct;
+	}
+
+	GPS (ODeviced.PluginManager plugin) {
+		this.plugin = plugin;
+	}
+
+	construct {
+		var device = ODeviced.get_device();
+		this.name = "GPS";
+		this._gps_node = plugin.conf.get_string (device, "gps_node");
+		this.powernode = "/sys/class/platform/" + this._gps_node + "/pwron";
+		this.resetnode = "";
+	}
+
+}
+
 
 
 public class Wifi: GenericPowerControl {
@@ -69,12 +176,10 @@ public class Wifi: GenericPowerControl {
 	private string default_iface = new string();
 	private string _dbus_path = "/org/freesmartphone/Device/PowerControl/WiFi";
 		
-	[DBus (visible = false)]
-	public string dbus_path {
+   	public string dbus_path {
 		get { return _dbus_path; }
 	}
 	
-	[DBus (visible = false)]
 	public ODeviced.PluginManager plugin {
 		get;
 		construct;
@@ -90,21 +195,14 @@ public class Wifi: GenericPowerControl {
 		this.name = "WiFi";
 	}
 		
-	public override bool GetPower() {
+	public override bool get_power() {
 		return WifiHelpers.get_status (this.default_iface);
 	}
 	
-	public override bool SetPower(bool enable) {
-		return WifiHelpers.set_control (this.default_iface, enable);
+	public override void set_power(bool enable) {
+		WifiHelpers.set_control (this.default_iface, enable);
 	}
 
-	public override string GetName () {
-		return this.name;
-	}
-
-	public override void Reset () {
-		print ("\tWiFi: INFO: No Reset for Wifi\n");
-	}
 }
 
 
@@ -112,6 +210,9 @@ public class Wifi: GenericPowerControl {
 namespace powercontrol {
 	
 	public static Wifi wifi_obj;
+	public static Bluetooth blt_obj;
+	public static GSM gsm_obj;
+	public static GPS gps_obj;
 	
 	public bool init (ODeviced.PluginManager plugin) {
 
@@ -119,22 +220,55 @@ namespace powercontrol {
 		string device = ODeviced.get_device();
 		var enable = plugin.conf.get_string_list (device, "enable");
 		
+		/* FIXME: refactor this */
 		foreach (string klass in enable) {
 			switch (klass){
+
 			case "WiFi":
 				wifi_obj = new Wifi (plugin);
 				if (wifi_obj == null)
 					success = false;
 				ODeviced.connection.register_object (wifi_obj.dbus_path, (GLib.Object)wifi_obj);
 				plugin.dbus_object_paths.append (wifi_obj.dbus_path);
+				print ("\tPowerControl: INFO: Registered %s\n", klass);
 				break;
+
+			case "Bluetooth":
+				blt_obj = new Bluetooth (plugin);
+				if (blt_obj == null)
+					success = false;
+				ODeviced.connection.register_object (blt_obj.dbus_path, (GLib.Object)blt_obj);
+				plugin.dbus_object_paths.append (blt_obj.dbus_path);
+				print ("\tPowerControl: INFO: Registered %s\n", klass);	
+				break;
+
+			case "GSM":
+				gsm_obj = new GSM (plugin);
+				if (gsm_obj == null)
+					success = false;
+				ODeviced.connection.register_object (gsm_obj.dbus_path, (GLib.Object)gsm_obj);
+				plugin.dbus_object_paths.append (gsm_obj.dbus_path);
+				print ("\tPowerControl: INFO: Registered %s\n", klass);	
+				break;
+
+			case "GPS":
+				gps_obj = new GPS (plugin);
+				if (gps_obj == null)
+					success = false;
+				ODeviced.connection.register_object (gps_obj.dbus_path, (GLib.Object)gps_obj);
+				plugin.dbus_object_paths.append (gps_obj.dbus_path);
+				print ("\tPowerControl: INFO: Registered %s\n", klass);	
+				break;
+
 			default:
 				print ("\tNo definition for %s\n", klass);
 				break;
 			}
-		}
+		}		
 		return success;
 	}
+
+
 }
 				
 
