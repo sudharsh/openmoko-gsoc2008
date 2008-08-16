@@ -37,8 +37,8 @@ int retrieve_xyz (int fd) {
 		return -1;
 	}
 	
-	if (event.value != EV_SYN) {
-		g_print ("\tAccel: INFO value %u\n", event.value);
+	if (event.type != EV_SYN) {
+		g_print ("\tAccel: INFO value %d\n", event.value);
 		return event.value;
 	}
 		
