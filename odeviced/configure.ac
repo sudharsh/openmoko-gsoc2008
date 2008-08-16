@@ -61,7 +61,7 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 src/plugins/Makefile
-src/plugins/wifi/Makefile
+src/plugins/powercontrol/Makefile
 src/plugins/rtc/Makefile
 src/plugins/display/Makefile
 src/plugins/power/Makefile

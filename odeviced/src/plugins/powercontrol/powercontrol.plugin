@@ -1,0 +1,7 @@
+[powercontrol]
+dbus_interface = org.freesmartphone.Device.PowerControl
+dbus_object_patch = /org/freesmartphone/Device/PowerControl
+
+[FreeRunner]
+enable = WiFi,Bluetooth,GPS,GSM
+default_iface = eth0

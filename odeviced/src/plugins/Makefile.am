@@ -1,5 +1,5 @@
 SUBDIRS = \
-	wifi \
+	powercontrol \
 	display \
 	rtc \
 	power \

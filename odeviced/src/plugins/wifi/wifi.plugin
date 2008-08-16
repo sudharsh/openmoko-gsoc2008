@@ -1,3 +1,0 @@
-[wifi]
-dbus_interface=org.freesmartphone.Device.PowerControl.WiFi
-dbus_object_path=/org/freesmartphone/Device/PowerControl/WiFi
