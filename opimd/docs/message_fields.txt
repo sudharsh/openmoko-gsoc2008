@@ -1,0 +1,36 @@
+
+----- Messages ---------------------------------------------------------------
+
+DESC		COUNT		FIELD NAME	CLASS	URI SCHEME
+------------------------------------------------------------------
+
+----- Internal use only ------------------------------------------
+
+Unique ID	  1		Hash			md5://? id://?
+Semantic links	0-X 		LinkedWith		dbus://[spouse|partner|coworker|bestfriend|...]@URI (link using md5?)
+							 - or -
+							entrylist:// (comma-seperated list of numeric IDs with types)
+
+Link blacklist			DoNotLinkWith		entrylist:// (comma-seperated list of numeric IDs)
+
+----- Non-internal fields with static data ---------------------
+
+Self reference	  1		URI			dbus://
+Source		  1		Source			dbus://
+Date		  1		Date			YYYY
+Direction	  1		Direction		in or out
+Title		0-1		Title			none
+Sender		  1		Sender			none, tel:, sip:...
+Recipient	1-X		Recipient		none, tel:, sip:...
+Attachment	0-X		Attachment		file:// or base64:// if < 1KB
+Transmit Loc	0-1		Position		
+Thread
+
+Text		0-1		Text			none or file:// or dbus://
+[Inline only if <1K bytes]
+
+----- User modifyable fields ------------------------------------------------
+
+Message read?	0-1		MessageRead		0 or 1
+Message sent?	0-1		MessageSent		0 or 1
+Folder

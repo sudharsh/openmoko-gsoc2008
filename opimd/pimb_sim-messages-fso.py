@@ -1,8 +1,9 @@
 #
 #   Openmoko PIM Daemon
-#   SIM-Contacts Backend Plugin for FSO
+#   SIM-Messages Backend Plugin for FSO
 #
 #   http://openmoko.org/
+#   http://pyneo.org/
 #   http://pyneo.org/
 #
 #   Copyright (C) 2008 by Soeren Apel (abraxa@dar-clan.de)
@@ -22,7 +23,7 @@
 #   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-"""pypimd SIM-Contacts Backend Plugin for FSO"""
+"""pypimd SIM-Messages Backend Plugin for FSO"""
 
 from dbus import SystemBus
 from dbus.proxies import Interface
@@ -36,19 +37,20 @@ from domain_manager import DomainManager
 from helpers import *
 
 
-_DOMAINS = ('Contacts', )
+_DOMAINS = ('Messages', )
 _OGSMD_POLL_INTERVAL = 7500
 
 
 
 #----------------------------------------------------------------------------#
-class SIMContactBackendFSO(object):
+class SIMMessageBackendFSO(object):
 #----------------------------------------------------------------------------#
-	name = 'SIM-Contacts-FSO'
+	name = 'SIM-Messages-FSO'
 	properties = []
 
 	_domain_handlers = None           # Map of the domain handler objects we support
 	_entry_ids = None                 # List of all entry IDs that have data from us
+	_gsm_sim_iface = None
 #----------------------------------------------------------------------------#
 
 	def __init__(self):
@@ -59,6 +61,7 @@ class SIMContactBackendFSO(object):
 		 self._domain_handlers[domain] = DomainManager.get_domain_handler(domain)
 
 		self.load_entries()
+		self.install_signal_handlers()
 
 
 	def get_supported_domains(self):
@@ -66,29 +69,41 @@ class SIMContactBackendFSO(object):
 		return _DOMAINS
 
 
-	def log_error(self, error):
+	def handle_pin_error(self, error):
 		log = get_logger('opimd')
-		log.error("%s hit an error and schedules retry. Reason: %s" % (self.name, error))
+		log.error("%s hit an error, scheduling retry. Reason: %s" % (self.name, error))
 		timeout_add(_OGSMD_POLL_INTERVAL, self.load_entries)
 
 
-	def process_entries(self, entries):
-		for (sim_entry_id, name, number) in entries:
-			
-			if len(name) == 0: continue
-			
-			# Remove special characters that indicate groups
-			
-			# TODO Do this in a non-unicode-destructing manner
-			name = name.encode('ascii', 'ignore')
-#			name.translate({"\xbf":None, "$":None})
-			
-			entry = {}
-			entry['Phone'] = phone_number_to_tel_uri(number)
-			entry['Name'] = name
-			
-			entry_id = self._domain_handlers['Contacts'].register_contact(self, entry)
-			self._entry_ids.append(entry_id)
+	def process_single_entry(self, status, number, text):
+		entry = {}
+		
+		entry['Direction'] = 'in' if status in ('read', 'unread') else 'out'
+		
+		if status == 'read': entry['MessageRead'] = 1
+		if status == 'sent': entry['MessageSent'] = 1
+		
+		if entry['Direction'] == 'in':
+			entry['Sender'] = phone_number_to_tel_uri(number)
+		else:
+			entry['Recipient'] = phone_number_to_tel_uri(number)
+		
+		# TODO Handle text properly, i.e. make it on-demand if >1KiB
+		entry['Text'] = text
+		
+		entry_id = self._domain_handlers['Messages'].register_message(self, entry)
+		self._entry_ids.append(entry_id)
+
+
+	def process_all_entries(self, entries):
+		for (sim_entry_id, status, number, text) in entries:
+			if len(text) == 0: continue
+			self.process_single_entry(status, number, text)
+
+
+	def process_incoming_entry(self, entry):
+		(number, text) = entry
+		self.process_single_entry('unread', number, text)
 
 
 	def load_entries(self):
@@ -96,19 +111,40 @@ class SIMContactBackendFSO(object):
 		
 		try:
 			gsm = bus.get_object('org.freesmartphone.ogsmd', '/org/freesmartphone/GSM/Device')
-			gsm_sim_iface = Interface(gsm, 'org.freesmartphone.GSM.SIM')
+			self.gsm_sim_iface = Interface(gsm, 'org.freesmartphone.GSM.SIM')
 			
-			gsm_sim_iface.RetrievePhonebook(
-				reply_handler=self.process_entries,
-				error_handler=self.log_error
+			self.gsm_sim_iface.RetrieveMessagebook(
+				'all',
+				reply_handler=self.process_all_entries,
+				error_handler=self.handle_pin_error
 				)
 				
 		except DBusException, e:
-			syslog(LOG_WARNING, "%s: Could not request SIM phonebook from ogsmd, scheduling retry (%s)" % (self.name, e))
+			syslog(LOG_WARNING, "%s: Could not request SIM messagebook from ogsmd, scheduling retry (%s)" % (self.name, e))
 			timeout_add(_OGSMD_POLL_INTERVAL, self.load_entries)
+
+
+	def handle_incoming_message(self, message_id):
+		self.gsm_sim_iface.RetrieveMessage(
+			message_id,
+			reply_handler=self.process_incoming_entry
+			# TODO We ignore errors for now
+			)
+
+
+	def install_signal_handlers(self):
+		"""Hooks to some d-bus signals that are of interest to us"""
+		
+		bus = SystemBus()
+		
+		bus.add_signal_receiver(
+			self.handle_incoming_message,
+			'IncomingMessage',
+			'org.freesmartphone.GSM.SIM'
+			)
 
 
 
 ###  Initalization  ###
 
-BackendManager.register_backend(SIMContactBackendFSO())
+BackendManager.register_backend(SIMMessageBackendFSO())

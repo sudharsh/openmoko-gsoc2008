@@ -1,24 +1,33 @@
 Object path / method				Interface name
 
 PIM/
- + Messages/				--	.PIM.Messages
-   - Query()				--
-   + Queries/				--	.PIM.MessageQuery
-     + n				--
-       - GetResultCount()		--
-       - Rewind()			--
-       - Skip()				--			
-       - GetMessageURI()		--
-       - GetResult()			--
-       - GetMultipleResults()		--
-       - Dispose()			--
+ + Messages/				OK	.PIM.Messages
+   - Query()				OK
+   + Queries/				OK	.PIM.MessageQuery
+     + n				OK
+       - GetResultCount()		OK
+       - Rewind()			OK
+       - Skip()				OK			
+       - GetMessageURI()		OK
+       - GetResult()			OK
+       - GetMultipleResults()		OK
+       - Dispose()			OK
        * MessageAdded			--
        * MessageDeleted			--
        * MessageChanged			--
-   + n					--	.PIM.Message
-     - GetContent()			--
-     - GetReadStatus()			--
+   - GetFolderNames()			--
+   - GetFolderOverview()		--
+   + Folders/				--	.PIM.MessageFolder
+     + [name]				--
+       - GetMessageCount()		--
+       - GetMessages()			--
+   + n					OK	.PIM.Message
+     - GetContent()			OK
+     - GetMultipleFields()		OK
+     - Update()				--
      - Delete()				--
+     + OnDemandAttachments/		--
+       + n				--
    * NewMessage				--
 
  + Contacts/				OK	.PIM.Contacts
