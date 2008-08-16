@@ -3,7 +3,7 @@
 #   Various globally used helpers
 #
 #   http://openmoko.org/
-#   http://neo1973-germany.de/
+#   http://pyneo.org/
 #
 #   Copyright (C) 2008 by Soeren Apel (abraxa@dar-clan.de)
 #
@@ -31,6 +31,7 @@
 
 def phone_number_to_tel_uri(phone_num):
 	"""Transforms a regular phone number into a tel URI"""
+	
 	uri = "tel:"
 	
 	uri += phone_num
@@ -38,7 +39,8 @@ def phone_number_to_tel_uri(phone_num):
 
 
 def get_compare_for_tel(tel_value):
-	"""Determines and returns a presentation of a tel URI that is comparable to human input"""
+	"""Determines and returns a representation of a tel URI that is comparable to human input"""
+	
 	res = tel_value[4:]    # Remove tel:
 	res = res.translate({ord(u'+'):None, ord(u'-'):None, ord(u'/'):None})   # Remove +, - and /
 	
@@ -52,21 +54,9 @@ class PIMException(Exception):
 	pass
 
 #----------------------------------------------------------------------------#
-class NoMoreContactsError(PIMException):
-#----------------------------------------------------------------------------#
-	"""Raised when there are no more contacts to be listed"""
-	pass
-
-#----------------------------------------------------------------------------#
 class InvalidQueryIDError(PIMException):
 #----------------------------------------------------------------------------#
 	"""Raised when a submitted query ID is invalid / out of range"""
-	pass
-
-#----------------------------------------------------------------------------#
-class InvalidContactIDError(PIMException):
-#----------------------------------------------------------------------------#
-	"""Raised when a submitted contact ID is invalid / out of range"""
 	pass
 
 #----------------------------------------------------------------------------#

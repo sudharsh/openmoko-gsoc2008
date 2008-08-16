@@ -5,7 +5,7 @@
 #   Main Program
 #
 #   http://openmoko.org/
-#   http://neo1973-germany.de/
+#   http://pyneo.org/
 #
 #   Copyright (C) 2008 by Soeren Apel (abraxa@dar-clan.de)
 #

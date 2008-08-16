@@ -1,75 +1,74 @@
 
 ----- Contacts ---------------------------------------------------------------
 
-DESC		COUNT		FIELD NAME	URI SCHEME
-----------------------------------------------------------
+DESC		COUNT		FIELD NAME	CLASS	URI SCHEME
+------------------------------------------------------------------
 
------ Internal use only ----------------------------------
+----- Internal use only ------------------------------------------
 
-Unique ID	  1		Hash		md5://? id://?
-Source		  1		Source		dbus://
-Semantic links	0-X 		LinkedWith	dbus://[spouse|partner|coworker|bestfriend|...]@URI (link using md5?)
-						 - or -
-						entrylist:// (comma-seperated list of numeric IDs with types)
+Unique ID	  1		Hash			md5://? id://?
+Semantic links	0-X 		LinkedWith		dbus://[spouse|partner|coworker|bestfriend|...]@URI (link using md5?)
+							 - or -
+							entrylist:// (comma-seperated list of numeric IDs with types)
 
-Link blacklist			DoNotLinkWith	entrylist:// (comma-seperated list of numeric IDs)
+Link blacklist			DoNotLinkWith		entrylist:// (comma-seperated list of numeric IDs)
 
------ Non-internal fields with non-user data -------------
+----- Non-internal fields with (virtually) static data ---------------------
 
-Self reference	  1		URI		dbus://
-Is organization	0-1		IsOrg		flag://[yes|no]
+Self reference	  1		URI			dbus://
+Is organization	0-1		IsOrg			0 or 1
 
------ User fields ----------------------------------------
+----- User modifyable fields ------------------------------------------------
 
-Title		0-1		Title		text://
-Name		0-1		Name		text://
-Surname		0-1		Surname		text://
-Nickname	0-1		Nickname	text://
+Title		0-1		Title			none
+Name		0-1		Name			none
+Surname		0-1		Surname			none
+Nickname	0-1		Nickname		none
 [Name or Nickname must be set at least]
 
-Address		0-X		Address		address://
-Birthdate	0-1		Birthdate	date://
-Date of marr.   0-1		MarrDate	date://
+Address		0-X		Address			address://
+Birthdate	0-1		Birthdate		date://
+Date of marr.   0-1		MarrDate		date://
 
-Picture		0-X		Picture		file://
-Note		0-X		Note		text://
-Partner		0-1		Partner		text:// or dbus:// -> contact URI
-Spouse		0-1		Spouse		text:// or dbus:// -> contact URI
+Picture		0-X		Picture			file://
+Note		0-X		Note			none
+Partner		0-1		Partner			none or dbus:// -> contact URI
+Spouse		0-1		Spouse			none or dbus:// -> contact URI
 
-Blog URL	0-X		BlogURL		http://
-Blog feed URL	0-X		BlogFeed	feed://
-Homepage URL	0-X		Homepage	http://
+Blog URL	0-X		BlogURL			http://
+Blog feed URL	0-X		BlogFeed		feed://
+Homepage URL	0-X		Homepage		http://
 
-Calendar URI	0-X		Calendar	???
-Free/Busy URL	0-X		FreeBusy	http:// or https:// or ftp:// or file://
-Phone		0-X		Phone (general) tel:// or sip://
-Cell phone	0-X		Cellphone	tel:// or sip://
-Car phone	0-X		Carphone	tel:// or sip://
-Pager		0-X		Pager		tel:// or sip://
-eMail address	0-X		EMail		mailto://
-First met at..	0-1		MetAt		geoloc://
+Calendar URI	0-X		Calendar		???
+Free/Busy URL	0-X		FreeBusy		http://, https://, ftp:// or file://
+Phone		0-X		Phone (general) 	tel: or sip:
+Cell phone	0-X		Cellphone		tel: or sip:
+Car phone	0-X		Carphone		tel: or sip:
+Pager		0-X		Pager			tel: or sip:
+eMail address	0-X		EMail			mailto://
+First met at..	0-1		MetAt			geoloc://
 
-AIM		0-X		AIM		aim://
-MSN		0-X		MSN		msnim://
-ICQ		0-X		ICQ		icq://
-yahoo IM	0-X		YIM		yim://
-jabber IM	0-X		Jabber		jabber://
-gadugadu	0-X		GaduGadu	gg://
+AIM		0-X		AIM			aim://
+MSN		0-X		MSN			msnim://
+ICQ		0-X		ICQ			icq://
+yahoo IM	0-X		YIM			yim://
+jabber IM	0-X		Jabber			jabber://
+gadugadu	0-X		GaduGadu		gg://
 
 
-Home fax	0-X		HomeFax		tel:// or sip:// or sips://
-Home phone	0-X		HomePhone	tel:// or sip:// or sips://
-Home location	0-1		HomeLoc		geoloc://
+Home fax	0-X		HomeFax			none, sip: or sips:
+Home phone	0-X		HomePhone		none, sip: or sips:
+Home location	0-1		HomeLoc			geoloc://
 
 -- Work
 
-Assistant	0-X		Assistant	text:// or dbus:// -> contact URI
-Fax at work	0-X		WorkFax		tel:// or sip:// or sips://
-Phone at work	0-X		WorkPhone	tel:// or sip:// or sips://
-Work eMail	0-X		WorkEMail	mailto://
-Work location	0-X		WorkLoc		geoloc://
-Works for...	0-X		WorksFor	text:// or dbus:// -> contact URI
-Department	0-1		Department	text://
+Assistant	0-X		Assistant		none or dbus:// -> contact URI
+Fax at work	0-X		WorkFax			tel:, sip: or sips:
+Phone at work	0-X		WorkPhone		tel:, sip: or sips:
+Work eMail	0-X		WorkEMail		mailto://
+Work location	0-X		WorkLoc			geoloc://
+Works for...	0-X		WorksFor		none or dbus:// -> contact URI
+Department	0-1		Department		none
 
 
 
