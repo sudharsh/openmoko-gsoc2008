@@ -22,11 +22,7 @@
 #   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-"""pypimd CSV-Contacts Backend Plugin
-
-Exports:
- - init ...................... initializes plugin and registers it
-"""
+"""pypimd CSV-Contacts Backend Plugin"""
 
 from syslog import syslog, LOG_WARNING, LOG_INFO, LOG_DEBUG
 

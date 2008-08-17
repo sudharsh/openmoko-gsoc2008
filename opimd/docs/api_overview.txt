@@ -28,10 +28,10 @@ PIM/
      - Delete()				--
      + OnDemandAttachments/		--
        + n				--
-   * NewMessage				--
+   * NewMessage				OK
 
  + Contacts/				OK	.PIM.Contacts
-   - Add()				--
+   - Add()				OK
    - GetSingleContactSingleField()	OK
    - Query()				OK
    + Queries/				OK	.PIM.ContactQuery
@@ -54,7 +54,7 @@ PIM/
 
  + Sources/				OK	.PIM.Sources
    - GetEntryCount()			OK
-   + n					OK
+   + n					OK	.PIM.Source
      - GetName()			OK
      - GetSupportedPIMDomains()		OK
      - GetStatus()			OK

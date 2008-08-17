@@ -22,18 +22,11 @@
 #   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-"""pypimd Domain Plugin Manager
-
-Loads and manages the various PIM domain plugins (contacts, messages, etc.)
-Exports a DomainManager singleton with the following class methods:
-  - init ..................... Loads domain plugins and initializes them
-  - register_domain .......... Takes a PIM domain class and registers it
-  - get_domain_handler ....... Returns a given domain plugin instance
-"""
+"""pypimd Domain Plugin Manager"""
 
 import os
 
-from syslog import syslog, LOG_INFO, LOG_DEBUG
+from syslog import syslog, LOG_WARNING, LOG_INFO, LOG_DEBUG
 
 from settings_manager import *
 
@@ -49,20 +42,24 @@ class DomainManager(object):
 	def init(class_, plugin_path):
 
 		# Load all domain plugins (pimd = PIM Domain)
-		files = os.listdir(plugin_path)
+		try:
+			files = os.listdir(plugin_path)
+			
+			for plugin in filter(
+				lambda s: (s[-3:] == '.py' and s[:5] == 'pimd_'),
+					files):
+					
+					# Don't load unsuited modules
+					if (ENV_MODE == 'pyneo' and 'FSO' in plugin): continue
+					if (ENV_MODE == 'FSO' and 'pyneo' in plugin): continue
+					
+					syslog(LOG_DEBUG, "Loading " + plugin)
+					
+					(file_name, file_ext) = os.path.splitext(plugin)
+					__import__(file_name, globals(), locals(), [])
 		
-		for plugin in filter(
-			lambda s: (s[-3:] == '.py' and s[:5] == 'pimd_'),
-				files):
-				
-				# Don't load unsuited modules
-				if (ENV_MODE == 'pyneo' and 'FSO' in plugin): continue
-				if (ENV_MODE == 'FSO' and 'pyneo' in plugin): continue
-				
-				syslog(LOG_DEBUG, "Loading " + plugin)
-				
-				(file_name, file_ext) = os.path.splitext(plugin)
-				__import__(file_name, globals(), locals(), [])
+		except OSError:
+			syslog(LOG_WARNING, "Could not open domain plugin directory: %s" % plugin_path)
 
 
 	@classmethod
@@ -77,7 +74,7 @@ class DomainManager(object):
 
 
 	@classmethod
-	def get_dbus_objects(class_):
+	def enumerate_dbus_objects(class_):
 		for handler in class_._domains.values():
 			for obj in handler.get_dbus_objects():
 				yield obj
