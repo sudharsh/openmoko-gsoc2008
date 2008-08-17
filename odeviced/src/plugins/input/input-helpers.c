@@ -27,26 +27,21 @@
 #include <linux/input.h>
 
 #include "input.h"
+#include "input-helpers.h"
 
-
-struct held_key_payload {
-	Input *obj;
-	gchar *event_source;
-	struct input_event *event;
-};
-	
-
-static gboolean held_key_timeout (Input *self, struct held_key_payload *hk);
 
 /* FIXME: make this asynchronous, use idle processing */
 static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input *self) {
 
 	struct input_event event;
 	struct held_key_payload hk;
+
 	gchar *event_source;
+	static guint tag;
 
 	GHashTable *watches = input_get_watches (self);
 	GList *reportheld = input_get_reportheld (self);
+	GList *temp = NULL;
 	
 	int fd = g_io_channel_unix_get_fd (channel);
 	
@@ -70,20 +65,24 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 
 	if (event.value == 0x01) { /* Press */
 		g_print ("\tInput: INFO: Got a keypress from %s\n", event_source);
-		if (g_list_find (reportheld, (void *)&event_source)) {
-			hk.obj = self;
-			hk.event_source = event_source;
-			hk.event = &event;
-			g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, &hk);
+		
+		if (list_has(reportheld, (char *)event_source)) {
+			hk.tv_sec = event.time.tv_sec;
+			tag = g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, &hk);
+			g_print ("Key held for %\n", hk.held_secs);
+			g_signal_emit_by_name (self, "event", event_source, "pressed", hk.held_secs);
 		}
 		else {
 			g_print ("\treportheld set to something other than true\n");
 			g_signal_emit_by_name (self, "event", event_source, "pressed", 0);
+			tag = 0;
 		}
 		
 	}
 	if (event.value == 0x00) { /* Release */
 		g_print ("\tInput: INFO: Released %s Key\n", event_source);
+		if (tag) 
+			g_source_remove (tag);
 		g_signal_emit_by_name (self, "event", event_source, "released", 0);
 	}	
 
@@ -91,13 +90,24 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 }
 
 
-static gboolean held_key_timeout (Input *self, struct held_key_payload *hk) {
+static gboolean list_has (GList *list, char *data) {
+	int i = 0;
+	char *_element = g_list_nth_data (list, 0);
+	while (_element) {
+		if (g_strcmp0 (_element, data)==0) 
+			return TRUE;
+		_element = g_list_nth_data (list, i++);
+	}
+	return FALSE;
+}
+		
+		
+
+
+gboolean held_key_timeout (struct held_key_payload hk) {
 	GTimeVal currtime;
-	int held_secs;
 	g_get_current_time (&currtime);
-	held_secs = (int)(currtime.tv_sec - hk->event->time.tv_sec);
-	g_print ("\tInput: INFO: Held key for %d secs", held_secs);
-	g_signal_emit_by_name (self, "event", hk->event_source, "pressed", held_secs);
+	hk.held_secs = (int)(currtime.tv_sec - hk.tv_sec);
 	return TRUE; /* Call me again */
 }
 
