@@ -61,11 +61,11 @@ namespace ODeviced {
 				string node = dir.read_name();
 				var i = 0;
 				while(node!=null) {
-					node = ODeviced.cleanup_dbus_path (node);
+					string cleansed_node = ODeviced.cleanup_dbus_path (node);
 					var obj = GLib.Object.new(klass, "node", dev_node + "/" + node,
-											  "dbus_path", dbus_path + "/" + node,
+											  "dbus_path", dbus_path + "/" + cleansed_node,
 						                      "plugin", plugin);
-					plugin.dbus_object_paths.append(dbus_path + "/" + node);
+					plugin.dbus_object_paths.append(dbus_path + "/" + cleansed_node);
 					objList.append(obj);
 					node = dir.read_name();
 					

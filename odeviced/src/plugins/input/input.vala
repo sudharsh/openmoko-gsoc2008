@@ -42,7 +42,7 @@ public class Input: GLib.Object {
 	private List<string> _reportheld = new List<string> ();
 	[DBus (visible = false)]
 	public List<string> reportheld {
-		get {return _reportheld; }
+		get { return _reportheld; }
 	}
 		
 
