@@ -22,11 +22,7 @@
 #   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-"""pypimd Helpers
-
-  - phone_number_to_tel_uri .. Transforms a regular phone number into a tel URI
-  - get_compare_for_tel ...... Returns a presentation of a tel URI that is comparable to human input
-"""
+"""pypimd Helpers"""
 
 
 def phone_number_to_tel_uri(phone_num):
@@ -57,6 +53,12 @@ class PIMException(Exception):
 class InvalidQueryIDError(PIMException):
 #----------------------------------------------------------------------------#
 	"""Raised when a submitted query ID is invalid / out of range"""
+	pass
+
+#----------------------------------------------------------------------------#
+class InvalidBackendIDError(PIMException):
+#----------------------------------------------------------------------------#
+	"""Raised when a submitted backend ID is invalid / out of range"""
 	pass
 
 #----------------------------------------------------------------------------#

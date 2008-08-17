@@ -22,14 +22,7 @@
 #   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-"""pypimd Backend Plugin Manager
-
-Loads and manages the various PIM backend plugins (csv-contacts, mail-messages, etc.)
-Exports a DomainManager singleton with the following class methods:
-  - init ..................... Loads backend plugins and initializes them
-  - register_backend ......... Takes a PIM backend class and registers it with
-                               the given domain handler
-"""
+"""pypimd Backend Plugin Manager"""
 
 import os
 
@@ -38,9 +31,10 @@ from dbus.service import FallbackObject as DBusFBObject
 from dbus.service import signal as dbus_signal
 from dbus.service import method as dbus_method
 
-from syslog import syslog, LOG_INFO, LOG_DEBUG
+from syslog import syslog, LOG_WARNING, LOG_INFO, LOG_DEBUG
 
 from domain_manager import DomainManager
+from helpers import *
 from settings_manager import *
 
 
@@ -57,13 +51,15 @@ PIMB_STATUS_CONNECTED = 1
 try:
 	import framework.config
 	
-	_DBUS_PATH_BACKENDMNG = DBUS_PATH_BASE_FSO + '/Sources'
-	_DIN_BACKENDMNG = DIN_BASE_FSO + '.Sources'
+	_DBUS_PATH_SOURCES = DBUS_PATH_BASE_FSO + '/Sources'
+	_DIN_SOURCES = DIN_BASE_FSO + '.Sources'
+	_DIN_SOURCE = DIN_BASE_FSO + '.Source'
 	ENV_MODE = 'FSO'
 	
 except ImportError:
-	_DBUS_PATH_BACKENDMNG = DBUS_PATH_BASE_PYNEO + '/Sources'
-	_DIN_BACKENDMNG = DIN_BASE_PYNEO + '.Sources'
+	_DBUS_PATH_SOURCES = DBUS_PATH_BASE_PYNEO + '/Sources'
+	_DIN_SOURCES = DIN_BASE_PYNEO + '.Sources'
+	_DIN_SOURCE = DIN_BASE_PYNEO + '.Source'
 	ENV_MODE = 'pyneo'
 
 
@@ -83,28 +79,32 @@ class BackendManager(DBusFBObject):
 		DBusFBObject.__init__(
 			self,
 			conn=SystemBus(),
-			object_path=_DBUS_PATH_BACKENDMNG
+			object_path=_DBUS_PATH_SOURCES
 			)
 		
 		# Keep frameworkd happy
-		self.interface = _DIN_BACKENDMNG
-		self.path = _DBUS_PATH_BACKENDMNG
+		self.interface = _DIN_SOURCES
+		self.path = _DBUS_PATH_SOURCES
 		
 		# Load all backend plugins (pimb = PIM Backend)
-		files = os.listdir(plugin_path)
+		try:
+			files = os.listdir(plugin_path)
+			
+			for plugin in filter(
+				lambda s: (s[-3:] == '.py' and s[:5] == 'pimb_'),
+					files):
+					
+					# Don't load unsuited modules
+					if (ENV_MODE == 'pyneo' and 'FSO' in plugin): continue
+					if (ENV_MODE == 'FSO' and 'pyneo' in plugin): continue
+					
+					syslog(LOG_DEBUG, "Loading " + plugin)
+					
+					(file_name, file_ext) = os.path.splitext(plugin)
+					__import__(file_name, globals(), locals(), [])
 		
-		for plugin in filter(
-			lambda s: (s[-3:] == '.py' and s[:5] == 'pimb_'),
-				files):
-				
-				# Don't load unsuited modules
-				if (ENV_MODE == 'pyneo' and 'FSO' in plugin): continue
-				if (ENV_MODE == 'FSO' and 'pyneo' in plugin): continue
-				
-				syslog(LOG_DEBUG, "Loading " + plugin)
-				
-				(file_name, file_ext) = os.path.splitext(plugin)
-				__import__(file_name, globals(), locals(), [])
+		except OSError:
+			syslog(LOG_WARNING, "Could not open backend plugin directory: %s" % plugin_path)
 
 
 	@classmethod
@@ -144,37 +144,47 @@ class BackendManager(DBusFBObject):
 		return backend
 
 
-	@dbus_method(_DIN_BACKENDMNG, "", "i")
+	@dbus_method(_DIN_SOURCES, "", "i")
 	def GetEntryCount(self):
 		"""Return the number of backends we know of"""
 		return len(self._backends)
 
 
-	@dbus_method(_DIN_BACKENDMNG, "", "s", rel_path_keyword="rel_path")
+	@dbus_method(_DIN_SOURCE, "", "s", rel_path_keyword="rel_path")
 	def GetName(self, rel_path):
 		num_id = int(rel_path[1:])
 		backend = None
 		
-		if (num_id < len(self._backends)): backend = self._backends[num_id]
-		return backend.name if backend else ""
+		if (num_id < len(self._backends)):
+			backend = self._backends[num_id]
+		else:
+			raise InvalidBackendIDError()
+		
+		return backend.name
 
 
-	@dbus_method(_DIN_BACKENDMNG, "", "as", rel_path_keyword="rel_path")
+	@dbus_method(_DIN_SOURCE, "", "as", rel_path_keyword="rel_path")
 	def GetSupportedPIMDomains(self, rel_path):
 		num_id = int(rel_path[1:])
 		backend = None
 		
-		if (num_id < len(self._backends)): backend = self._backends[num_id]
-		return backend.get_supported_domains() if backend else ()
+		if (num_id < len(self._backends)):
+			backend = self._backends[num_id]
+		else:
+			raise InvalidBackendIDError()
+		
+		return backend.get_supported_domains()
 
 
-	@dbus_method(_DIN_BACKENDMNG, "", "s", rel_path_keyword="rel_path")
+	@dbus_method(_DIN_SOURCE, "", "s", rel_path_keyword="rel_path")
 	def GetStatus(self, rel_path):
 		num_id = int(rel_path[1:])
 		backend = None
 		
-		if (num_id < len(self._backends)): backend = self._backends[num_id]
-		return backend.status if backend else ""
-
-
+		if (num_id < len(self._backends)):
+			backend = self._backends[num_id]
+		else:
+			raise InvalidBackendIDError()
+			
+		return backend.status
 

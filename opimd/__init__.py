@@ -91,7 +91,7 @@ def factory(prefix, controller):
 	dbus_objects = []
 	
 	# Create a list of all d-bus objects to make frameworkd happy
-	for dbus_obj in DomainManager.get_dbus_objects():
+	for dbus_obj in DomainManager.enumerate_dbus_objects():
 		dbus_objects.append(dbus_obj)
 
 	dbus_objects.append(backend_manager)
