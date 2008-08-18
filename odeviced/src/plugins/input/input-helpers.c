@@ -37,7 +37,6 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 	struct held_key_payload hk;
 
 	gchar *event_source;
-	static guint tag;
 
 	GHashTable *watches = input_get_watches (self);
 	GList *reportheld = input_get_reportheld (self);
@@ -50,13 +49,13 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 		return TRUE;
 	}
 		
-	g_print ("Input: event, value:%d code:%u type:%u\n", event.value, event.code, event.type);
 	/* Ignore EV_SYN */
 	if (event.type == EV_SYN) {
 		g_print ("\tInput: INFO: Got a SYN event, Ignoring\n");
 		return TRUE;
 	}
 
+	g_print ("Input: event, value:%d code:%u type:%u\n", event.value, event.code, event.type);
 	event_source = g_hash_table_lookup (watches, event.code);
 	if (!event_source) {
 		g_print ("\tNo watch added for event code %u\n", event.code);
@@ -68,21 +67,20 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 		
 		if (list_has(reportheld, (char *)event_source)) {
 			hk.tv_sec = event.time.tv_sec;
-			tag = g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, &hk);
-			g_print ("Key held for %\n", hk.held_secs);
-			g_signal_emit_by_name (self, "event", event_source, "pressed", hk.held_secs);
+			hk.event_source = g_strdup (event_source);
+			self->tag = g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, &hk);
 		}
 		else {
 			g_print ("\treportheld set to something other than true\n");
 			g_signal_emit_by_name (self, "event", event_source, "pressed", 0);
-			tag = 0;
+			self->tag = 0;
 		}
 		
 	}
-	if (event.value == 0x00) { /* Release */
+	else if (event.value == 0x00) { /* Release */
 		g_print ("\tInput: INFO: Released %s Key\n", event_source);
-		if (tag) 
-			g_source_remove (tag);
+		if (self->tag) 
+			g_source_remove (self->tag);
 		g_signal_emit_by_name (self, "event", event_source, "released", 0);
 	}	
 
@@ -104,10 +102,14 @@ static gboolean list_has (GList *list, char *data) {
 		
 
 
-gboolean held_key_timeout (struct held_key_payload hk) {
+gboolean held_key_timeout (struct held_key_payload *hk) {
 	GTimeVal currtime;
+	int held_secs;
 	g_get_current_time (&currtime);
-	hk.held_secs = (int)(currtime.tv_sec - hk.tv_sec);
+	held_secs = currtime.tv_sec - hk->tv_sec;
+	g_print ("\t%ld %ld %ld\n", held_secs, currtime.tv_sec, hk->tv_sec);
+	g_signal_emit_by_name (input_obj, "event", hk->event_source, "held", held_secs);
+	
 	return TRUE; /* Call me again */
 }
 

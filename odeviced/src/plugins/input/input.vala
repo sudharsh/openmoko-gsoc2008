@@ -38,6 +38,7 @@ public class Input: GLib.Object {
 	}
 
 	private string[] watchfor;
+	public uint tag;
 
 	private List<string> _reportheld = new List<string> ();
 	[DBus (visible = false)]
