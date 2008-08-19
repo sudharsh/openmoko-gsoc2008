@@ -29,13 +29,13 @@
 #include "input.h"
 #include "input-helpers.h"
 
+static struct held_key_payload hk;
 
 /* FIXME: make this asynchronous, use idle processing */
-static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input *self) {
+gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input *self) {
 
 	struct input_event event;
-	struct held_key_payload hk;
-
+	
 	gchar *event_source;
 
 	GHashTable *watches = input_get_watches (self);
@@ -68,7 +68,11 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input
 		if (list_has(reportheld, (char *)event_source)) {
 			hk.tv_sec = event.time.tv_sec;
 			hk.event_source = g_strdup (event_source);
-			self->tag = g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, &hk);
+			g_print ("\tInput: %d", hk.tv_sec);
+			self->tag = g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, NULL);
+			
+			if (hk.event_source) 
+				g_free (hk.event_source);
 		}
 		else {
 			g_print ("\treportheld set to something other than true\n");
@@ -102,13 +106,13 @@ static gboolean list_has (GList *list, char *data) {
 		
 
 
-gboolean held_key_timeout (struct held_key_payload *hk) {
+static gboolean held_key_timeout (gpointer data) {
 	GTimeVal currtime;
 	int held_secs;
 	g_get_current_time (&currtime);
-	held_secs = currtime.tv_sec - hk->tv_sec;
-	g_print ("\t%ld %ld %ld\n", held_secs, currtime.tv_sec, hk->tv_sec);
-	g_signal_emit_by_name (input_obj, "event", hk->event_source, "held", held_secs);
+	held_secs = currtime.tv_sec - hk.tv_sec;
+	g_print ("\t%ld %ld %ld\n", held_secs, currtime.tv_sec, hk.tv_sec);
+	g_signal_emit_by_name (input_obj, "event", hk.event_source, "held", held_secs);
 	
 	return TRUE; /* Call me again */
 }
