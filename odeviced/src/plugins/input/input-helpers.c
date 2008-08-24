@@ -31,18 +31,19 @@
 
 struct held_key_payload hk;
 
-/* FIXME: make this asynchronous, use idle processing */
 static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, GQueue *event_q) {
 
 	struct input_event *event;
 	event = g_new (struct input_event, 1);
 	int fd = g_io_channel_unix_get_fd (channel);	
-	if (read (fd, event, sizeof(struct input_event)) < 0) {
+	if (read (fd, event, sizeof(struct input_event)) < 0)
 		perror ("read");
+
+	if (event->type!=EV_SYN) { /* Don't process sync events */
+		g_queue_push_tail (event_q, event);
 		return TRUE;
 	}
-	if (event->type!=EV_SYN) /* Don't process sync events */
-		g_queue_push_tail (event_q, event);
+	g_free (event);
 	return TRUE;
 }
 	
@@ -52,8 +53,7 @@ static gboolean process_event (GQueue *event_q) {
 	gchar *event_source;
 	GHashTable *watches = input_get_watches (input_obj);
 	GList *reportheld = input_get_reportheld (input_obj);
-       	int i = 0;
-
+       	
 	struct input_event *event;
 	event = g_queue_pop_head (event_q);
        
@@ -84,11 +84,14 @@ static gboolean process_event (GQueue *event_q) {
 			g_print ("\tInput: INFO: Released %s Key\n", event_source);
 			if (input_obj->tag) 
 				g_source_remove (input_obj->tag);
+
+			if (hk.event_source)
+				g_free (hk.event_source);		       
 			g_signal_emit_by_name (input_obj, "event", event_source, "released", 0);
 		}
 	end: event = g_queue_pop_head (event_q);
 	}
-		
+	g_queue_foreach (event_q, (GFunc)g_free, NULL);
 	return TRUE;
 }
 
@@ -121,5 +124,5 @@ static gboolean held_key_timeout (struct held_key_payload *hk) {
 void process_watch (GIOChannel *channel) {
 	GQueue *event_q = g_queue_new();
 	g_io_add_watch (channel, G_IO_IN, (GIOFunc)on_activity, event_q);
-	g_idle_add ((GSourceFunc)process_event, event_q);
+	g_idle_add_full (G_PRIORITY_HIGH_IDLE, (GSourceFunc)process_event, event_q, NULL);
 }
