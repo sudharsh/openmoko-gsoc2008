@@ -38,16 +38,15 @@ public class Input: GLib.Object {
 	}
 
 	private string[] watchfor;
-	public uint tag;
-
+	
 	private List<string> _reportheld = new List<string> ();
 	[DBus (visible = false)]
 	public List<string> reportheld {
 		get { return _reportheld; }
 	}
-		
 
-   	public signal void @event(string name, string action, int seconds);
+  	public uint tag;
+	public signal void @event(string name, string action, int seconds);
 
 	[DBus (visible = false)]
 	public ODeviced.PluginManager plugin {
@@ -70,7 +69,7 @@ public class Input: GLib.Object {
 			foreach (string input_node in this.watchfor) {
 				var channel = new IOChannel.file (dev_node+"/"+input_node, "r");
 				/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
-				InputHelpers.process_watch (channel, this);;
+				InputHelpers.process_watch (channel);
 			}
 		}
 		catch (GLib.Error error) {

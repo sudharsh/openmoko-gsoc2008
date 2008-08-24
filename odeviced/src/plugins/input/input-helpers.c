@@ -32,62 +32,66 @@
 static struct held_key_payload hk;
 
 /* FIXME: make this asynchronous, use idle processing */
-gboolean on_activity (GIOChannel *channel, GIOCondition *condition, Input *self) {
+static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, GQueue *event_q) {
 
 	struct input_event event;
-	
-	gchar *event_source;
-
-	GHashTable *watches = input_get_watches (self);
-	GList *reportheld = input_get_reportheld (self);
-	GList *temp = NULL;
-	
-	int fd = g_io_channel_unix_get_fd (channel);
-	
+	int fd = g_io_channel_unix_get_fd (channel);	
 	if (read (fd, &event, sizeof(event)) < 0) {
 		perror ("read");
 		return TRUE;
 	}
-		
-	/* Ignore EV_SYN */
-	if (event.type == EV_SYN) {
-		g_print ("\tInput: INFO: Got a SYN event, Ignoring\n");
-		return TRUE;
-	}
+	if (event.type!=EV_SYN) /* Don't process sync events */
+		g_queue_push_tail (event_q, &event);
+	return TRUE;
+}
+	
+ 
+static gboolean process_event (GQueue *event_q) {	
 
-	g_print ("Input: event, value:%d code:%u type:%u\n", event.value, event.code, event.type);
-	event_source = g_hash_table_lookup (watches, event.code);
-	if (!event_source) {
-		g_print ("\tNo watch added for event code %u\n", event.code);
-		return TRUE;
-	}
+	gchar *event_source;
+	GHashTable *watches = input_get_watches (input_obj);
+	GList *reportheld = input_get_reportheld (input_obj);
+	int i = 0;
 
-	if (event.value == 0x01) { /* Press */
-		g_print ("\tInput: INFO: Got a keypress from %s\n", event_source);
+	struct input_event *event;
+	event = g_queue_pop_head (event_q);
+       
+	while (event) {
+  		g_print ("Input: event, value:%d code:%u type:%u\n", event->value, event->code, event->type);
+		event_source = g_hash_table_lookup (watches, event->code);
+		if (!event_source) {
+			g_print ("\tNo watch added for event code %u\n", event->code);
+			goto end;
+		}
 		
-		if (list_has(reportheld, (char *)event_source)) {
-			hk.tv_sec = event.time.tv_sec;
-			hk.event_source = g_strdup (event_source);
-			g_print ("\tInput: %d", hk.tv_sec);
-			self->tag = g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, NULL);
+		if (event->value == 0x01) { /* Press */
+			g_print ("\tInput: INFO: Got a keypress from %s\n", event_source);
 			
-			if (hk.event_source) 
-				g_free (hk.event_source);
+			if (list_has(reportheld, (char *)event_source)) {
+				hk.tv_sec = event->time.tv_sec;
+				hk.event_source = g_strdup (event_source);
+				g_print ("\tInput: %d", hk.tv_sec);
+				input_obj->tag = g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, NULL);
+				
+				if (hk.event_source) 
+					g_free (hk.event_source);
+			}
+			else {
+				g_print ("\treportheld set to something other than true\n");
+				g_signal_emit_by_name (input_obj, "event", event_source, "pressed", 0);
+				input_obj->tag = 0;
+			}
+			
 		}
-		else {
-			g_print ("\treportheld set to something other than true\n");
-			g_signal_emit_by_name (self, "event", event_source, "pressed", 0);
-			self->tag = 0;
+		else if (event->value == 0x00) { /* Release */
+			g_print ("\tInput: INFO: Released %s Key\n", event_source);
+			if (input_obj->tag) 
+				g_source_remove (input_obj->tag);
+			g_signal_emit_by_name (input_obj, "event", event_source, "released", 0);
 		}
-		
+	end: event = g_queue_pop_head (event_q);
 	}
-	else if (event.value == 0x00) { /* Release */
-		g_print ("\tInput: INFO: Released %s Key\n", event_source);
-		if (self->tag) 
-			g_source_remove (self->tag);
-		g_signal_emit_by_name (self, "event", event_source, "released", 0);
-	}	
-
+		
 	return TRUE;
 }
 
@@ -118,6 +122,8 @@ static gboolean held_key_timeout (gpointer data) {
 }
 
 
-void process_watch (GIOChannel *channel, Input *self) {
-	g_io_add_watch (channel, G_IO_IN, (GIOFunc)on_activity, self);
+void process_watch (GIOChannel *channel) {
+	GQueue *event_q = g_queue_new();
+	g_idle_add ((GSourceFunc)process_event, event_q);
+	g_io_add_watch (channel, G_IO_IN, (GIOFunc)on_activity, event_q);
 }
