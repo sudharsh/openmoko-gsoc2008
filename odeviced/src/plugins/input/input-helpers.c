@@ -29,19 +29,20 @@
 #include "input.h"
 #include "input-helpers.h"
 
-static struct held_key_payload hk;
+struct held_key_payload hk;
 
 /* FIXME: make this asynchronous, use idle processing */
 static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, GQueue *event_q) {
 
-	struct input_event event;
+	struct input_event *event;
+	event = g_new (struct input_event, 1);
 	int fd = g_io_channel_unix_get_fd (channel);	
-	if (read (fd, &event, sizeof(event)) < 0) {
+	if (read (fd, event, sizeof(struct input_event)) < 0) {
 		perror ("read");
 		return TRUE;
 	}
-	if (event.type!=EV_SYN) /* Don't process sync events */
-		g_queue_push_tail (event_q, &event);
+	if (event->type!=EV_SYN) /* Don't process sync events */
+		g_queue_push_tail (event_q, event);
 	return TRUE;
 }
 	
@@ -51,7 +52,7 @@ static gboolean process_event (GQueue *event_q) {
 	gchar *event_source;
 	GHashTable *watches = input_get_watches (input_obj);
 	GList *reportheld = input_get_reportheld (input_obj);
-	int i = 0;
+       	int i = 0;
 
 	struct input_event *event;
 	event = g_queue_pop_head (event_q);
@@ -66,15 +67,11 @@ static gboolean process_event (GQueue *event_q) {
 		
 		if (event->value == 0x01) { /* Press */
 			g_print ("\tInput: INFO: Got a keypress from %s\n", event_source);
-			
 			if (list_has(reportheld, (char *)event_source)) {
 				hk.tv_sec = event->time.tv_sec;
 				hk.event_source = g_strdup (event_source);
-				g_print ("\tInput: %d", hk.tv_sec);
-				input_obj->tag = g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, NULL);
-				
-				if (hk.event_source) 
-					g_free (hk.event_source);
+				g_print ("\tInput: %d\n", hk.tv_sec);
+				input_obj->tag = g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, &hk);
 			}
 			else {
 				g_print ("\treportheld set to something other than true\n");
@@ -110,20 +107,19 @@ static gboolean list_has (GList *list, char *data) {
 		
 
 
-static gboolean held_key_timeout (gpointer data) {
+static gboolean held_key_timeout (struct held_key_payload *hk) {
 	GTimeVal currtime;
 	int held_secs;
 	g_get_current_time (&currtime);
-	held_secs = currtime.tv_sec - hk.tv_sec;
-	g_print ("\t%ld %ld %ld\n", held_secs, currtime.tv_sec, hk.tv_sec);
-	g_signal_emit_by_name (input_obj, "event", hk.event_source, "held", held_secs);
-	
-	return TRUE; /* Call me again */
+	held_secs = currtime.tv_sec - hk->tv_sec;
+	g_print ("\t%ld %ld %ld\n", held_secs, currtime.tv_sec, hk->tv_sec);
+	g_signal_emit_by_name (input_obj, "event", hk->event_source, "held", held_secs);
+       	return TRUE; /* Call me again */
 }
 
 
 void process_watch (GIOChannel *channel) {
 	GQueue *event_q = g_queue_new();
-	g_idle_add ((GSourceFunc)process_event, event_q);
 	g_io_add_watch (channel, G_IO_IN, (GIOFunc)on_activity, event_q);
+	g_idle_add ((GSourceFunc)process_event, event_q);
 }

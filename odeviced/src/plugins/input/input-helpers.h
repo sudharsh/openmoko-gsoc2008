@@ -26,7 +26,6 @@ struct held_key_payload {
 
 
 static gboolean process_event (GQueue *event_q);
-static gboolean held_key_timeout (gpointer data);
+static gboolean held_key_timeout (struct held_key_payload *hk);
 static gboolean list_has (GList *list, gchar *data);
 
-	
