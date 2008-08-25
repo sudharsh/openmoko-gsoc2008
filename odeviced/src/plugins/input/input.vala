@@ -37,6 +37,9 @@ public class Input: GLib.Object {
 		get { return _watches; }
 	}
 
+	[DBus (visible = false)]
+	public Queue<void> event_q = new Queue<void>();
+
 	private string[] watchfor;
 	
 	private List<string> _reportheld = new List<string> ();
@@ -69,7 +72,8 @@ public class Input: GLib.Object {
 			foreach (string input_node in this.watchfor) {
 				var channel = new IOChannel.file (dev_node+"/"+input_node, "r");
 				/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
-				InputHelpers.process_watch (channel);
+				channel.add_watch (IOCondition.IN, (IOFunc)InputHelpers.on_activity);
+				Idle.add (InputHelpers.process_event);
 			}
 		}
 		catch (GLib.Error error) {

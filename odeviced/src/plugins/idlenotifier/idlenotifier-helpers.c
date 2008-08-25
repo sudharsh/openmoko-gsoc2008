@@ -1,3 +1,4 @@
+
 /* 
  * idle-helpers.c
  * Written by Sudharshan "Sup3rkiddo" S <sudharsh@gmail.com>
@@ -35,7 +36,7 @@ static gboolean on_activity (GIOChannel *source, GIOCondition condition, IdleNot
 
 
 void start_timers (GIOChannel *channel, IdleNotifier *self) {
-	g_io_add_watch (channel, G_IO_IN, (GIOFunc)on_activity, self);
+	g_io_add_watch_full (channel, G_PRIORITY_LOW, G_IO_IN, (GIOFunc)on_activity, self, NULL);
 	g_message ("IdleNotifier: INFO: Started Timers");	
 }
 

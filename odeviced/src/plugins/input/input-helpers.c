@@ -29,9 +29,12 @@
 #include "input.h"
 #include "input-helpers.h"
 
+static gboolean held_key_timeout (struct held_key_payload *hk);
+static gboolean list_has (GList *list, gchar *data);
+
 struct held_key_payload hk;
 
-static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, GQueue *event_q) {
+gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
 
 	struct input_event *event;
 	event = g_new (struct input_event, 1);
@@ -40,22 +43,22 @@ static gboolean on_activity (GIOChannel *channel, GIOCondition *condition, GQueu
 		perror ("read");
 
 	if (event->type!=EV_SYN) { /* Don't process sync events */
-		g_queue_push_tail (event_q, event);
+		g_queue_push_tail (input_obj->event_q, event);
 		return TRUE;
 	}
 	g_free (event);
 	return TRUE;
 }
+
 	
- 
-static gboolean process_event (GQueue *event_q) {	
+gboolean process_event () {	
 
 	gchar *event_source;
 	GHashTable *watches = input_get_watches (input_obj);
 	GList *reportheld = input_get_reportheld (input_obj);
        	
 	struct input_event *event;
-	event = g_queue_pop_head (event_q);
+	event = (struct input_event *)g_queue_pop_head (input_obj->event_q);
        
 	while (event) {
   		g_print ("Input: event, value:%d code:%u type:%u\n", event->value, event->code, event->type);
@@ -89,9 +92,8 @@ static gboolean process_event (GQueue *event_q) {
 				g_free (hk.event_source);		       
 			g_signal_emit_by_name (input_obj, "event", event_source, "released", 0);
 		}
-	end: event = g_queue_pop_head (event_q);
+	end: event = (struct input_event *)g_queue_pop_head (input_obj->event_q);
 	}
-	g_queue_foreach (event_q, (GFunc)g_free, NULL);
 	return TRUE;
 }
 
@@ -108,8 +110,6 @@ static gboolean list_has (GList *list, char *data) {
 }
 		
 		
-
-
 static gboolean held_key_timeout (struct held_key_payload *hk) {
 	GTimeVal currtime;
 	int held_secs;
@@ -120,9 +120,3 @@ static gboolean held_key_timeout (struct held_key_payload *hk) {
        	return TRUE; /* Call me again */
 }
 
-
-void process_watch (GIOChannel *channel) {
-	GQueue *event_q = g_queue_new();
-	g_io_add_watch (channel, G_IO_IN, (GIOFunc)on_activity, event_q);
-	g_idle_add_full (G_PRIORITY_HIGH_IDLE, (GSourceFunc)process_event, event_q, NULL);
-}
