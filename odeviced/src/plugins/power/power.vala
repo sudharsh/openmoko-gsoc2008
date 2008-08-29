@@ -19,12 +19,11 @@
  *
  */ 
 
-/* This vala source exists to generate the boilerplate code
-   $ valac -C powercontrol.vala --pkg dbus-glib-1*/
 
 using DBus;
 using GLib;
 using ODeviced;
+using PowerHelpers;
 
 
 [DBus (name = "org.freesmartphone.Device.PowerSupply")]
@@ -33,7 +32,6 @@ public class Power: GLib.Object {
 	private string status = new string();
 	private int max_energy = 0;
 	private int low_energy_threshold;
-	private int status_poll_interval;
 	private uint _energy_id;
 	private uint _status_id;
 	private string name = new string();
@@ -41,7 +39,12 @@ public class Power: GLib.Object {
 	public signal void battery_status_changed(string status);
 	public signal void low_battery(int charge);
 
-	private string curr_status;
+	private string _curr_status = new string();
+	[DBus (visible = false)]
+	public string curr_status {
+		get { return _curr_status; }
+		set { _curr_status = value; }
+	}
 
 	[DBus (visible = false)]
 	public string node {
@@ -67,18 +70,21 @@ public class Power: GLib.Object {
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
 	}
-	
+	 
+
 	construct {
 		
 		this._energy_id = Timeout.add_seconds(30, poll_energy);
 		try {
 			var dev = ODeviced.get_device();
-			this.status_poll_interval = plugin.conf.get_integer(dev, "status_poll_interval");
+			int netlink_fd = PowerHelpers.get_netlink_fd();			
 			this.low_energy_threshold = plugin.conf.get_integer(dev, "low_energy_threshold");
 
-			this._status_id = Timeout.add_seconds(this.status_poll_interval, poll_status);
+			IOChannel channel = new IOChannel.unix_new(netlink_fd);
+			PowerHelpers.start_watch (channel, this);
+
 			this.name = ODeviced.compute_name (this.dbus_path);
-			this.curr_status = GetBatteryStatus();
+			this._curr_status = GetBatteryStatus();
 			
 			if (!FileUtils.test (this.node + "/capacity", FileTest.EXISTS))
 				this.max_energy = ODeviced.read_integer (this.node + "/energy_full");
@@ -156,22 +162,6 @@ public class Power: GLib.Object {
 		if(_curr < this.low_energy_threshold) {
 			message("%s\tLow energy warning", this.name);
 			this.low_battery(_curr);
-		}
-		return true;
-	}
-
-
-	private bool poll_status() {
-		var stat = GetBatteryStatus();
-		if (stat == null) {
-			Source.remove(_status_id);
-			return false;
-		}
-
-		if(stat != this.curr_status) {
-			message("%s\tStatus changed, %s ->", this.name, stat);
-			this.battery_status_changed(stat);
-			this.curr_status = stat;
 		}
 		return true;
 	}
