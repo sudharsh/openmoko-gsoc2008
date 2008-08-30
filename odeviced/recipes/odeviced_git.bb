@@ -2,7 +2,7 @@ DESCRIPTION = "Open Device Daemon - C implementation"
 HOMEPAGE = "http://www.freesmartphone.org/"
 AUTHOR = "Sudharshan S"
 SECTION = "console/network"
-DEPENDS = "dbus dbus-glib"
+DEPENDS = "dbus dbus-glib libnl"
 LICENSE = "LGPL"
 CONFLICTS = "python-odeviced"
 
