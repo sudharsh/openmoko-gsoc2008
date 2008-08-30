@@ -73,8 +73,8 @@ public class Input: GLib.Object {
 				var channel = new IOChannel.file (dev_node+"/"+input_node, "r");
 				/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
 				channel.add_watch (IOCondition.IN, (IOFunc)InputHelpers.on_activity);
-				Idle.add (InputHelpers.process_event);
 			}
+			Idle.add (InputHelpers.process_event);
 		}
 		catch (GLib.Error error) {
 			message (error.message);

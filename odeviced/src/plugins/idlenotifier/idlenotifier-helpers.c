@@ -30,7 +30,8 @@ static gboolean on_activity (GIOChannel *source, GIOCondition condition, IdleNot
 		if (tag > 0)
 			g_source_remove (tag);
 		idle_notifier_SetState(self, "BUSY");
-	}	
+	}
+	g_free (curr_state);
 	return TRUE;
 }
 
