@@ -30,25 +30,25 @@ public class Input: GLib.Object {
 
 	private string device = new string();
 	private string dev_node = "/dev/input";
+	public uint tag;
 
 	private HashTable<uint, string> _watches = new HashTable<uint, string> ((HashFunc)direct_hash, (EqualFunc)direct_equal);
 	[DBus (visible = false)]
 	public HashTable<uint, string> watches {
 		get { return _watches; }
-	}
+	}	[DBus (visible = false)]
 
-	[DBus (visible = false)]
 	public Queue<void> event_q = new Queue<void>();
 
-	private string[] watchfor;
-	
 	private List<string> _reportheld = new List<string> ();
 	[DBus (visible = false)]
 	public List<string> reportheld {
 		get { return _reportheld; }
 	}
 
-  	public uint tag;
+	private string[] watchfor;
+	private List<string> ignoreList = new List<string> ();
+
 	public signal void @event(string name, string action, int seconds);
 
 	[DBus (visible = false)]
@@ -66,15 +66,18 @@ public class Input: GLib.Object {
 		
 		try {
 			this.device = ODeviced.get_device();
-			this.watchfor = plugin.conf.get_string_list (device, "watchfor");
-			compute_watches (this.watchfor);
-			
-			foreach (string input_node in this.watchfor) {
-				var channel = new IOChannel.file (dev_node+"/"+input_node, "r");
-				/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
-				channel.add_watch (IOCondition.IN, (IOFunc)InputHelpers.on_activity);
+			compute_watches ();
+		   
+			var input_nodes = plugin.conf.get_string_list (this.device, "input_nodes");
+
+			foreach (string input_node in input_nodes) {
+					string device_node = this.dev_node + "/" + input_node;
+					var channel = new IOChannel.file (device_node, "r");
+					/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
+					message ("Adding watch for %s", device_node);
+					channel.add_watch (IOCondition.IN, (IOFunc)InputHelpers.on_activity);		  
 			}
-			Idle.add (InputHelpers.process_event);
+			
 		}
 		catch (GLib.Error error) {
 			message (error.message);
@@ -83,7 +86,9 @@ public class Input: GLib.Object {
 	}
 
 	
-	private void compute_watches (string[] watchfor) {
+	private void compute_watches () {
+		this.watchfor = plugin.conf.get_string_list(this.device, "watchfor");
+		
 		foreach (string key in watchfor) {
 			try {
 				string[] settings = plugin.conf.get_string_list (device, key);
@@ -97,7 +102,7 @@ public class Input: GLib.Object {
 				message (error.message);
 			}
 		}
-	}		
+	}
 
 }
 

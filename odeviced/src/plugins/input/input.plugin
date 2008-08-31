@@ -4,8 +4,11 @@ dbus_object_path=/org/freesmartphone/Device/Input
 
 # Device specific keycodes
 [FreeRunner]
-event0 = 169,AUX,key,true
-event4 = 116,POWER,key,true
-watchfor = event0,event4
+aux = 169,AUX,key,true
+power = 116,POWER,key,true
+charger = 356,CHARGER,key,false
+headset = 2,HEADSET,switch,false
 
- 
+watchfor = aux,charger,power,headset
+# Accelerometers
+input_nodes = event0,event4

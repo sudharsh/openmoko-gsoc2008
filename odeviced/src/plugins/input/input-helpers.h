@@ -1,3 +1,4 @@
+
 /* 
  * input-helpers.h
  * Written by Sudharshan "Sup3rkiddo" S <sudharsh@gmail.com>
@@ -24,9 +25,9 @@ struct held_key_payload {
 	gchar *event_source;
 };
 
-
-gboolean process_event ();
 gboolean on_activity (GIOChannel *channel, GIOCondition *condition);
+
+static gboolean process_event ();
 static gboolean held_key_timeout (struct held_key_payload *hk);
 static gboolean list_has (GList *list, gchar *data);
 

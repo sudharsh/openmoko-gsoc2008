@@ -32,13 +32,12 @@
 static gboolean held_key_timeout (struct held_key_payload *hk);
 static gboolean list_has (GList *list, gchar *data);
 
-struct held_key_payload hk;
-
 gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
 
 	struct input_event *event;
 	event = g_new (struct input_event, 1);
 	int fd = g_io_channel_unix_get_fd (channel);	
+	int tag = g_idle_add ((GSourceFunc)process_event, NULL);
 	if (read (fd, event, sizeof(struct input_event)) < 0)
 		perror ("read");
 
@@ -51,15 +50,17 @@ gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
 }
 
 	
-gboolean process_event () {	
+static gboolean process_event () {	
 
+	static struct held_key_payload hk;
 	gchar *event_source;
 	GHashTable *watches = input_get_watches (input_obj);
 	GList *reportheld = input_get_reportheld (input_obj);
        	
 	struct input_event *event;
 	event = (struct input_event *)g_queue_pop_head (input_obj->event_q);
-       
+        
+	hk.event_source = NULL;
 	while (event) {
   		g_print ("Input: event, value:%d code:%u type:%u\n", event->value, event->code, event->type);
 		event_source = g_hash_table_lookup (watches, event->code);
@@ -79,7 +80,7 @@ gboolean process_event () {
 			else {
 				g_print ("\treportheld set to something other than true\n");
 				g_signal_emit_by_name (input_obj, "event", event_source, "pressed", 0);
-				input_obj->tag = 0;
+				g_source_remove(input_obj->tag);
 			}
 			
 		}
@@ -94,7 +95,7 @@ gboolean process_event () {
 		}
 	end: event = (struct input_event *)g_queue_pop_head (input_obj->event_q);
 	}
-	return TRUE;
+	return FALSE;
 }
 
 
