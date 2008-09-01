@@ -27,7 +27,4 @@ struct held_key_payload {
 
 gboolean on_activity (GIOChannel *channel, GIOCondition *condition);
 
-static gboolean process_event ();
-static gboolean held_key_timeout (struct held_key_payload *hk);
-static gboolean list_has (GList *list, gchar *data);
 
