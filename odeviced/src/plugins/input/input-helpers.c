@@ -79,10 +79,9 @@ static gboolean process_event () {
 			}
 			else {
 				g_print ("\treportheld set to something other than true\n");
-				g_signal_emit_by_name (input_obj, "event", event_source, "pressed", 0);
 				g_source_remove(input_obj->tag);
 			}
-			
+			g_signal_emit_by_name (input_obj, "event", event_source, "pressed", 0);
 		}
 		else if (event->value == 0x00) { /* Release */
 			g_print ("\tInput: INFO: Released %s Key\n", event_source);
