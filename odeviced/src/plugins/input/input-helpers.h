@@ -22,7 +22,7 @@
 
 struct held_key_payload {
 	unsigned long tv_sec;
-	gchar *event_source;
+	unsigned int code;
 };
 
 gboolean on_activity (GIOChannel *channel, GIOCondition *condition);

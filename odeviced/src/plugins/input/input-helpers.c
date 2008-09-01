@@ -31,6 +31,7 @@
 
 static gboolean held_key_timeout (struct held_key_payload *hk);
 static gboolean list_has (GList *list, gchar *data);
+static gboolean process_event ();
 
 gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
 
@@ -53,15 +54,14 @@ gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
 static gboolean process_event () {	
 
 	static struct held_key_payload hk;
-	gchar *event_source;
 	GHashTable *watches = input_get_watches (input_obj);
 	GList *reportheld = input_get_reportheld (input_obj);
-       	
+	gchar *event_source;
+
 	struct input_event *event;
 	event = (struct input_event *)g_queue_pop_head (input_obj->event_q);
-        
-	hk.event_source = NULL;
-	while (event) {
+       	
+       	while (event) {
   		g_print ("Input: event, value:%d code:%u type:%u\n", event->value, event->code, event->type);
 		event_source = g_hash_table_lookup (watches, event->code);
 		if (!event_source) {
@@ -73,7 +73,7 @@ static gboolean process_event () {
 			g_print ("\tInput: INFO: Got a keypress from %s\n", event_source);
 			if (list_has(reportheld, (char *)event_source)) {
 				hk.tv_sec = event->time.tv_sec;
-				hk.event_source = g_strdup (event_source);
+				hk.code = event->code;
 				g_print ("\tInput: %d\n", hk.tv_sec);
 				input_obj->tag = g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, &hk);
 			}
@@ -89,12 +89,11 @@ static gboolean process_event () {
 			if (input_obj->tag) 
 				g_source_remove (input_obj->tag);
 
-			if (hk.event_source)
-				g_free (hk.event_source);		       
 			g_signal_emit_by_name (input_obj, "event", event_source, "released", 0);
 		}
 	end: event = (struct input_event *)g_queue_pop_head (input_obj->event_q);
 	}
+	 
 	return FALSE;
 }
 
@@ -112,12 +111,16 @@ static gboolean list_has (GList *list, char *data) {
 		
 		
 static gboolean held_key_timeout (struct held_key_payload *hk) {
+
 	GTimeVal currtime;
 	int held_secs;
+	GHashTable *watches = input_get_watches (input_obj);
+	gchar *event_source = g_hash_table_lookup (watches, hk->code);
+
 	g_get_current_time (&currtime);
 	held_secs = currtime.tv_sec - hk->tv_sec;
 	g_print ("\t%ld %ld %ld\n", held_secs, currtime.tv_sec, hk->tv_sec);
-	g_signal_emit_by_name (input_obj, "event", hk->event_source, "held", held_secs);
+	g_signal_emit_by_name (input_obj, "event", event_source, "held", held_secs);
        	return TRUE; /* Call me again */
 }
 
