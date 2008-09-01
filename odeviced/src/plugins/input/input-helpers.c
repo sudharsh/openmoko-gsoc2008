@@ -59,14 +59,14 @@ static gboolean process_event () {
 	gchar *event_source;
 
 	struct input_event *event;
-	event = (struct input_event *)g_queue_pop_head (input_obj->event_q);
        	
-       	while (event) {
+       	while ( event = (struct input_event *)g_queue_pop_head (input_obj->event_q) ) {
+		
   		g_print ("Input: event, value:%d code:%u type:%u\n", event->value, event->code, event->type);
 		event_source = g_hash_table_lookup (watches, event->code);
 		if (!event_source) {
 			g_print ("\tNo watch added for event code %u\n", event->code);
-			goto end;
+			continue;
 		}
 		
 		if (event->value == 0x01) { /* Press */
@@ -85,25 +85,23 @@ static gboolean process_event () {
 		}
 		else if (event->value == 0x00) { /* Release */
 			g_print ("\tInput: INFO: Released %s Key\n", event_source);
-			if (input_obj->tag) 
+			if (input_obj->tag)  
 				g_source_remove (input_obj->tag);
-
+			
 			g_signal_emit_by_name (input_obj, "event", event_source, "released", 0);
 		}
-	end: event = (struct input_event *)g_queue_pop_head (input_obj->event_q);
 	}
-	 
+	
 	return FALSE;
 }
 
 
 static gboolean list_has (GList *list, char *data) {
 	int i = 0;
-	char *_element = g_list_nth_data (list, 0);
-	while (_element) {
+	gchar *_element;
+	while (_element = g_list_nth_data (list, i++)) {
 		if (g_strcmp0 (_element, data)==0) 
 			return TRUE;
-		_element = g_list_nth_data (list, i++);
 	}
 	return FALSE;
 }
