@@ -38,7 +38,7 @@ gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
 	struct input_event *event;
 	event = g_new (struct input_event, 1);
 	int fd = g_io_channel_unix_get_fd (channel);	
-	int tag = g_idle_add ((GSourceFunc)process_event, NULL);
+	g_idle_add_full (100, (GSourceFunc)process_event, NULL, NULL);
 	if (read (fd, event, sizeof(struct input_event)) < 0)
 		perror ("read");
 
