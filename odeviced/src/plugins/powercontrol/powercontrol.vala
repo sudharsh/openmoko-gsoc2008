@@ -141,6 +141,41 @@ public class GSM: GenericPowerControl {
 }
 
 
+public class UsbHost: GenericPowerControl {
+	
+	private string modenode = new string();
+	private string _dbus_path = "/org/freesmartphone/Device/PowerControl/GPS";
+	public string dbus_path {
+		get { return _dbus_path; }
+	}
+
+	public ODeviced.PluginManager plugin {
+		get;
+		construct;
+	}
+
+	UsbHost (ODeviced.PluginManager plugin) {
+		this.plugin = plugin;
+	}
+
+	construct {
+		this.name = "UsbHost";
+		this.powernode = "/sys/devices/platform/neo1973-pm-host.0/hostmode";
+		this.modenode = "/sys/devices/platform/s3c2410-ohci/usb-mode";
+		this.resetnode = "";
+	}
+
+	public override void set_power (bool power) {
+		if (power)
+			ODeviced.write_string (this.powernode, "host");
+		else
+			ODeviced.write_string (this.powernode, "deviced");
+	}
+				
+
+}
+
+
 public class GPS: GenericPowerControl {
 	
 	private string _gps_node = new string();
@@ -213,6 +248,7 @@ namespace powercontrol {
 	public static Bluetooth blt_obj;
 	public static GSM gsm_obj;
 	public static GPS gps_obj;
+	public static UsbHost usbhost_obj;
 	
 	public bool init (ODeviced.PluginManager plugin) {
 
@@ -257,6 +293,15 @@ namespace powercontrol {
 					success = false;
 				ODeviced.connection.register_object (gps_obj.dbus_path, (GLib.Object)gps_obj);
 				plugin.dbus_object_paths.append (gps_obj.dbus_path);
+				print ("\tPowerControl: INFO: Registered %s\n", klass);	
+				break;
+
+			case "UsbHost":
+				usbhost_obj = new UsbHost (plugin);
+				if (usbhost_obj == null)
+					success = false;
+				ODeviced.connection.register_object (usbhost_obj.dbus_path, (GLib.Object)usbhost_obj);
+				plugin.dbus_object_paths.append (usbhost_obj.dbus_path);
 				print ("\tPowerControl: INFO: Registered %s\n", klass);	
 				break;
 
