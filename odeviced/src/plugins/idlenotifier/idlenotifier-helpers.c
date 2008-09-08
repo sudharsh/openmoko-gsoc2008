@@ -21,23 +21,23 @@
  */ 
 
 #include <glib.h>
+#include <linux/input.h>
 #include "idlenotifier.h"
 
-static gboolean on_activity (GIOChannel *source, GIOCondition condition, IdleNotifier *self) {
-	gchar *curr_state = idle_notifier_GetState(self);
-	uint tag = idle_notifier_get_tag(self);
-	if (g_strcmp0(curr_state, "BUSY")!=0) {
-		if (tag > 0)
-			g_source_remove (tag);
-		idle_notifier_SetState(self, "BUSY");
-	}
-	g_free (curr_state);
+
+gboolean on_activity (GIOChannel *source, GIOCondition *condition) {
+	const gchar *curr_state = idle_notifier_get_current_state(idlenotifier_obj);
+	struct input_event *event;
+	event = g_new (struct input_event, 1);
+	int fd = g_io_channel_unix_get_fd (source);
+	
+	if (read (fd, event, sizeof(struct input_event)) < 0)
+		perror ("read");
+
+	if (g_strcmp0(curr_state, "BUSY")) 
+		idle_notifier_SetState(idlenotifier_obj, "BUSY");
+	
+	g_free (event);
 	return TRUE;
-}
-
-
-void start_timers (GIOChannel *channel, IdleNotifier *self) {
-	g_io_add_watch_full (channel, G_PRIORITY_LOW, G_IO_IN, (GIOFunc)on_activity, self, NULL);
-	g_message ("IdleNotifier: INFO: Started Timers");	
 }
 

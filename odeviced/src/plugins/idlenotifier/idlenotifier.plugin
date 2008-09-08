@@ -7,11 +7,11 @@ dbus_object_path=/org/freesmartphone/Device/IdleNotifier/0
 
 # Timouts in seconds, -1 to disable
 [FreeRunner]
-IDLE = 2
-IDLE_DIM = 2
-IDLE_PRELOCK = 2
+IDLE = 10
+IDLE_DIM = 20
+IDLE_PRELOCK = 12
 LOCK = 2
-SUSPEND = 10
+SUSPEND = 20
 AWAKE = -1
 BUSY = -1
 watchfor=event0,event4

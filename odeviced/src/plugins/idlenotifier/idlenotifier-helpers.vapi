@@ -1,4 +1,4 @@
 namespace IdleHelpers {
-	[CCode (cname = "start_timers")]
-	public void start_timers(GLib.IOChannel channel, IdleNotifier obj);
+	[CCode (cname = "on_activity", cheader_filename = "idlenotifier-helpers.h")]
+	public bool on_activity(GLib.IOChannel channel, GLib.IOCondition condition);
 }

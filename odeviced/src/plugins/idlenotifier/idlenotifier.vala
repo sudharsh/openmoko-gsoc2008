@@ -29,24 +29,28 @@ public class IdleNotifier: GLib.Object {
 
 	public signal void state (string curr_state);
 
-	private virtual void emit_signal (string _state) {
+	private void emit_signal (string _state) {
 		this.state (_state);
 		message ("Switching to %s state", _state);
-		this.current_state = _state;
+		this._current_state = _state;
 	}
-	private string current_state = "AWAKE";
+
+	private string _current_state = "AWAKE";
+	[DBus (visible = false)]
+	public string current_state {
+		get { return _current_state; }
+  	}
+
 	private string dev_node = "/dev/input";
 	private string device = new string();
 	private string[] watches;
+	private PollFD[] fds;
 	   
 	private HashTable<string, int> timeouts = new HashTable<string, int>((HashFunc)str_hash, (EqualFunc)str_equal);
 
-	private uint _tag;
 	[DBus (visible=false)]
-	public uint tag {
-		get { return _tag; }
-	}
-	
+	public uint tag;
+		
 	[DBus (visible=false)]
 	public ODeviced.PluginManager plugin {
 		get;
@@ -71,47 +75,56 @@ public class IdleNotifier: GLib.Object {
 
 		this.watches  = plugin.conf.get_string_list (device, "watchfor");
 		
-		try {			
+		try {		
+			int i = 0;
 			foreach (string node in this.watches) {
 				IOChannel channel = new IOChannel.file (dev_node+"/"+node, "r");
 				/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
-				IdleHelpers.start_timers (channel, this);
+				channel.add_watch (IOCondition.IN, (IOFunc)IdleHelpers.on_activity);
 			}
-			_tag = Timeout.add_seconds (2, this.onIdle);
+			tag = Timeout.add_seconds (2, this.onIdle);
 		}
 		catch (GLib.Error error) {
 			message (error.message);
 		}
 	}
 
+	
+	private static bool on_activity (IOChannel source, IOCondition condition) {
+		if (idlenotifier.obj.current_state == "BUSY")
+			return idlenotifier.obj.onBusy();
+		return true;
+	}
+			
+	
 
 	private bool onBusy() {
 		this.emit_signal ("BUSY");
-		_tag = Timeout.add_seconds (this.timeouts.lookup("IDLE"), this.onIdle);
+		this.tag = Timeout.add_seconds (this.timeouts.lookup("IDLE"), this.onIdle);
 		return false;
 	}
 		
 	private bool onIdle() {
 		this.emit_signal ("IDLE");
-		_tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_DIM"), this.onIdleDim);
+		this.tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_DIM"), this.onIdleDim);
 		return false;
 	}
 
 	private bool onIdleDim() {
 		this.emit_signal ("IDLE_DIM");
-		_tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_PRELOCK"), this.onIdlePrelock);
+		this.tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_PRELOCK"), this.onIdlePrelock);
 		return false;
 	}
 
 	private bool onIdlePrelock() {
 		this.emit_signal ("IDLE_PRELOCK");
-		_tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_LOCK"), this.onLock);
+		this.tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_LOCK"), this.onLock);
 		return false;
 	}
 
 	private bool onLock() {
 		this.emit_signal ("LOCK");
-		_tag = Timeout.add_seconds (this.timeouts.lookup("SUSPEND"), this.onSuspend);
+		this.tag = Timeout.add_seconds (this.timeouts.lookup("SUSPEND"), this.onSuspend);
 		return false;
 	}
 
@@ -123,21 +136,21 @@ public class IdleNotifier: GLib.Object {
 	
 	/* DBus methods */
 	public string GetState () {
-		return this.current_state;
+		return this._current_state;
 	}
 
 	public void SetState (string _state) {
-		if (this.current_state == _state) {
+		if (this._current_state == _state) 
 			message ("Already in %s, ignoring..", _state);
-			return;
-		}
-		
+					
+		Source.remove(this.tag);
+			
 		switch (_state) {
-		case "IDLE":
-			onIdle();
-			break;
 		case "BUSY":
 			onBusy();
+			break;
+		case "IDLE":
+			onIdle();
 			break;
 		case "IDLE_DIM":
 			onIdleDim();
