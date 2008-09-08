@@ -144,7 +144,7 @@ public class GSM: GenericPowerControl {
 public class UsbHost: GenericPowerControl {
 	
 	private string modenode = new string();
-	private string _dbus_path = "/org/freesmartphone/Device/PowerControl/GPS";
+	private string _dbus_path = "/org/freesmartphone/Device/PowerControl/UsbHost";
 	public string dbus_path {
 		get { return _dbus_path; }
 	}
@@ -167,9 +167,9 @@ public class UsbHost: GenericPowerControl {
 
 	public override void set_power (bool power) {
 		if (power)
-			ODeviced.write_string (this.powernode, "host");
+			ODeviced.write_string (this.modenode, "host");
 		else
-			ODeviced.write_string (this.powernode, "deviced");
+			ODeviced.write_string (this.modenode, "device");
 	}
 				
 
