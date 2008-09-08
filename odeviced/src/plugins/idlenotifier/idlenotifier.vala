@@ -90,14 +90,6 @@ public class IdleNotifier: GLib.Object {
 	}
 
 	
-	private static bool on_activity (IOChannel source, IOCondition condition) {
-		if (idlenotifier.obj.current_state == "BUSY")
-			return idlenotifier.obj.onBusy();
-		return true;
-	}
-			
-	
-
 	private bool onBusy() {
 		this.emit_signal ("BUSY");
 		this.tag = Timeout.add_seconds (this.timeouts.lookup("IDLE"), this.onIdle);
