@@ -50,8 +50,8 @@ class DomainManager(object):
 					files):
 					
 					# Don't load unsuited modules
-					if (ENV_MODE == 'pyneo' and 'FSO' in plugin): continue
-					if (ENV_MODE == 'FSO' and 'pyneo' in plugin): continue
+					if (ENV_MODE == 'pyneo' and 'fso' in plugin): continue
+					if (ENV_MODE == 'fso' and 'pyneo' in plugin): continue
 					
 					syslog(LOG_DEBUG, "Loading " + plugin)
 					

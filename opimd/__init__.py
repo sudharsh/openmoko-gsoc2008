@@ -29,17 +29,17 @@
 import os
 import sys
 
-from dbus.glib import init_threads as dbus_threads_init
+from dbus import SystemBus
 from dbus.mainloop.glib import DBusGMainLoop
 
 from gobject import MainLoop
-from gobject import threads_init as glib_threads_init
 
 from syslog import openlog as log_open
 from syslog import closelog as log_close
 from syslog import LOG_ERR, LOG_WARNING, LOG_INFO, LOG_DEBUG, LOG_DAEMON, LOG_NDELAY, LOG_PID, LOG_PERROR
 
-import settings_manager
+from settings_manager import *
+
 
 ###  Main Program  ###
 
@@ -47,15 +47,16 @@ def main_pyneo():
 	"""This is the function that will be used to launch pypimd for pyneo"""
 	log_open('pypimd', LOG_NDELAY|LOG_PID|LOG_PERROR, LOG_DAEMON)
 	
-	glib_threads_init()
-	dbus_threads_init()
 	DBusGMainLoop(set_as_default=True)
 	
-	# Configure the system for pyneo use
-	settings_manager.DBUS_PATH_BASE = settings_manager.DBUS_PATH_BASE_PYNEO
-	settings_manager.DIN_BASE = settings_manager.DIN_BASE_PYNEO
-	settings_manager.ENV_MODE = 'pyneo'
-
+	# Claim the bus name
+	# TODO Check for exceptions
+	SystemBus().request_name(DBUS_BUS_NAME_PYNEO)
+	
+	# Workaround for relative imports of pyneod stuff, see
+	# http://mail.python.org/pipermail/python-list/2007-May/438250.html
+	sys.path.append('/usr/share/pyneod')
+	
 	from backend_manager import BackendManager
 	from domain_manager import DomainManager
 
@@ -76,10 +77,9 @@ def factory(prefix, controller):
 	from logging import getLogger as get_logger
 	log = get_logger('opimd')
 	
-	# Configure the system for FSO use
-	settings_manager.DBUS_PATH_BASE = settings_manager.DBUS_PATH_BASE_FSO
-	settings_manager.DIN_BASE = settings_manager.DIN_BASE_FSO
-	settings_manager.ENV_MODE = 'FSO'
+	# Claim the bus name
+	# TODO Check for exceptions
+	SystemBus().request_name(DBUS_BUS_NAME_FSO)
 	
 	from backend_manager import BackendManager
 	from domain_manager import DomainManager

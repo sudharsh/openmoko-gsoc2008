@@ -24,29 +24,31 @@
 
 """pypimd Settings storage
 
-Provides a central repository for storing/retrieving application settings
-Exports the Settings class that can be accessed over the default variable "settings":
-  - load_settings ............ Loads settings from persistent source
-  - save_settings ............ Saves settings to persistent source
-
 The settings are accessed by using them as properties of the class instance:
 settings["startup_cmd"] = "moo"
 """
 
-DBUS_PATH_BASE_PYNEO = "/org/pyneo/PIM"
-DIN_BASE_PYNEO = "org.pyneo.PIM"
+DBUS_BUS_NAME_PYNEO = "org.pyneo.pim"
+DBUS_PATH_BASE_PYNEO = "/org/pyneo/pim"
+DIN_BASE_PYNEO = "org.pyneo.pim"
 
+DBUS_BUS_NAME_FSO = "org.freesmartphone.PIM"
 DBUS_PATH_BASE_FSO = "/org/freesmartphone/PIM"
 DIN_BASE_FSO = "org.freesmartphone.PIM"
 
 DBUS_PATH_BASE = None
 DIN_BASE = None
 
-ENV_MODE = None    # Either "pyneo" or "FSO", depending on the runtime environment
+# ENV_MODE is either "pyneo" or "FSO", depending on the runtime environment
+ENV_MODE = None
 
 
 _SETTINGS_DEFAULTS = {
 	"contacts_default_backend": "CSV-Contacts",
+
+	"messages_default_folder": "Unfiled",
+	"messages_trash_folder": "Trash",
+	"sim_messages_default_folder": "SMS"
 }
 
 
@@ -67,7 +69,15 @@ class SettingsManager():
 
 
 	def __getitem__(self, key):
-		return self._settings[key]
+		
+		result = None
+		
+		try:
+			result = self._settings[key]
+		except KeyError:
+			result = _SETTINGS_DEFAULTS[key]
+		
+		return result
 
 
 	def __setitem__(self, key, value):
@@ -98,7 +108,7 @@ class SettingsManager():
 
 
 	def save_settings(self):
-		"""Saves all entries on disk"""
+		"""Saves all entries to disk"""
 		
 		file = open(self._file_name, "w")
 		

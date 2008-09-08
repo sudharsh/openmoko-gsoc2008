@@ -355,7 +355,8 @@ class Contact():
 					# A field is (Key,Value,Comp_Value,Source), so [2] is the value we usually use for comparison
 					comp_value = self._fields[field_id][2]
 					if not comp_value:
-						comp_value = self._fields[field_id][1]   # We use the true value if no comparison value given
+						# Use the real value if no comparison value given
+						comp_value = self._fields[field_id][1]
 					
 					# Compare and determine the best match ratio
 					matcher.set_seq1(comp_value)
@@ -525,7 +526,7 @@ class SingleQueryHandler(object):
 		
 		result = {}
 		
-		for i in range(0, num_entries):
+		for i in range(num_entries):
 			try:
 				entry = self.get_result(dbus_sender)
 				result[i] = entry
@@ -535,31 +536,31 @@ class SingleQueryHandler(object):
 		return result
 
 
-		def check_new_contact(self, contact_id):
-			"""Checks whether a newly added contact matches this so it can signal clients
+	def check_new_contact(self, contact_id):
+		"""Checks whether a newly added contact matches this so it can signal clients
+		
+		@param contact_id Contact ID of the contact that was added
+		@return True if contact matches this query, False otherwise
+		
+		@todo Currently this messes up the order of the result set if a specific order was desired"""
+		
+		result = False
+		
+		matcher = ContactQueryMatcher(self.query)
+		if matcher.single_contact_matches():
+			self.entries = matcher.match(self._contacts)
 			
-			@param contact_id Contact ID of the contact that was added
-			@return True if contact matches this query, False otherwise
+			# TODO Register with the new contact to receive changes
 			
-			@todo Currently this messes up the order of the result set if a specific order was desired"""
+			# We *should* reset all cursors *if* the result set is ordered, however
+			# in order to prevent confusion, this is left for the client to do.
+			# Rationale: clients with unordered queries can just use get_result()
+			# and be done with it. For those, theres's no need to re-read all results.
 			
-			result = False
-			
-			matcher = ContactQueryMatcher(self.query)
-			if matcher.single_contact_matches():
-				self.entries = matcher.match(self._contacts)
-				
-				# TODO Register with the new contact to receive changes
-				
-				# We *should* reset all cursors *if* the result set is ordered, however
-				# in order to prevent confusion, this is left for the client to do.
-				# Rationale: clients with unordered queries can just use get_result()
-				# and be done with it. For those, theres's no need to re-read all results.
-				
-				# Let clients know that this result set changed
-				result = True
-			
-			return result
+			# Let clients know that this result set changed
+			result = True
+		
+		return result
 
 
 
@@ -569,6 +570,8 @@ class QueryManager(DBusFBObject):
 	_queries = None
 	_contacts = None
 	_next_query_id = None
+	
+# Note: _queries must be a dict so we can remove queries without messing up query IDs
 #----------------------------------------------------------------------------#
 
 	def __init__(self, contacts):
@@ -577,7 +580,7 @@ class QueryManager(DBusFBObject):
 		@param contacts Set of Contact objects to use"""
 		
 		self._contacts = contacts
-		self._queries = {}    # Must be a dict so we can remove queries without messing up query IDs
+		self._queries = {}
 		self._next_query_id = 0
 		
 		# Initialize the D-Bus-Interface
@@ -672,7 +675,7 @@ class QueryManager(DBusFBObject):
 		return self._queries[num_id].get_result(sender)
 
 
-	@dbus_method(_DIN_QUERY, "i", "a{ia{sv}}", rel_path_keyword="rel_path", sender_keyword="sender")
+	@dbus_method(_DIN_QUERY, "i", "(a{sv})", rel_path_keyword="rel_path", sender_keyword="sender")
 	def GetMultipleResults(self, num_entries, rel_path, sender):
 		num_id = int(rel_path[1:])
 		
@@ -741,18 +744,18 @@ class ContactDomain(DBusFBObject):
 		self._backends[backend.name] = backend
 
 
-	def register_contact(self, backend, contact_fields):
+	def register_contact(self, backend, contact_data):
 		"""Merges/inserts the given contact into the contact list and returns its ID
 		
 		@param backend Backend objects that requests the registration
-		@param contact_fields Contact data; format: [Key:Value, Key:Value, ...]"""
+		@param contact_data Contact data; format: [Key:Value, Key:Value, ...]"""
 		
 		contact_id = -1
 		merge_success = False
 		
 		# Check if the contact can be merged with one we already know of
 		for entry in self._contacts:
-			if entry.attempt_merge(contact_fields, backend.name):
+			if entry.attempt_merge(contact_data, backend.name):
 				
 				# Find that entry's ID
 				for (contact_idx, contact) in enumerate(self._contacts):
@@ -767,7 +770,7 @@ class ContactDomain(DBusFBObject):
 			
 			uri = 'dbus://' + _DBUS_PATH_CONTACTS+ '/' + str(contact_id)
 			contact = Contact(uri)
-			contact.import_fields(contact_fields, backend.name)
+			contact.import_fields(contact_data, backend.name)
 			
 			self._contacts.append(contact)
 		

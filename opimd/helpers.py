@@ -37,8 +37,11 @@ def phone_number_to_tel_uri(phone_num):
 def get_compare_for_tel(tel_value):
 	"""Determines and returns a representation of a tel URI that is comparable to human input"""
 	
-	res = tel_value[4:]    # Remove tel:
-	res = res.translate({ord(u'+'):None, ord(u'-'):None, ord(u'/'):None})   # Remove +, - and /
+	# Remove tel:
+	res = tel_value[4:]
+	
+	# Remove +, - and /
+	res = res.translate({ord(u'-'):None, ord(u'/'):None})
 	
 	return res
 

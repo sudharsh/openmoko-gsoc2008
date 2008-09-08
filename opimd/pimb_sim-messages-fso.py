@@ -4,7 +4,6 @@
 #
 #   http://openmoko.org/
 #   http://pyneo.org/
-#   http://pyneo.org/
 #
 #   Copyright (C) 2008 by Soeren Apel (abraxa@dar-clan.de)
 #
@@ -48,8 +47,12 @@ class SIMMessageBackendFSO(object):
 	name = 'SIM-Messages-FSO'
 	properties = []
 
-	_domain_handlers = None           # Map of the domain handler objects we support
-	_entry_ids = None                 # List of all entry IDs that have data from us
+	# Dict containing the domain handler objects we support
+	_domain_handlers = None
+	
+	# List of all entry IDs that have data from us
+	_entry_ids = None
+	
 	_gsm_sim_iface = None
 #----------------------------------------------------------------------------#
 
@@ -69,7 +72,7 @@ class SIMMessageBackendFSO(object):
 		return _DOMAINS
 
 
-	def handle_pin_error(self, error):
+	def handle_sim_error(self, error):
 		log = get_logger('opimd')
 		log.error("%s hit an error, scheduling retry. Reason: %s" % (self.name, error))
 		timeout_add(_OGSMD_POLL_INTERVAL, self.load_entries)
@@ -90,6 +93,8 @@ class SIMMessageBackendFSO(object):
 		
 		# TODO Handle text properly, i.e. make it on-demand if >1KiB
 		entry['Text'] = text
+		
+		entry['Folder'] = settings['sim_messages_default_folder']
 		
 		entry_id = self._domain_handlers['Messages'].register_message(self, entry)
 		self._entry_ids.append(entry_id)
@@ -116,12 +121,13 @@ class SIMMessageBackendFSO(object):
 			self.gsm_sim_iface.RetrieveMessagebook(
 				'all',
 				reply_handler=self.process_all_entries,
-				error_handler=self.handle_pin_error
-				)
+				error_handler=self.handle_sim_error)
 				
 		except DBusException, e:
 			syslog(LOG_WARNING, "%s: Could not request SIM messagebook from ogsmd, scheduling retry (%s)" % (self.name, e))
-			timeout_add(_OGSMD_POLL_INTERVAL, self.load_entries)
+			return True
+		
+		return False
 
 
 	def handle_incoming_message(self, message_id):
