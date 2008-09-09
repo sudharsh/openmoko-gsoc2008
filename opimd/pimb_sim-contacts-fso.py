@@ -47,8 +47,11 @@ class SIMContactBackendFSO(object):
 	name = 'SIM-Contacts-FSO'
 	properties = []
 
-	_domain_handlers = None           # Map of the domain handler objects we support
-	_entry_ids = None                 # List of all entry IDs that have data from us
+	# Dict containing the domain handler objects we support
+	_domain_handlers = None
+	
+	# List of all entry IDs that have data from us
+	_entry_ids = None
 #----------------------------------------------------------------------------#
 
 	def __init__(self):
@@ -99,13 +102,14 @@ class SIMContactBackendFSO(object):
 			gsm_sim_iface = Interface(gsm, 'org.freesmartphone.GSM.SIM')
 			
 			gsm_sim_iface.RetrievePhonebook(
-				reply_handler=self.process_entries,
-				error_handler=self.log_error
-				)
+				reply_handler=process_entries,
+				error_handler=log_error)
 				
 		except DBusException, e:
 			syslog(LOG_WARNING, "%s: Could not request SIM phonebook from ogsmd, scheduling retry (%s)" % (self.name, e))
-			timeout_add(_OGSMD_POLL_INTERVAL, self.load_entries)
+			return True
+		
+		return False
 
 
 

@@ -12,20 +12,23 @@ PIM/
        - GetResult()			OK
        - GetMultipleResults()		OK
        - Dispose()			OK
-       * MessageAdded			--
-       * MessageDeleted			--
-       * MessageChanged			--
-   - GetFolderNames()			--
+       * MessageAdded			##
+       * MessageDeleted			##
+       * MessageChanged			##
+   - GetFolderNames()			OK
    - GetFolderOverview()		--
-   + Folders/				--	.PIM.MessageFolder
-     + [name]				--
-       - GetMessageCount()		--
-       - GetMessages()			--
+   - GetFolderURIFromName()		OK
+   + Folders/				OK	.PIM.MessageFolder
+     + n				OK
+       - GetMessageCount()		OK
+       - GetMessageURIs()		OK
+       * MessageMoved			OK
    + n					OK	.PIM.Message
      - GetContent()			OK
      - GetMultipleFields()		OK
      - Update()				--
      - Delete()				--
+     - MoveToFolder()			OK
      + OnDemandAttachments/		--
        + n				--
    * NewMessage				OK
@@ -43,9 +46,9 @@ PIM/
        - GetResult()			OK
        - GetMultipleResults()		OK
        - Dispose()			OK
-       * ContactAdded			--
-       * ContactDeleted			--
-       * ContactChanged			--
+       * ContactAdded			##
+       * ContactDeleted			##
+       * ContactChanged			##
    + n					OK	.PIM.Contact
      - GetContent()			OK
      - GetMultipleFields()		OK

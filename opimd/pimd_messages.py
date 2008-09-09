@@ -44,6 +44,8 @@ from settings_manager import *
 
 _DOMAIN_NAME = "Messages"
 
+_MIN_MATCH_TRESHOLD = 0.75
+
 
 # D-Bus constant initialization, *must* be done before any D-Bus method decorators are declared
 try:
@@ -60,10 +62,12 @@ except ImportError:
 
 
 _DBUS_PATH_QUERIES = _DBUS_PATH_MESSAGES + '/Queries'
+_DBUS_PATH_FOLDERS = _DBUS_PATH_MESSAGES + '/Folders'
 
 _DIN_MESSAGES = _DIN_MESSAGES_BASE + '.' + 'Messages'
 _DIN_ENTRY = _DIN_MESSAGES_BASE + '.' + 'Message'
 _DIN_QUERY = _DIN_MESSAGES_BASE + '.' + 'MessageQuery'
+_DIN_FOLDER = _DIN_MESSAGES_BASE + '.' + 'MessageFolder'
 
 
 
@@ -79,6 +83,22 @@ class InvalidMessageIDError(PIMException):
 class NoMoreMessagesError(PIMException):
 #----------------------------------------------------------------------------#
 	"""Raised when there are no more messages to be listed"""
+	pass
+
+
+
+#----------------------------------------------------------------------------#
+class UnknownFolderNameError(PIMException):
+#----------------------------------------------------------------------------#
+	"""Raised when a given folder name is unknown"""
+	pass
+
+
+
+#----------------------------------------------------------------------------#
+class AmbiguousKeyError(PIMException):
+#----------------------------------------------------------------------------#
+	"""Raised when a given message field name is present more than once and it's unclear which to modify"""
 	pass
 
 
@@ -190,6 +210,22 @@ class Message():
 				result.append(field[1])
 			
 			return result
+
+
+	def __setitem__(self, key, value):
+		"""Assigns a field a new value"""
+		
+		try:
+			field_ids = self._field_idx[key]
+		except KeyError:
+			self.import_fields( (key, value) )
+			return
+		
+		if len(field_ids) > 1:
+			raise AmbiguousKeyError()
+		
+		field = self._fields[field_ids[0]]
+		field[1] = value
 
 
 	def __repr__(self):
@@ -342,7 +378,8 @@ class Message():
 					# A field is (Key,Value,Comp_Value,Source), so [2] is the value we usually use for comparison
 					comp_value = self._fields[field_id][2]
 					if not comp_value:
-						comp_value = self._fields[field_id][1]   # We use the true value if no comparison value given
+						# Use the real value if no comparison value given
+						comp_value = self._fields[field_id][1]
 					
 					# Compare and determine the best match ratio
 					matcher.set_seq1(comp_value)
@@ -522,31 +559,31 @@ class SingleQueryHandler(object):
 		return result
 
 
-		def check_new_message(self, message_id):
-			"""Checks whether a newly added message matches this so it can signal clients
+	def check_new_message(self, message_id):
+		"""Checks whether a newly added message matches this so it can signal clients
+		
+		@param message_id Message ID of the message that was added
+		@return True if message matches this query, False otherwise
+		
+		@todo Currently this messes up the order of the result set if a specific order was desired"""
+		
+		result = False
+		
+		matcher = MessageQueryMatcher(self.query)
+		if matcher.single_message_matches():
+			self.entries = matcher.match(self._messages)
 			
-			@param message_id Message ID of the message that was added
-			@return True if message matches this query, False otherwise
+			# TODO Register with the new message to receive changes
 			
-			@todo Currently this messes up the order of the result set if a specific order was desired"""
+			# We *should* reset all cursors *if* the result set is ordered, however
+			# in order to prevent confusion, this is left for the client to do.
+			# Rationale: clients with unordered queries can just use get_result()
+			# and be done with it. For those, theres's no need to re-read all results.
 			
-			result = False
-			
-			matcher = MessageQueryMatcher(self.query)
-			if matcher.single_message_matches():
-				self.entries = matcher.match(self._messages)
-				
-				# TODO Register with the new message to receive changes
-				
-				# We *should* reset all cursors *if* the result set is ordered, however
-				# in order to prevent confusion, this is left for the client to do.
-				# Rationale: clients with unordered queries can just use get_result()
-				# and be done with it. For those, theres's no need to re-read all results.
-				
-				# Let clients know that this result set changed
-				result = True
-			
-			return result
+			# Let clients know that this result set changed
+			result = True
+		
+		return result
 
 
 
@@ -556,6 +593,8 @@ class QueryManager(DBusFBObject):
 	_queries = None
 	_messages = None
 	_next_query_id = None
+	
+# Note: _queries must be a dict so we can remove queries without messing up query IDs
 #----------------------------------------------------------------------------#
 
 	def __init__(self, messages):
@@ -564,7 +603,7 @@ class QueryManager(DBusFBObject):
 		@param messages Set of Message objects to use"""
 		
 		self._messages = messages
-		self._queries = {}    # Must be a dict so we can remove queries without messing up query IDs
+		self._queries = {}
 		self._next_query_id = 0
 		
 		# Initialize the D-Bus-Interface
@@ -684,12 +723,87 @@ class QueryManager(DBusFBObject):
 
 
 #----------------------------------------------------------------------------#
+class MessageFolder(DBusFBObject):
+#----------------------------------------------------------------------------#
+	_messages = None   # List of all messages registered with the messages domain
+	_entries = None    # List of all messages within this folder
+	name = None
+#----------------------------------------------------------------------------#
+
+	def __init__(self, messages, folder_id, folder_name):
+		self._messages = messages
+		self._entries = []
+		self.name = folder_name
+		
+				# Initialize the D-Bus-Interface
+		DBusFBObject.__init__(
+			self,
+			conn=SystemBus(),
+			object_path=_DBUS_PATH_FOLDERS + '/' + str(folder_id)
+			)
+
+
+	def register_message(self, message_id):
+		self._entries.append(message_id)
+		
+		# TODO Send "new message" signal for this folder
+
+
+	def notify_message_move(self, message_id, new_folder_name):
+		
+		message = self._messages[message_id]
+		message_uri = message['URI']
+		
+		self._entries.remove(message_id)
+		
+		self.MessageMoved(message_uri, new_folder_name)
+
+
+	@dbus_method(_DIN_FOLDER, "", "i")
+	def GetMessageCount(self):
+		"""Returns number of messages in this folder"""
+		
+		return len(self._entries)
+
+
+	@dbus_method(_DIN_FOLDER, "ii", "as")
+	def GetMessageURIs(self, first_message_id, message_count):
+		"""Produces and returns a list of message URIs
+		
+		@param first_message_id Number of first message to deliver
+		@param message_count Number of messages to deliver
+		@return Array of message URIs"""
+		
+		result = []
+		
+		for i in range(message_count):
+			entry_id = first_message_id + i
+			
+			try:
+				message_id = self._entries[entry_id]
+				message = self._messages[message_id]
+				result.append(message['URI'])
+				
+			except IndexError:
+				break
+		
+		return result
+
+
+	@dbus_signal(_DIN_FOLDER, "ss")
+	def MessageMoved(self, message_uri, new_folder_name):
+		pass
+
+
+
+#----------------------------------------------------------------------------#
 class MessageDomain(DBusFBObject):
 #----------------------------------------------------------------------------#
 	name = _DOMAIN_NAME
 
 	_backends = None
 	_messages = None
+	_folders = None
 	query_manager = None
 #----------------------------------------------------------------------------#
 
@@ -698,6 +812,7 @@ class MessageDomain(DBusFBObject):
 		
 		self._backends = {}
 		self._messages = []
+		self._folders = []
 		self.query_manager = QueryManager(self._messages)
 		
 		# Initialize the D-Bus-Interface
@@ -710,7 +825,14 @@ class MessageDomain(DBusFBObject):
 		# Keep frameworkd happy, pyneo won't care
 		self.interface = _DIN_MESSAGES
 		self.path = _DBUS_PATH_MESSAGES
-
+		
+		# Create the default folders
+		folder_name = settings['messages_default_folder']
+		self._folders.append(MessageFolder(self._messages, 0, folder_name))
+		
+		folder_name = settings['messages_trash_folder']
+		self._folders.append(MessageFolder(self._messages, 1, folder_name))
+		
 
 	def get_dbus_objects(self):
 		"""Returns a list of all d-bus objects we manage
@@ -718,6 +840,18 @@ class MessageDomain(DBusFBObject):
 		@return List of d-bus objects"""
 		
 		return (self, self.query_manager)
+
+
+	def get_folder_id_from_name(self, folder_name):
+		"""Resolves a folder's name to its numerical list ID
+		
+		@param folder_name Folder Name
+		@return Numerical folder ID"""
+		
+		for (folder_id, folder) in enumerate(self._folders):
+			if folder.name == folder_name: return folder_id
+		
+		raise UnknownFolderNameError()
 
 
 	def register_backend(self, backend):
@@ -728,20 +862,37 @@ class MessageDomain(DBusFBObject):
 		self._backends[backend.name] = backend
 
 
-	def register_message(self, backend, message_fields):
+	def register_message(self, backend, message_data):
 		"""Merges/inserts the given message into the message list and returns its ID
 		
 		@param backend Backend objects that requests the registration
-		@param message_fields Message data; format: [Key:Value, Key:Value, ...]"""
+		@param message Message data; format: [Key:Value, Key:Value, ...]"""
 		
 		# Create a new message entry and append it to the list
 		message_id = len(self._messages)
 		
 		uri = 'dbus://' + _DBUS_PATH_MESSAGES+ '/' + str(message_id)
 		message = Message(uri)
-		message.import_fields(message_fields, backend.name)
+		message.import_fields(message_data, backend.name)
 		
 		self._messages.append(message)
+		
+		# Put it in the corresponding folder
+		try:
+			folder_name = message_data['Folder']
+		except KeyError:
+			folder_name = settings['messages_default_folder']
+		
+		try:
+			folder_id = self.get_folder_id_from_name(folder_name)
+			folder = self._folders[folder_id]
+			
+		except UnknownFolderNameError:
+			folder_id = len(self._folders)
+			folder = MessageFolder(self._messages, folder_id, folder_name)
+			self._folders.append(folder)
+		
+		folder.register_message(message_id)
 		
 		# Notify clients that a new message arrived
 		self.NewMessage(uri)
@@ -826,6 +977,29 @@ class MessageDomain(DBusFBObject):
 		return self.query_manager.process_query(query, sender)
 
 
+	@dbus_method(_DIN_MESSAGES, "", "as")
+	def GetFolderNames(self):
+		"""Retrieves a list of all available folders"""
+		
+		result = []
+		
+		for folder in self._folders:
+			result.append(folder.name)
+		
+		return result
+
+
+	@dbus_method(_DIN_MESSAGES, "s", "s")
+	def GetFolderURIFromName(self, folder_name):
+		"""Retrieves a folder's D-Bus URI
+		
+		@param folder_name Name of folder whose URI to return
+		@return D-Bus URI for the folder object"""
+		
+		folder_id = self.get_folder_id_from_name(folder_name)
+		return 'dbus://' + _DBUS_PATH_FOLDERS + '/' + str(folder_id)
+
+
 	@dbus_signal(_DIN_MESSAGES, "s")
 	def NewMessage(self, message_URI):
 		pass
@@ -858,6 +1032,32 @@ class MessageDomain(DBusFBObject):
 			if field_name: new_field_list.append(field_name)
 			
 		return self._messages[num_id].get_fields(new_field_list)
+
+
+	@dbus_method(_DIN_ENTRY, "s", "", rel_path_keyword="rel_path")
+	def MoveToFolder(self, new_folder_name, rel_path):
+		"""Moves a message into a specific folder, if it exists
+		
+		@param new_folder_name Name of new folder
+		@param rel_path Relative part of D-Bus object path, e.g. '/4'"""
+		num_id = int(rel_path[1:])
+		
+		# Make sure the requested message exists
+		if num_id >= len(self._messages): raise InvalidMessageIDError()
+		
+		message = self._messages[num_id]
+		
+		# Notify old folder of the move
+		folder_name = message['Folder']
+		folder_id = self.get_folder_id_from_name(folder_name)
+		folder = self._folders[folder_id]
+		folder.notify_message_move(num_id, new_folder_name)
+		
+		# Register message with new folder
+		message['Folder'] = new_folder_name
+		folder_id = self.get_folder_id_from_name(new_folder_name)
+		folder = self._folders[folder_id]
+		folder.register_message(num_id)
 
 
 
