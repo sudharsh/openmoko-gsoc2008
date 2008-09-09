@@ -92,31 +92,41 @@ public class IdleNotifier: GLib.Object {
 	
 	private bool onBusy() {
 		this.emit_signal ("BUSY");
-		this.tag = Timeout.add_seconds (this.timeouts.lookup("IDLE"), this.onIdle);
+		int secs = this.timeouts.lookup("IDLE");
+		if (secs > 0)
+			this.tag = Timeout.add_seconds (secs, this.onIdle);
 		return false;
 	}
 		
 	private bool onIdle() {
 		this.emit_signal ("IDLE");
-		this.tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_DIM"), this.onIdleDim);
+		int secs = this.timeouts.lookup("IDLE_DIM");
+		if (secs > 0)
+			this.tag = Timeout.add_seconds (secs, this.onIdleDim);
 		return false;
 	}
 
 	private bool onIdleDim() {
 		this.emit_signal ("IDLE_DIM");
-		this.tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_PRELOCK"), this.onIdlePrelock);
+		int secs = this.timeouts.lookup("IDLE_PRELOCK");
+		if (secs > 0)
+			this.tag = Timeout.add_seconds (secs, this.onIdlePrelock);
 		return false;
 	}
 
 	private bool onIdlePrelock() {
 		this.emit_signal ("IDLE_PRELOCK");
-		this.tag = Timeout.add_seconds (this.timeouts.lookup("IDLE_LOCK"), this.onLock);
+		int secs = this.timeouts.lookup("IDLE_LOCK");
+		if (secs > 0)
+			this.tag = Timeout.add_seconds (secs, this.onLock);
 		return false;
 	}
 
 	private bool onLock() {
 		this.emit_signal ("LOCK");
-		this.tag = Timeout.add_seconds (this.timeouts.lookup("SUSPEND"), this.onSuspend);
+		int secs = this.timeouts.lookup("SUSPEND");
+		if (secs > 0)
+			this.tag = Timeout.add_seconds (secs, this.onSuspend);
 		return false;
 	}
 
@@ -134,8 +144,9 @@ public class IdleNotifier: GLib.Object {
 	public void SetState (string _state) {
 		if (this._current_state == _state) 
 			message ("Already in %s, ignoring..", _state);
-					
-		Source.remove(this.tag);
+		
+		if (this.tag > 0)
+			Source.remove(this.tag);
 			
 		switch (_state) {
 		case "BUSY":

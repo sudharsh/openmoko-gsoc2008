@@ -14,4 +14,5 @@ LOCK = 2
 SUSPEND = 20
 AWAKE = -1
 BUSY = -1
+SUSPEND = 0
 watchfor=event0,event1 
