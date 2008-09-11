@@ -9,6 +9,7 @@ namespace ODeviced {
 	[CCode (cheader_filename = "src/daemon/plugin.h")]
 	public class PluginManager : GLib.Object {
 		public GLib.List<string> dbus_object_paths;
+		[CCode (array_length_pos = 0, delegate_target_pos = 0)]
 		public PluginManager (string name, string path);
 		public bool register () throws ODeviced.PluginError;
 		public GLib.Module library { get; }
@@ -19,14 +20,15 @@ namespace ODeviced {
 	}
 	[CCode (cheader_filename = "src/daemon/service.h")]
 	public class Service : GLib.Object {
-		protected string dev_name;
-		protected string conf_dir_plugins;
+		protected static string dev_name;
+		protected static string conf_dir_plugins;
 		public string[] ListObjectsByInterface (string iface);
 		public void run ();
+		[CCode (array_length_pos = 0, delegate_target_pos = 0)]
 		public Service ();
 	}
 	[CCode (cheader_filename = "src/daemon/odeviced.h")]
-	protected DBus.Connection connection;
+	protected static DBus.Connection connection;
 	[CCode (cheader_filename = "src/daemon/helpers.h")]
 	public static void register_dbus_object (ODeviced.PluginManager plugin, GLib.Object interface_obj);
 	[CCode (cheader_filename = "src/daemon/helpers.h")]

@@ -32,12 +32,17 @@ public class Power: GLib.Object {
 	private string status = new string();
 	private int max_energy = 0;
 	private int low_energy_threshold;
-	private uint _energy_id;
-	private uint _status_id;
+	private uint _id;
 	private string name = new string();
+	private int curr_capacity;
 
-	public signal void battery_status_changed(string status);
-	public signal void low_battery(int charge);
+	public signal void power_status(string status);
+	public signal void capacity(int charge);
+
+	private void emit_signal(int current_capacity) {
+		message ("\tCapacity changed");
+		this.curr_capacity = current_capacity;
+	}
 
 	private string _curr_status = new string();
 	[DBus (visible = false)]
@@ -74,18 +79,18 @@ public class Power: GLib.Object {
 
 	construct {
 		
-		this._energy_id = Timeout.add_seconds(30, poll_energy);
+		this._id = Timeout.add_seconds(30, poll_energy);
 		try {
 			var dev = ODeviced.get_device();
 			int netlink_fd = PowerHelpers.get_netlink_fd();			
-			this.low_energy_threshold = plugin.conf.get_integer(dev, "low_energy_threshold");
-
+			
 			IOChannel channel = new IOChannel.unix_new(netlink_fd);
 			PowerHelpers.start_watch (channel, this);
 
 			this.name = ODeviced.compute_name (this.dbus_path);
-			this._curr_status = GetBatteryStatus();
-			
+			this._curr_status = GetPowerStatus();
+			this.curr_capacity = GetCapacity();
+
 			if (!FileUtils.test (this.node + "/capacity", FileTest.EXISTS))
 				this.max_energy = ODeviced.read_integer (this.node + "/energy_full");
 		}
@@ -110,7 +115,7 @@ public class Power: GLib.Object {
 	}
 
 
-	public string GetBatteryStatus() {
+	public string GetPowerStatus() {
 		return ODeviced.read_string(this.node + "/status");
 	}
 
@@ -140,11 +145,11 @@ public class Power: GLib.Object {
 	}
 
 
-	public int GetEnergyPercentage() {
+	public int GetCapacity() {
 		/* Some devices have capacity, just return that */
-		var capacity = ODeviced.read_integer (this.node + "/capacity");
-		if(capacity != -1)
-			return capacity;
+		var curr_capacity = ODeviced.read_integer (this.node + "/capacity");
+		if(curr_capacity != -1)
+			return curr_capacity;
 
 		var _curr = GetCurrentEnergy();
 		return (int)(100.0 * ((float)_curr / (float)this.max_energy));
@@ -152,16 +157,15 @@ public class Power: GLib.Object {
 
 
 	private bool poll_energy() {
-		var _curr = GetEnergyPercentage();
+		var _curr = GetCapacity();
 		if (_curr == -1) { 
-			Source.remove(_energy_id);
+			Source.remove(_id);
 			return false;
 		}
 
 		message("Current capacity, %d", _curr);
-		if(_curr < this.low_energy_threshold) {
-			message("%s\tLow energy warning", this.name);
-			this.low_battery(_curr);
+		if(_curr != this.curr_capacity) {
+			this.emit_signal(_curr);
 		}
 		return true;
 	}
