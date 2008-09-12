@@ -1,10 +1,10 @@
 Sudharshan <Sup3rkiddo> S
 
-odeviced is a deviced daemon written in vala which uses dbus and gmodule to
-offer a framework that offers highly dynamic loading of arbitrary device plugins.
+Proof of concept device daemon written in vala confirming to frameworkd
+git.freesmartphone.org
 
 For more, refer the docs present in docs/ 
 
-Requires vala 0.3.4
+Requires vala 0.3.5
 -------------------
 Depends on GIO, GLib, GModule and DBus
