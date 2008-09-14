@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<api version="1.0">
+<namespace name="FSO">
+	<object name="Service" parent="GLib.Object" type-name="FSOService" get-type="fso_service_get_type">
+		<method name="run" symbol="fso_service_run">
+			<parameters>
+				<parameter name="self" type="FSO.Service*"/>
+			</parameters>
+			<return-type type="void"/>
+		</method>
+		<constructor name="new" symbol="fso_service_new">
+			<parameters>
+			</parameters>
+			<return-type type="FSO.Service*"/>
+		</constructor>
+		<property name="connection" type="DBus.Connection*" readable="1"/>
+	</object>
+</namespace>
+<namespace name="Subsystem">
+	<object name="Manager" parent="GLib.Object" type-name="SubsystemManager" get-type="subsystem_manager_get_type">
+		<method name="init_subsystem" symbol="subsystem_manager_init_subsystem">
+			<parameters>
+				<parameter name="self" type="Subsystem.Manager*"/>
+			</parameters>
+			<return-type type="bool" transfer="full"/>
+		</method>
+		<property name="dbus_iface" type="const char*" readable="1"/>
+		<property name="conf" type="GLib.KeyFile*" readable="1"/>
+		<property name="path" type="const char*" readable="1" writable="1"/>
+		<property name="name" type="const char*" readable="1" writable="1"/>
+	</object>
+</namespace>
+</api>

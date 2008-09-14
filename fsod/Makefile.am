@@ -19,6 +19,7 @@ bin_PROGRAMS = fsod
 
 fsod_VALASOURCES = \
 	src/fsod.vala \
+	src/subsystem.vala \
 	$(NULL)
 
 fsod_SOURCES = \
@@ -27,7 +28,7 @@ fsod_SOURCES = \
 	$(NULL)
 
 src/fsod.vala.stamp: $(fsod_VALASOURCES)
-	$(VALAC) -C --basedir $(top_srcdir) --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0 $^
+	$(VALAC) -C --library ./vapi/fsod --basedir $(top_srcdir) --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0 $^
 	touch $@
 
 fsod_LDADD = \
@@ -50,5 +51,11 @@ DISTCLEANFILES = \
 	intltool-update \
 	intltool-merge \
 	po/.intltool-merge-cache \
+	$(NULL)
+
+CLEANFILES = \
+	src/*.c \
+	src/*.h \
+	src/*.stamp \
 	$(NULL)
 

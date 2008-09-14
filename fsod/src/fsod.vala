@@ -49,9 +49,9 @@ namespace FSO {
 					
 					print("Starting fsod....\n");
 					var service = new Service();
-					connection.register_object ("/org/freesmartphone/Device", service);
+					connection.register_object ("/org/freesmartphone/Framework", service);
 					
-					if(GLib.Module.supported()) {
+					if(!GLib.Module.supported()) {
 						log("FSO Service", LogLevelFlags.LEVEL_ERROR, 
 							"Modules are not supported in the current system");
 					}		
@@ -61,7 +61,7 @@ namespace FSO {
 				}
 				else {
 					/* If odeviced is already running */
-					print("ODeviced already running!\n");			       
+					print("fsod already running!\n");			       
 				}
 				
 			}
