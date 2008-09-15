@@ -1,11 +1,46 @@
-SUBDIRS = \
-	powercontrol \
-	display \
-	rtc \
-	power \
-	input \
-	led \
-	idlenotifier \
-	audio \
-	accelerometer
+
+
+AM_CPPFLAGS = \
+	$(GLIB_CFLAGS) \
+	$(DBUS_CFLAGS) \
+	$(GMODULE_CFLAGS) \
+	-include $(CONFIG_HEADER) \
+	-ggdb
+
+
+pkgdir = $(libdir)/fsod/subsystems
+pkg_LTLIBRARIES	= Device.la
+
+Device_VALASOURCES = Device.vala \
+		helpers.vala
+
+Device_la_SOURCES = \
+	$(Device_VALASOURCES:.vala=.c) \
+	$(Device_VALASOURCES:.vala=.h)
+
+BUILT_SOURCES = Device.vala.stamp
+
+
+Device.vala.stamp: $(Device_VALASOURCES)
+	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg fsod --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
+	$^
+	touch $@
+
+
+Device_la_LIBADD = \
+	$(GLIB_LIBS) \
+	$(DBUS_LIBS) \
+	$(GMODULE_LIBS)
+
+Device_la_LDFLAGS      = -module -avoid-version
+Device_la_DEPENDENCIES = $(top_builddir)/config.h
+
+EXTRA_DIST = \
+	$(Device_VALASOURCES) \
+	Device.vala.stamp
+
+CLEANFILES = \
+	Device.c \
+	Device.h \
+	Device.vala.stamp
 

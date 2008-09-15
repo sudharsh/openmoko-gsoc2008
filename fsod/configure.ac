@@ -59,4 +59,17 @@ AC_DEFINE_UNQUOTED(DBUS_SYSTEM_DIR, "$DBUS_SYSTEM_DIR", [Where system.d dir is])
 AC_CONFIG_FILES([Makefile
 	po/Makefile.in])
 
-AC_OUTPUT
+AC_OUTPUT([
+	src/Makefile
+	src/subsystems/Makefile
+        src/subsystems/Device/Makefile
+	src/subsystems/Device/input/Makefile
+	src/subsystems/Device/idlenotifier/Makefile
+	src/subsystems/Device/power/Makefile
+	src/subsystems/Device/powercontrol/Makefile
+	src/subsystems/Device/accelerometer/Makefile
+	src/subsystems/Device/audio/Makefile
+	src/subsystems/Device/rtc/Makefile
+	src/subsystems/Device/led/Makefile
+	src/subsystems/Device/display/Makefile
+	])

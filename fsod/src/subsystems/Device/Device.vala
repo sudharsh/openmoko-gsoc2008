@@ -26,21 +26,20 @@ using DBus;
 public class Device: Subsystem.Manager {
 
    	 public bool init_subsystem() {
-		 this._library = Module.open(this.path, ModuleFlags.BIND_LAZY | ModuleFlags.BIND_LOCAL);				
-		 if(this._library == null) {
+		 /*this.library = Module.open(this.path, ModuleFlags.BIND_LAZY | ModuleFlags.BIND_LOCAL);				
+		 if(this.library == null) {
 			 warning ("library is null, possibly some symbol error");
-			 throw new PluginError.LOAD_ERROR("_library is null");
 		 }
 		 
-		 /* If the plugin uses sysfs, check if the device class exists */
+		 /* If the plugin uses sysfs, check if the device class exists 
 		 if(this.conf.has_key (name, "device_class")) {
 			 var _dev = this.conf.get_string (name, "device_class");
 			 if (!FileUtils.test ("/sys/class/" + _dev, FileTest.IS_DIR)) 
-				 throw new PluginError.LOAD_ERROR("Device class %s doesn't exist".printf(name));
-		 }				
+				 return false;	
+		 }			
 		 
 		 var _symbol = null;
-		 if(!this._library.symbol(name + "_init", out _symbol)) {
+		 if(!this.library.symbol(name + "_init", out _symbol)) {
 			 throw new PluginError.LOAD_ERROR("Malformed odeviced plugin");
 		 }
 		 
@@ -50,11 +49,10 @@ public class Device: Subsystem.Manager {
 			 message (Module.error());
 		 }
 		 else
-			 this._library.make_resident();
+			 this.library.make_resident();
 
 		 
-		 return success;
+			 return success;*/
 	 }
 }
  
-		 
