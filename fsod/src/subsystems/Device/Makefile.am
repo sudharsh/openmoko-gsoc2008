@@ -1,5 +1,4 @@
 
-
 AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
@@ -10,6 +9,9 @@ AM_CPPFLAGS = \
 
 pkgdir = $(libdir)/fsod/subsystems
 pkg_LTLIBRARIES	= Device.la
+
+deviceconfdir	= $(datadir)/fsod/subsystems
+deviceconf_DATA   = Device.conf	
 
 Device_VALASOURCES = Device.vala \
 		helpers.vala
@@ -22,7 +24,7 @@ BUILT_SOURCES = Device.vala.stamp
 
 
 Device.vala.stamp: $(Device_VALASOURCES)
-	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg fsod --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
+	$(VALAC) -C --basedir . --library Device --vapidir $(top_srcdir)/vapi --pkg fsod --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
 	$^
 	touch $@
 
@@ -44,3 +46,6 @@ CLEANFILES = \
 	Device.h \
 	Device.vala.stamp
 
+
+SUBDIRS = \
+	input

@@ -23,6 +23,8 @@
 using DBus;
 using GLib;
 using ODeviced;
+using FSO;
+using Subsystem;
 using InputHelpers;
 
 [DBus (name = "org.freesmartphone.Device.Input")]
@@ -52,12 +54,12 @@ public class Input: GLib.Object {
 	public signal void @event(string name, string action, int seconds);
 
 	[DBus (visible = false)]
-	public ODeviced.PluginManager plugin {
+	public Subsystem.Manager plugin {
 		get;
 		construct;
 	}
 
-	Input (ODeviced.PluginManager plugin) {
+	Input (Subsystem.Manager plugin) {
 		this.plugin = plugin;
 	}
 
@@ -65,7 +67,7 @@ public class Input: GLib.Object {
    	construct {
 		
 		try {
-			this.device = ODeviced.get_device();
+			this.device = "Freerunner";
 			compute_watches ();
 		   
 			var input_nodes = plugin.conf.get_string_list (this.device, "input_nodes");
@@ -111,7 +113,7 @@ namespace input {
 
 	public static Input obj;
 
-	public bool init (ODeviced.PluginManager plugin) {		
+	public bool init (Subsystem.Manager plugin) {		
 		obj = new Input(plugin);
 		if(obj == null)
 			return false;

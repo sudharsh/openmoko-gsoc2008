@@ -4,6 +4,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 SUBDIRS = \
 	po \
+	src \
 	$(NULL)
 
 AM_CPPFLAGS = \
@@ -17,6 +18,9 @@ AM_CPPFLAGS = \
 BUILT_SOURCES = src/fsod.vala.stamp
 
 bin_PROGRAMS = fsod
+
+fsodconfdir = /etc
+fsodconf_DATA = etc/fsod.conf
 
 fsod_VALASOURCES = \
 	src/fsod.vala \
@@ -45,6 +49,7 @@ EXTRA_DIST = \
 	intltool-merge.in \
 	$(fsod_VALASOURCES) \
 	src/fsod.vala.stamp \
+	fsodconf_DATA \
 	$(NULL)
 
 DISTCLEANFILES = \

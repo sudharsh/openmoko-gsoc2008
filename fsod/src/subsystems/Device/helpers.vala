@@ -21,14 +21,16 @@
 using GLib;
 using DBus;
 using Subsystem;
+using FSO;
 
 namespace ODeviced {
 
 	public static void register_dbus_object(Manager plugin, GLib.Object interface_obj) {
+		
 		try {
 			if(plugin.conf.has_group(plugin.name)) {
 				var at_path = plugin.conf.get_string(plugin.name, "dbus_object_path");
-				ODeviced.connection.register_object (at_path, interface_obj);
+				FSO.connection.register_object (at_path, interface_obj);
 				plugin.dbus_object_paths.append (at_path);
 			}
 			else
@@ -41,7 +43,7 @@ namespace ODeviced {
 	
 
 	public static string get_device () {
-		return ODeviced.Service.dev_name;
+		return "Freerunner";
 	}
 
 

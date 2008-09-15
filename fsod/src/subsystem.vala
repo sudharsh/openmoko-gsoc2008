@@ -26,18 +26,20 @@ namespace Subsystem {
 	
 	public abstract class Manager: GLib.Object {
 		
-		private Module library;
+		public Module library;
 		private string _dbus_iface;
 		public string dbus_iface {
 			get { return _dbus_iface; }
 		}
-		
+
+		public List<string> dbus_object_paths = new List<string> ();
+
 		private KeyFile _conf = new KeyFile();
 		public KeyFile conf {
 			get { return _conf; }
 		}
 		
-		public string path {
+		public string path { 
 			get;
 			construct;
 		}
@@ -46,12 +48,20 @@ namespace Subsystem {
 			get;
 			construct;
 		}
-
-		Manager (string name, string path) {
-			this.name = name;
-			this.path = path;
-		}
 		
+		construct {
+			var _conf_path  = "/usr/share/fsod/subsystems/Device" + "/" + this.name + ".plugin";
+			message (_conf_path);
+			try {
+				this._conf.load_from_file(_conf_path, KeyFileFlags.NONE);
+				this._conf.set_list_separator(',');
+				this._dbus_iface = this._conf.get_string (this.name, "dbus_interface");
+			}
+			catch (GLib.Error error) {
+				critical("Plugin configuration file for %s malformed/not found : %s", this.name, error.message);
+			}
+		}
+
 		public abstract bool init_subsystem();
 
 	}

@@ -3,7 +3,7 @@ dbus_interface=org.freesmartphone.Device.Input
 dbus_object_path=/org/freesmartphone/Device/Input
 
 # Device specific keycodes
-[FreeRunner]
+[Freerunner]
 aux = 169,AUX,key,true
 power = 116,POWER,key,true
 charger = 356,CHARGER,key,false

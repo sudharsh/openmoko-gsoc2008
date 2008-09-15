@@ -19,40 +19,80 @@
  *
  */ 
 
+using FSO;
 using Subsystem;
 using GLib;
 using DBus;
+using ODeviced;
 
 public class Device: Subsystem.Manager {
 
-   	 public bool init_subsystem() {
-		 /*this.library = Module.open(this.path, ModuleFlags.BIND_LAZY | ModuleFlags.BIND_LOCAL);				
-		 if(this.library == null) {
-			 warning ("library is null, possibly some symbol error");
-		 }
-		 
-		 /* If the plugin uses sysfs, check if the device class exists 
-		 if(this.conf.has_key (name, "device_class")) {
-			 var _dev = this.conf.get_string (name, "device_class");
-			 if (!FileUtils.test ("/sys/class/" + _dev, FileTest.IS_DIR)) 
-				 return false;	
-		 }			
-		 
-		 var _symbol = null;
-		 if(!this.library.symbol(name + "_init", out _symbol)) {
-			 throw new PluginError.LOAD_ERROR("Malformed odeviced plugin");
-		 }
-		 
-		 InitFunc func = (InitFunc)_symbol;
-		 var success = func(this);
-		 if (!success) {
-			 message (Module.error());
-		 }
-		 else
-			 this.library.make_resident();
+	delegate bool InitFunc(Device dev);
 
-		 
-			 return success;*/
-	 }
+	Device (string name, string path) {
+			this.name = name;
+			this.path = path;
+	}
+
+	public override bool init_subsystem() {		
+		/* Resolve symbols only when necessary and don't pollute the global namespace */
+		this.library = Module.open(this.path, ModuleFlags.BIND_LAZY | ModuleFlags.BIND_LOCAL);				
+		if(this.library == null) {
+			warning ("library is null, possibly some symbol error");
+		}		 
+
+		/* If the plugin uses sysfs, check if the device class exists */
+		if(this.conf.has_key (name, "device_class")) {
+			var _dev = this.conf.get_string (name, "device_class");
+			if (!FileUtils.test ("/sys/class/" + _dev, FileTest.IS_DIR)) 
+				return false;	
+		}	
+		var _symbol = null;
+		if(!this.library.symbol(name + "_init", out _symbol)) {
+			log("Device", LogLevelFlags.LEVEL_WARNING, "Malformed odeviced plugin");
+		}	
+		InitFunc func = (InitFunc)_symbol;
+
+		/* This calls the foo_init functions of the Device plugins */
+		var success = func(this);
+		if (!success) {
+			message (Module.error());
+		 }
+		else
+			this.library.make_resident();
+		
+		
+		return success;
+	}
 }
  
+
+public bool factory() {
+	
+	dynamic DBus.Object bus = FSO.connection.get_object ("org.freedesktop.DBus", 
+														 "/org/freedesktop/DBus", "org.freedesktop.DBus");
+	uint result = bus.RequestName ("org.freesmartphone.odeviced", (uint) 0);
+	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
+		try {
+			Dir dir = Dir.open("/usr/lib/fsod/subsystems/Device", 0);
+			var plugin = dir.read_name();
+
+			while ((plugin = dir.read_name())!=null) {
+				var path = "/usr/lib/fsod/subsystems/Device/" + plugin;
+				if(plugin.has_suffix (".so")) {
+					Device dev = new Device(plugin.split(".")[0], path);
+					dev.init_subsystem();			
+				}
+			}
+			return true;
+		}
+		catch (GLib.Error error) {
+			message (error.message);
+		}
+	}
+	return false;
+}
+					
+					
+				
+				
