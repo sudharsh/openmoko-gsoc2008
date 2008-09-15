@@ -22,6 +22,9 @@ bin_PROGRAMS = fsod
 fsodconfdir = /etc
 fsodconf_DATA = etc/fsod.conf
 
+dbussystemdir = $(DBUS_SYSTEM_DIR)
+dbussystem_DATA = etc/dbus-1/system.d/fsod.conf
+
 fsod_VALASOURCES = \
 	src/fsod.vala \
 	src/subsystem.vala \
@@ -50,6 +53,7 @@ EXTRA_DIST = \
 	$(fsod_VALASOURCES) \
 	src/fsod.vala.stamp \
 	fsodconf_DATA \
+	dbussystem_DATA \
 	$(NULL)
 
 DISTCLEANFILES = \
