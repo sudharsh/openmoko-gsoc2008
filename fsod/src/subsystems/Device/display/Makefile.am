@@ -22,7 +22,7 @@ BUILT_SOURCES = display.vala.stamp
 
 
 display.vala.stamp: $(display_VALASOURCES)
-	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg odeviced --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
+	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg fsod --pkg Device --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
 	$^
 	touch $@
 

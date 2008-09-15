@@ -23,6 +23,9 @@
 using GLib;
 using ODeviced;
 using IdleHelpers;
+using FSO;
+using Subsystem;
+
 
 [DBus (name = "org.freesmartphone.Device.IdleNotifier") ]
 public class IdleNotifier: GLib.Object {
@@ -52,13 +55,13 @@ public class IdleNotifier: GLib.Object {
 	public uint tag;
 		
 	[DBus (visible=false)]
-	public ODeviced.PluginManager plugin {
+	public Subsystem.Manager plugin {
 		get;
 		construct;
 	}
 
 
-	IdleNotifier (ODeviced.PluginManager plugin) {
+	IdleNotifier (Subsystem.Manager plugin) {
 		this.plugin = plugin;
 	}
 
@@ -180,7 +183,7 @@ namespace idlenotifier {
 
 	public static IdleNotifier obj;
 
-	public bool init (ODeviced.PluginManager plugin) {		
+	public bool init (Subsystem.Manager plugin) {		
 		obj = new IdleNotifier(plugin);
 		if(obj == null)
 			return false;

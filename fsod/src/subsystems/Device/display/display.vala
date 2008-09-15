@@ -21,7 +21,8 @@
 
 using DBus;
 using ODeviced;
-
+using FSO;
+using Subsystem;
 
 [DBus (name = "org.freesmartphone.Device.Display")]
 public class Display: GLib.Object {
@@ -42,12 +43,12 @@ public class Display: GLib.Object {
 	}
 
 	[DBus (visible=false)]
-	public ODeviced.PluginManager plugin {
+	public Subsystem.Manager plugin {
 		get;
 		construct;
 	}
 
-	Display(string node, string dbus_path, ODeviced.PluginManager plugin) {
+	Display(string node, string dbus_path, Subsystem.Manager plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -99,7 +100,7 @@ namespace display {
 
 	public static List<Display> list;
 
-	public bool init (ODeviced.PluginManager plugin) {
+	public bool init (Subsystem.Manager plugin) {
 		Type type;
 		type = typeof (Display);
 		list = ODeviced.compute_objects (plugin, type);
@@ -117,5 +118,5 @@ namespace display {
 
 static void register_dbus (Display obj) {
 	GLib.message("Registering DBus object at %s", obj.dbus_path);
-	ODeviced.connection.register_object(obj.dbus_path, obj);
+	FSO.connection.register_object(obj.dbus_path, obj);
 }

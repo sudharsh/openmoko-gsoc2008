@@ -6,13 +6,13 @@ AM_CPPFLAGS = \
 	-ggdb
 
 
-pkgdir		= $(libdir)fsod/subsystems/Device
-powercontrolconfdir	= $(datadir)fsod/subsystems/Device
+pkgdir		= $(libdir)/fsod/subsystems/Device
+powercontrolconfdir	= $(datadir)/fsod/subsystems/Device
 powercontrolconf_DATA   = powercontrol.plugin	
 
 pkg_LTLIBRARIES	= powercontrol.la
 
-powercontrol_VALASOURCES = powercontrol.vala 
+powercontrol_VALASOURCES = powercontrol.vala
 
 powercontrol_la_SOURCES = \
 	powercontrol-helpers.c \
@@ -23,7 +23,7 @@ BUILT_SOURCES = powercontrol.vala.stamp
 
 
 powercontrol.vala.stamp: $(powercontrol_VALASOURCES)
-	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg odeviced --vapidir ./ --pkg powercontrol-helpers --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
+	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg fsod --vapidir ../ --pkg Device --vapidir ./ --pkg powercontrol-helpers --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
 	$^
 	touch $@
 

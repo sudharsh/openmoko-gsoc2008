@@ -24,7 +24,8 @@ using DBus;
 using GLib;
 using ODeviced;
 using PowerHelpers;
-
+using FSO;
+using Subsystem;
 
 [DBus (name = "org.freesmartphone.Device.PowerSupply")]
 public class Power: GLib.Object {
@@ -64,13 +65,13 @@ public class Power: GLib.Object {
 	}
 
 	[DBus (visible = false)]
-	public ODeviced.PluginManager plugin {
+	public Subsystem.Manager plugin {
 		get;
 		construct;
 	}
 
 
-	Power(string node, string dbus_path, ODeviced.PluginManager plugin) {
+	Power(string node, string dbus_path, Subsystem.Manager plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -175,7 +176,7 @@ public class Power: GLib.Object {
 
 void register_dbus (Power obj) {
 	GLib.message("Registering DBus object at %s", obj.dbus_path);
-	ODeviced.connection.register_object(obj.dbus_path, obj);
+	FSO.connection.register_object(obj.dbus_path, obj);
 }
 
 
@@ -184,7 +185,7 @@ namespace power {
 
 	public static List<Power> list;
 
-	public bool init (ODeviced.PluginManager plugin) {
+	public bool init (Subsystem.Manager plugin) {
 		Type type;
 		list = new List<Power>();
 		type = typeof (Power);

@@ -80,6 +80,7 @@ public bool factory() {
 			while ((plugin = dir.read_name())!=null) {
 				var path = "/usr/lib/fsod/subsystems/Device/" + plugin;
 				if(plugin.has_suffix (".so")) {
+					message ("loading " + plugin);
 					Device dev = new Device(plugin.split(".")[0], path);
 					dev.init_subsystem();			
 				}

@@ -23,6 +23,8 @@
 using GLib;
 using ODeviced;
 using AccelHelpers;
+using Subsystem;
+using FSO;
 
 
 [DBus (name = "org.freesmartphone.Device.Accelerometer") ]
@@ -35,12 +37,12 @@ public class Accelerometer: Object {
 	private List<IOChannel> channels = new List<IOChannel> ();
 	   
 	[DBus (visible=false)]
-	public ODeviced.PluginManager plugin {
+	public Subsystem.Manager plugin {
 		get;
 		construct;
 	}
 
-	Accelerometer (ODeviced.PluginManager plugin) {
+	Accelerometer (Subsystem.Manager plugin) {
 		this.plugin = plugin;
 	}
 
@@ -97,7 +99,7 @@ namespace accelerometer {
 
 	public static Accelerometer obj;
 
-	public bool init (ODeviced.PluginManager plugin) {		
+	public bool init (Subsystem.Manager plugin) {		
 		obj = new Accelerometer(plugin);
 		if(obj == null)
 			return false;

@@ -24,7 +24,8 @@ using DBus;
 using GLib;
 using ODeviced;
 using RTCHelpers;
-
+using FSO;
+using Subsystem;
 
 [DBus (name = "org.freesmartphone.Device.RealTimeClock")]
 public class RealTimeClock: GLib.Object {
@@ -46,13 +47,13 @@ public class RealTimeClock: GLib.Object {
 	}
 
 	[DBus (visible=false)]
-	public ODeviced.PluginManager plugin {
+	public Subsystem.Manager plugin {
 		get;
 		construct;
 	}
 
 
-	RealTimeClock (string node, string dbus_path, ODeviced.PluginManager plugin) {
+	RealTimeClock (string node, string dbus_path, Subsystem.Manager plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -105,7 +106,7 @@ public class RealTimeClock: GLib.Object {
 
 void register_dbus (RealTimeClock obj) {
 	GLib.message("Registering DBus object at %s", obj.dbus_path);
-	ODeviced.connection.register_object(obj.dbus_path, obj);
+	FSO.connection.register_object(obj.dbus_path, obj);
 }
 	
 		
@@ -113,7 +114,7 @@ namespace rtc {
 
 	public static List<RealTimeClock> list;
 
-	public bool init (ODeviced.PluginManager plugin) {
+	public bool init (Subsystem.Manager plugin) {
 		Type type;
 		list = new List<RealTimeClock>();
 		type = typeof (RealTimeClock);

@@ -22,7 +22,8 @@
 using DBus;
 using ODeviced;
 using Gst;
-
+using FSO;
+using Subsystem;
 
 class GstPlayer : GLib.Object {
 	private HashTable<string, string> decoder_table = new HashTable<string, string> ((HashFunc)str_hash, (EqualFunc)str_equal);
@@ -105,7 +106,7 @@ namespace audio {
 
 	public static Audio obj;
 
-	public bool init (ODeviced.PluginManager plugin) {		
+	public bool init (Subsystem.Manager plugin) {		
 		GLib.Thread.init (null);
 		obj = new Audio();
 		if(obj == null)

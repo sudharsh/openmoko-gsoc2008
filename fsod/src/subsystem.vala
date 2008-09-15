@@ -51,7 +51,6 @@ namespace Subsystem {
 		
 		construct {
 			var _conf_path  = "/usr/share/fsod/subsystems/Device" + "/" + this.name + ".plugin";
-			message (_conf_path);
 			try {
 				this._conf.load_from_file(_conf_path, KeyFileFlags.NONE);
 				this._conf.set_list_separator(',');

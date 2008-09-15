@@ -23,7 +23,8 @@ using GLib;
 using ODeviced;
 using DBus; 
 using WifiHelpers;
-
+using FSO;
+using Subsystem;
 
 [DBus (name = "org.freesmartphone.Device.PowerControl")]
 public abstract class GenericPowerControl: GLib.Object {
@@ -92,12 +93,12 @@ public class Bluetooth: GenericPowerControl {
 		get { return _dbus_path; }
 	}
 
-	public ODeviced.PluginManager plugin {
+	public Subsystem.Manager plugin {
 		get;
 		construct;
 	}
 
-	Bluetooth (ODeviced.PluginManager plugin) {
+	Bluetooth (Subsystem.Manager plugin) {
 		this.plugin = plugin;
 	}
 
@@ -121,12 +122,12 @@ public class GSM: GenericPowerControl {
 		get { return _dbus_path; }
 	}
 
-	public ODeviced.PluginManager plugin {
+	public Subsystem.Manager plugin {
 		get;
 		construct;
 	}
 
-	GSM (ODeviced.PluginManager plugin) {
+	GSM (Subsystem.Manager plugin) {
 		this.plugin = plugin;
 	}
 
@@ -149,12 +150,12 @@ public class UsbHost: GenericPowerControl {
 		get { return _dbus_path; }
 	}
 
-	public ODeviced.PluginManager plugin {
+	public Subsystem.Manager plugin {
 		get;
 		construct;
 	}
 
-	UsbHost (ODeviced.PluginManager plugin) {
+	UsbHost (Subsystem.Manager plugin) {
 		this.plugin = plugin;
 	}
 
@@ -185,12 +186,12 @@ public class GPS: GenericPowerControl {
 		get { return _dbus_path; }
 	}
 
-	public ODeviced.PluginManager plugin {
+	public Subsystem.Manager plugin {
 		get;
 		construct;
 	}
 
-	GPS (ODeviced.PluginManager plugin) {
+	GPS (Subsystem.Manager plugin) {
 		this.plugin = plugin;
 	}
 
@@ -215,12 +216,12 @@ public class Wifi: GenericPowerControl {
 		get { return _dbus_path; }
 	}
 	
-	public ODeviced.PluginManager plugin {
+	public Subsystem.Manager plugin {
 		get;
 		construct;
 	}
 
-	Wifi (ODeviced.PluginManager plugin) {
+	Wifi (Subsystem.Manager plugin) {
 		this.plugin = plugin;
 	}
 
@@ -250,7 +251,7 @@ namespace powercontrol {
 	public static GPS gps_obj;
 	public static UsbHost usbhost_obj;
 	
-	public bool init (ODeviced.PluginManager plugin) {
+	public bool init (Subsystem.Manager plugin) {
 
 		bool success = true;
 		string device = ODeviced.get_device();
@@ -264,7 +265,7 @@ namespace powercontrol {
 				wifi_obj = new Wifi (plugin);
 				if (wifi_obj == null)
 					success = false;
-				ODeviced.connection.register_object (wifi_obj.dbus_path, (GLib.Object)wifi_obj);
+				FSO.connection.register_object (wifi_obj.dbus_path, (GLib.Object)wifi_obj);
 				plugin.dbus_object_paths.append (wifi_obj.dbus_path);
 				print ("\tPowerControl: INFO: Registered %s\n", klass);
 				break;
@@ -273,7 +274,7 @@ namespace powercontrol {
 				blt_obj = new Bluetooth (plugin);
 				if (blt_obj == null)
 					success = false;
-				ODeviced.connection.register_object (blt_obj.dbus_path, (GLib.Object)blt_obj);
+				FSO.connection.register_object (blt_obj.dbus_path, (GLib.Object)blt_obj);
 				plugin.dbus_object_paths.append (blt_obj.dbus_path);
 				print ("\tPowerControl: INFO: Registered %s\n", klass);	
 				break;
@@ -282,7 +283,7 @@ namespace powercontrol {
 				gsm_obj = new GSM (plugin);
 				if (gsm_obj == null)
 					success = false;
-				ODeviced.connection.register_object (gsm_obj.dbus_path, (GLib.Object)gsm_obj);
+				FSO.connection.register_object (gsm_obj.dbus_path, (GLib.Object)gsm_obj);
 				plugin.dbus_object_paths.append (gsm_obj.dbus_path);
 				print ("\tPowerControl: INFO: Registered %s\n", klass);	
 				break;
@@ -291,7 +292,7 @@ namespace powercontrol {
 				gps_obj = new GPS (plugin);
 				if (gps_obj == null)
 					success = false;
-				ODeviced.connection.register_object (gps_obj.dbus_path, (GLib.Object)gps_obj);
+				FSO.connection.register_object (gps_obj.dbus_path, (GLib.Object)gps_obj);
 				plugin.dbus_object_paths.append (gps_obj.dbus_path);
 				print ("\tPowerControl: INFO: Registered %s\n", klass);	
 				break;
@@ -300,7 +301,7 @@ namespace powercontrol {
 				usbhost_obj = new UsbHost (plugin);
 				if (usbhost_obj == null)
 					success = false;
-				ODeviced.connection.register_object (usbhost_obj.dbus_path, (GLib.Object)usbhost_obj);
+				FSO.connection.register_object (usbhost_obj.dbus_path, (GLib.Object)usbhost_obj);
 				plugin.dbus_object_paths.append (usbhost_obj.dbus_path);
 				print ("\tPowerControl: INFO: Registered %s\n", klass);	
 				break;

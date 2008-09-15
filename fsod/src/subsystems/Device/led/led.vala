@@ -21,7 +21,8 @@
 
 using DBus;
 using ODeviced;
-
+using FSO;
+using Subsystem;
 
 [DBus (name = "org.freesmartphone.Device.LED")]
 public class LED:GLib.Object {
@@ -41,13 +42,13 @@ public class LED:GLib.Object {
 	}
 
 	[DBus (visible=false)]
-	public ODeviced.PluginManager plugin {
+	public Subsystem.Manager plugin {
 		get;
 		construct;
 	}
 
 
-	LED(string node, string dbus_path, ODeviced.PluginManager plugin) {
+	LED(string node, string dbus_path, Subsystem.Manager plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -85,7 +86,7 @@ namespace led {
 
 	public static List<LED> list;
 
-	public bool init (ODeviced.PluginManager plugin) {
+	public bool init (Subsystem.Manager plugin) {
 		Type type;
 		type = typeof (LED);
 		list = ODeviced.compute_objects (plugin, type);
@@ -103,5 +104,5 @@ namespace led {
 
 static void register_dbus (LED obj) {
 	GLib.message("Registering DBus object at %s", obj.dbus_path);
-	ODeviced.connection.register_object(obj.dbus_path, obj);
+	FSO.connection.register_object(obj.dbus_path, obj);
 }

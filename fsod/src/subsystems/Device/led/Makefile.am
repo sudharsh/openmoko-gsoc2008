@@ -6,8 +6,8 @@ AM_CPPFLAGS = \
 	-ggdb
 
 
-pkgdir		= $(libdir)fsod/subsystems/Device
-ledconfdir	= $(datadir)fsod/subsystems/Device
+pkgdir		= $(libdir)/fsod/subsystems/Device
+ledconfdir	= $(datadir)/fsod/subsystems/Device
 ledconf_DATA   = led.plugin	
 
 pkg_LTLIBRARIES	= led.la
@@ -22,7 +22,7 @@ BUILT_SOURCES = led.vala.stamp
 
 
 led.vala.stamp: $(led_VALASOURCES)
-	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg odeviced --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
+	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg fsod --pkg Device --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
 	$^
 	touch $@
 

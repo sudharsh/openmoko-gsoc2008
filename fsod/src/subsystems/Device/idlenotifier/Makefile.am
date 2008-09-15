@@ -6,8 +6,8 @@ AM_CPPFLAGS = \
 	-ggdb
 
 
-pkgdir		= $(libdir)fsod/subsystems/Device
-idlenotifierconfdir	= $(datadir)fsod/subsystems/Device
+pkgdir		= $(libdir)/fsod/subsystems/Device
+idlenotifierconfdir	= $(datadir)/fsod/subsystems/Device
 idlenotifierconf_DATA   = idlenotifier.plugin	
 
 pkg_LTLIBRARIES	= idlenotifier.la
@@ -23,7 +23,7 @@ BUILT_SOURCES = idlenotifier.vala.stamp
 
 
 idlenotifier.vala.stamp: $(idlenotifier_VALASOURCES)
-	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg odeviced --vapidir ./ --pkg idlenotifier-helpers --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
+	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg fsod --vapidir ../ --pkg Device --vapidir ./ --pkg idlenotifier-helpers --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
 	$^
 	touch $@
 
