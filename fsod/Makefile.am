@@ -11,6 +11,7 @@ AM_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	$(GMODULE_CFLAGS) \
 	-include $(CONFIG_HEADER) \
+	-ggdb \
 	$(NULL)
 
 BUILT_SOURCES = src/fsod.vala.stamp

@@ -21,22 +21,93 @@
 
 using GLib;
 using DBus;
+using Subsystem;
 
 namespace FSO {
 	[DBus (name = "org.freesmartphone.Objects")]
 	public class Service : GLib.Object {
-	
+
 		private MainLoop loop = new MainLoop (null, false);
-		private DBus.Connection _connection;
-		public DBus.Connection connection {
-			get { return connection; }
-		}
+		private KeyFile conf_file = new KeyFile();
+		HashTable<string, Subsystem.Manager> loadedTable = new HashTable<string, Subsystem.Manager>((HashFunc)str_hash,
+																							(EqualFunc)str_equal);
+
+		private delegate bool InitFunc();
+		protected static string dev_name = new string();
+		Module library;
+		private string[] enableList;
 
 		[DBus (visible = false)]
 		public void run() {
 			loop.run();
 		}
+
+
+		construct {
+			conf_file.set_list_separator (',');
+			try {
+				conf_file.load_from_file ("/etc/fsod.conf", KeyFileFlags.NONE);
+				if (conf_file.has_group("fsod")) 
+					dev_name = conf_file.get_string ("fsod", "device_name");
+				if (conf_file.has_key ("fsod", "enable")) {
+					this.enableList = conf_file.get_string_list ("fsod", "enable");
+					probe_subsystems();
+				}
+			}
+			catch (GLib.Error error) {
+				print( "FSO Service - %s\n", error.message);
+			}
+		}
+ 		
 		
+		private void probe_subsystems () {
+			try {
+				Dir subsys_dir = Dir.open("/usr/lib/fsod/subsystems/", 0);
+				string dir_name = subsys_dir.read_name();
+				while(dir_name!=null) {
+					var path = "/usr/lib/fsod/subsystems/" + dir_name;
+					if(FileUtils.test("/usr/lib/fsod/subsystems/" + dir_name, FileTest.IS_DIR)) {
+						message (path);
+						load(path + "/" +dir_name + ".so");
+					}
+					
+					var dir_name = subsys_dir.read_name();
+				}
+			}
+			catch (GLib.Error error) {
+				message (error.message);
+			}
+		}
+						
+
+		/* Private methods ... */
+		private bool load(string path) {
+			bool success = false;
+			
+			library = Module.open (path, ModuleFlags.BIND_LAZY | ModuleFlags.BIND_LOCAL);
+			if (this.library == null) {
+				log ("FSO Service", LogLevelFlags.LEVEL_WARNING, 
+					 "Library NULL");
+				return success;
+			}
+			var _init = null;
+			if (!this. library.symbol("factory", out _init)) {
+				log ("FSO Service", LogLevelFlags.LEVEL_WARNING,
+					 "factory function not found");
+				return success;
+			}
+			InitFunc _func = (InitFunc)_init;
+			success = _func();
+			if (success) {
+				log ("FSO Service", LogLevelFlags.LEVEL_INFO,
+					 "%s loaded", path);
+				return success;
+			}
+
+			return false;
+		}
+		  
+
 		static void main(string[] args) {
 			
 			try {
@@ -46,7 +117,6 @@ namespace FSO {
 				uint result = bus.RequestName ("org.freesmartphone.frameworkd", (uint) 0);
 				
 				if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
-					
 					print("Starting fsod....\n");
 					var service = new Service();
 					connection.register_object ("/org/freesmartphone/Framework", service);

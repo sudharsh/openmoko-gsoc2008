@@ -4,10 +4,10 @@
 namespace FSO {
 	[CCode (cheader_filename = "src/fsod.h")]
 	public class Service : GLib.Object {
+		protected static string dev_name;
 		public void run ();
 		[CCode (array_length_pos = 0, delegate_target_pos = 0)]
 		public Service ();
-		public DBus.Connection connection { get; }
 	}
 }
 [CCode (cprefix = "Subsystem", lower_case_cprefix = "subsystem_")]
