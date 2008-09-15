@@ -1,0 +1,10 @@
+[powercontrol]
+dbus_interface = org.freesmartphone.Device.PowerControl
+dbus_object_patch = /org/freesmartphone/Device/PowerControl
+
+[FreeRunner]
+enable = WiFi,Bluetooth,GPS,GSM,UsbHost
+default_iface = eth0
+bluetooth_node = neo1973-pm-bt.0
+gps_node = neo1973-pm-gps.0
+gsm_node = neo1973-pm-gsm.0

@@ -1,0 +1,11 @@
+[power]
+dbus_interface=org.freesmartphone.Device.PowerSupply
+dbus_object_path=/org/freesmartphone/Device/PowerSupply
+device_class=power_supply
+
+[FreeRunner]
+# We have automatic path creation now :D
+# power_supply_node=/sys/class/power_supply/BAT1
+# low_energy threshold in percentage
+low_energy_threshold=10
+status_poll_interval=2
