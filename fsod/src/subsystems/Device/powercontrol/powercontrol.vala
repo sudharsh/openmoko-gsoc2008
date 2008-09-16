@@ -24,7 +24,7 @@ using ODeviced;
 using DBus; 
 using WifiHelpers;
 using FSO;
-using Subsystem;
+using Device;
 
 [DBus (name = "org.freesmartphone.Device.PowerControl")]
 public abstract class GenericPowerControl: GLib.Object {

@@ -23,7 +23,7 @@
 using GLib;
 using ODeviced;
 using AccelHelpers;
-using Subsystem;
+using Device;
 using FSO;
 
 

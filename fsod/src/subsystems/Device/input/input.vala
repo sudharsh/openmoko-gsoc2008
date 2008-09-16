@@ -24,7 +24,7 @@ using DBus;
 using GLib;
 using ODeviced;
 using FSO;
-using Subsystem;
+using Device;
 using InputHelpers;
 
 [DBus (name = "org.freesmartphone.Device.Input")]

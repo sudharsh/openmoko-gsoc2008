@@ -24,7 +24,7 @@ using GLib;
 using ODeviced;
 using IdleHelpers;
 using FSO;
-using Subsystem;
+using Device;
 
 
 [DBus (name = "org.freesmartphone.Device.IdleNotifier") ]
@@ -79,16 +79,16 @@ public class IdleNotifier: GLib.Object {
 		this.watches  = plugin.conf.get_string_list (device, "watchfor");
 		
 		try {		
-			int i = 0;
 			foreach (string node in this.watches) {
-				IOChannel channel = new IOChannel.file (dev_node+"/"+node, "r");
+				message (dev_node+"/"+node);
+				IOChannel channel = new IOChannel.file ("/dev/input/event0", "r");
 				/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
 				channel.add_watch (IOCondition.IN, (IOFunc)IdleHelpers.on_activity);
 			}
 			tag = Timeout.add_seconds (2, this.onIdle);
 		}
 		catch (GLib.Error error) {
-			message (error.message);
+			print (">>>> %s\n", error.domain.to_string());
 		}
 	}
 

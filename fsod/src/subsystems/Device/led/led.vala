@@ -22,7 +22,7 @@
 using DBus;
 using ODeviced;
 using FSO;
-using Subsystem;
+using Device;
 
 [DBus (name = "org.freesmartphone.Device.LED")]
 public class LED:GLib.Object {

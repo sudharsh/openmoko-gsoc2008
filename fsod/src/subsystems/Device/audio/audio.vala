@@ -23,7 +23,7 @@ using DBus;
 using ODeviced;
 using Gst;
 using FSO;
-using Subsystem;
+using Device;
 
 class GstPlayer : GLib.Object {
 	private HashTable<string, string> decoder_table = new HashTable<string, string> ((HashFunc)str_hash, (EqualFunc)str_equal);

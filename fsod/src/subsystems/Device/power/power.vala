@@ -25,7 +25,7 @@ using GLib;
 using ODeviced;
 using PowerHelpers;
 using FSO;
-using Subsystem;
+using Device;
 
 [DBus (name = "org.freesmartphone.Device.PowerSupply")]
 public class Power: GLib.Object {

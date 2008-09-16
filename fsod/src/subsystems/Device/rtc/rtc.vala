@@ -25,7 +25,7 @@ using GLib;
 using ODeviced;
 using RTCHelpers;
 using FSO;
-using Subsystem;
+using Device;
 
 [DBus (name = "org.freesmartphone.Device.RealTimeClock")]
 public class RealTimeClock: GLib.Object {

@@ -26,6 +26,7 @@
 #include <sys/socket.h>
 #include <glib.h>
 
+#include "power.h"
 #include "power-helpers.h"
 
 /* Return FD for kernel netlink socket */
@@ -47,7 +48,7 @@ int power_helpers_get_netlink_fd() {
 
 
 static gboolean process_uevent (GIOChannel *source, GIOCondition *condition, Power *self) {
-	gchar *_status = power_GetBatteryStatus(self);
+	gchar *_status = power_GetPowerStatus(self);
 	const gchar *curr_status = power_get_curr_status(self);
 	int sockfd = g_io_channel_unix_get_fd (source);
 	char buf[1024];
