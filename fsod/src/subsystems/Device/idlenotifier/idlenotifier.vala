@@ -34,7 +34,7 @@ public class IdleNotifier: GLib.Object {
 
 	private void emit_signal (string _state) {
 		this.state (_state);
-		message ("Switching to %s state", _state);
+		log ("Device.IdleNotifier", LogLevelFlags.LEVEL_INFO, "Switching to %s state", _state);
 		this._current_state = _state;
 	}
 
@@ -44,7 +44,6 @@ public class IdleNotifier: GLib.Object {
 		get { return _current_state; }
   	}
 
-	private string dev_node = "/dev/input";
 	private string device = new string();
 	private string[] watches;
 	private PollFD[] fds;
@@ -75,21 +74,15 @@ public class IdleNotifier: GLib.Object {
 		this.timeouts.insert ("LOCK", plugin.conf.get_integer (this.device, "LOCK"));
 		this.timeouts.insert ("AWAKE", plugin.conf.get_integer (this.device, "AWAKE"));
 		this.timeouts.insert ("BUSY", plugin.conf.get_integer (this.device, "BUSY"));
-
 		this.watches  = plugin.conf.get_string_list (device, "watchfor");
-		
-		try {		
-			foreach (string node in this.watches) {
-				message (dev_node+"/"+node);
-				IOChannel channel = new IOChannel.file ("/dev/input/event0", "r");
-				/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
-				channel.add_watch (IOCondition.IN, (IOFunc)IdleHelpers.on_activity);
-			}
-			tag = Timeout.add_seconds (2, this.onIdle);
+
+		foreach (string node in this.watches) {
+			IOChannel channel = new IOChannel.file ("/dev/input/" + node, "r");
+			/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
+			channel.add_watch (IOCondition.IN, (IOFunc)IdleHelpers.on_activity);
 		}
-		catch (GLib.Error error) {
-			print (">>>> %s\n", error.domain.to_string());
-		}
+		tag = Timeout.add_seconds (2, this.onIdle);
+			
 	}
 
 	
