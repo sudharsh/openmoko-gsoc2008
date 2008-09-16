@@ -29,8 +29,7 @@ namespace FSO {
 
 	[DBus (name = "org.freesmartphone.Objects")]
 	public class Service : GLib.Object {
-
-		
+	
 		private KeyFile conf_file = new KeyFile();
 		HashTable<string, Subsystem.Manager> loadedTable = new HashTable<string, Subsystem.Manager>((HashFunc)str_hash,
 																							(EqualFunc)str_equal);
@@ -42,7 +41,8 @@ namespace FSO {
 
 		construct {
 			conf_file.set_list_separator (',');
-			
+			Idle.add(this.idle);
+			Timeout.add_seconds(50, this.timeout);
 			try {
 				conf_file.load_from_file ("/etc/fsod.conf", KeyFileFlags.NONE);
 				if (conf_file.has_group("fsod")) 
@@ -101,7 +101,17 @@ namespace FSO {
 
 			return false;
 		}
-		  
+
+		private bool timeout() {
+			log ("FSO Service", LogLevelFlags.LEVEL_INFO, "Timeout");
+			return true;
+		}
+
+
+		private bool idle() { 
+			log ("FSO Service", LogLevelFlags.LEVEL_INFO, "idle");
+			return false;
+		}		  
 
 		static void main(string[] args) {
 			MainLoop loop = new MainLoop (null, false);	
