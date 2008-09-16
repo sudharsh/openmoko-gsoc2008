@@ -64,9 +64,10 @@ namespace FSO {
 			try {
 				Dir subsys_dir = Dir.open(path, 0);
 				string _subsys = subsys_dir.read_name();
-				while((_subsys=subsys_dir.read_name()) != null) {
+				while(_subsys != null) {
 					if(_subsys.has_suffix(".so"))
 						load(path + "/" +_subsys);
+					_subsys = subsys_dir.read_name();
 				}
 			}
 			catch (GLib.Error error) {

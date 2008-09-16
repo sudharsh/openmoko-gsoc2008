@@ -36,9 +36,11 @@ public class Device: Subsystem.Manager {
 
 	public override bool init_subsystem() {		
 		/* Resolve symbols only when necessary and don't pollute the global namespace */
+		log("Device", LogLevelFlags.LEVEL_INFO, "Loading plugin at %s", this.path);
 		this.library = Module.open(this.path, ModuleFlags.BIND_LAZY | ModuleFlags.BIND_LOCAL);				
 		if(this.library == null) {
 			warning ("library is null, possibly some symbol error");
+			return false;
 		}		 
 
 		/* If the plugin uses sysfs, check if the device class exists */
@@ -50,13 +52,14 @@ public class Device: Subsystem.Manager {
 		var _symbol = null;
 		if(!this.library.symbol(name + "_init", out _symbol)) {
 			log("Device", LogLevelFlags.LEVEL_WARNING, "Malformed odeviced plugin");
+			return false;
 		}	
 		InitFunc func = (InitFunc)_symbol;
 
 		/* This calls the foo_init functions of the Device plugins */
 		var success = func(this);
 		if (!success) {
-			message (Module.error());
+			message ("Weird error %s", Module.error());
 		 }
 		else
 			this.library.make_resident();
@@ -75,15 +78,15 @@ public bool factory() {
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 		try {
 			Dir dir = Dir.open("/usr/lib/fsod/subsystems/Device", 0);
-			var plugin = dir.read_name();
-
-			while ((plugin = dir.read_name())!=null) {
+			string plugin = dir.read_name();
+			while (plugin!=null) {
 				var path = "/usr/lib/fsod/subsystems/Device/" + plugin;
 				if(plugin.has_suffix (".so")) {
 					message ("loading " + plugin);
 					Device dev = new Device(plugin.split(".")[0], path);
-					dev.init_subsystem();			
+					dev.init_subsystem();						
 				}
+				plugin = dir.read_name();
 			}
 			return true;
 		}
