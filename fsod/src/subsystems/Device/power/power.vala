@@ -65,13 +65,13 @@ public class Power: GLib.Object {
 	}
 
 	[DBus (visible = false)]
-	public Subsystem.Manager plugin {
+	public Device plugin {
 		get;
 		construct;
 	}
 
 
-	Power(string node, string dbus_path, Subsystem.Manager plugin) {
+	Power(string node, string dbus_path, Device plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -185,7 +185,7 @@ namespace power {
 
 	public static List<Power> list;
 
-	public bool init (Subsystem.Manager plugin) {
+	public bool init (Device plugin) {
 		Type type;
 		list = new List<Power>();
 		type = typeof (Power);

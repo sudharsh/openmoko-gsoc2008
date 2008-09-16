@@ -54,12 +54,12 @@ public class Input: GLib.Object {
 	public signal void @event(string name, string action, int seconds);
 
 	[DBus (visible = false)]
-	public Subsystem.Manager plugin {
+	public Device plugin {
 		get;
 		construct;
 	}
 
-	Input (Subsystem.Manager plugin) {
+	Input (Device plugin) {
 		this.plugin = plugin;
 	}
 
@@ -113,7 +113,7 @@ namespace input {
 
 	public static Input obj;
 
-	public bool init (Subsystem.Manager plugin) {		
+	public bool init (Device plugin) {		
 		obj = new Input(plugin);
 		if(obj == null)
 			return false;

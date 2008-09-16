@@ -93,12 +93,12 @@ public class Bluetooth: GenericPowerControl {
 		get { return _dbus_path; }
 	}
 
-	public Subsystem.Manager plugin {
+	public Device plugin {
 		get;
 		construct;
 	}
 
-	Bluetooth (Subsystem.Manager plugin) {
+	Bluetooth (Device plugin) {
 		this.plugin = plugin;
 	}
 
@@ -122,12 +122,12 @@ public class GSM: GenericPowerControl {
 		get { return _dbus_path; }
 	}
 
-	public Subsystem.Manager plugin {
+	public Device plugin {
 		get;
 		construct;
 	}
 
-	GSM (Subsystem.Manager plugin) {
+	GSM (Device plugin) {
 		this.plugin = plugin;
 	}
 
@@ -150,12 +150,12 @@ public class UsbHost: GenericPowerControl {
 		get { return _dbus_path; }
 	}
 
-	public Subsystem.Manager plugin {
+	public Device plugin {
 		get;
 		construct;
 	}
 
-	UsbHost (Subsystem.Manager plugin) {
+	UsbHost (Device plugin) {
 		this.plugin = plugin;
 	}
 
@@ -186,12 +186,12 @@ public class GPS: GenericPowerControl {
 		get { return _dbus_path; }
 	}
 
-	public Subsystem.Manager plugin {
+	public Device plugin {
 		get;
 		construct;
 	}
 
-	GPS (Subsystem.Manager plugin) {
+	GPS (Device plugin) {
 		this.plugin = plugin;
 	}
 
@@ -216,12 +216,12 @@ public class Wifi: GenericPowerControl {
 		get { return _dbus_path; }
 	}
 	
-	public Subsystem.Manager plugin {
+	public Device plugin {
 		get;
 		construct;
 	}
 
-	Wifi (Subsystem.Manager plugin) {
+	Wifi (Device plugin) {
 		this.plugin = plugin;
 	}
 
@@ -251,7 +251,7 @@ namespace powercontrol {
 	public static GPS gps_obj;
 	public static UsbHost usbhost_obj;
 	
-	public bool init (Subsystem.Manager plugin) {
+	public bool init (Device plugin) {
 
 		bool success = true;
 		string device = ODeviced.get_device();

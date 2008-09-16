@@ -37,12 +37,12 @@ public class Accelerometer: Object {
 	private List<IOChannel> channels = new List<IOChannel> ();
 	   
 	[DBus (visible=false)]
-	public Subsystem.Manager plugin {
+	public Device plugin {
 		get;
 		construct;
 	}
 
-	Accelerometer (Subsystem.Manager plugin) {
+	Accelerometer (Device plugin) {
 		this.plugin = plugin;
 	}
 
@@ -99,7 +99,7 @@ namespace accelerometer {
 
 	public static Accelerometer obj;
 
-	public bool init (Subsystem.Manager plugin) {		
+	public bool init (Device plugin) {		
 		obj = new Accelerometer(plugin);
 		if(obj == null)
 			return false;

@@ -47,13 +47,13 @@ public class RealTimeClock: GLib.Object {
 	}
 
 	[DBus (visible=false)]
-	public Subsystem.Manager plugin {
+	public Device plugin {
 		get;
 		construct;
 	}
 
 
-	RealTimeClock (string node, string dbus_path, Subsystem.Manager plugin) {
+	RealTimeClock (string node, string dbus_path, Device plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -114,7 +114,7 @@ namespace rtc {
 
 	public static List<RealTimeClock> list;
 
-	public bool init (Subsystem.Manager plugin) {
+	public bool init (Device plugin) {
 		Type type;
 		list = new List<RealTimeClock>();
 		type = typeof (RealTimeClock);

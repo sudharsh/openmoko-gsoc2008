@@ -43,12 +43,12 @@ public class Display: GLib.Object {
 	}
 
 	[DBus (visible=false)]
-	public Subsystem.Manager plugin {
+	public Device plugin {
 		get;
 		construct;
 	}
 
-	Display(string node, string dbus_path, Subsystem.Manager plugin) {
+	Display(string node, string dbus_path, Device plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -100,7 +100,7 @@ namespace display {
 
 	public static List<Display> list;
 
-	public bool init (Subsystem.Manager plugin) {
+	public bool init (Device plugin) {
 		Type type;
 		type = typeof (Display);
 		list = ODeviced.compute_objects (plugin, type);

@@ -55,13 +55,13 @@ public class IdleNotifier: GLib.Object {
 	public uint tag;
 		
 	[DBus (visible=false)]
-	public Subsystem.Manager plugin {
+	public Device plugin {
 		get;
 		construct;
 	}
 
 
-	IdleNotifier (Subsystem.Manager plugin) {
+	IdleNotifier (Device plugin) {
 		this.plugin = plugin;
 	}
 
@@ -183,7 +183,7 @@ namespace idlenotifier {
 
 	public static IdleNotifier obj;
 
-	public bool init (Subsystem.Manager plugin) {		
+	public bool init (Device plugin) {		
 		obj = new IdleNotifier(plugin);
 		if(obj == null)
 			return false;
