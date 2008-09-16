@@ -76,7 +76,7 @@ public class Input: GLib.Object {
 					string device_node = this.dev_node + "/" + input_node;
 					var channel = new IOChannel.file (device_node, "r");
 					/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
-					message ("Adding watch for %s", device_node);
+					//message ("Adding watch for %s", device_node);
 					channel.add_watch (IOCondition.IN, (IOFunc)InputHelpers.on_activity);		  
 			}
 			
@@ -96,7 +96,7 @@ public class Input: GLib.Object {
 				string[] settings = plugin.conf.get_string_list (device, key);
 				this._watches.insert (settings[0].to_int(), settings[1]);
 				if(settings[3] == "true") {
-					message ("\tConfig wants to report held seconds for %s", settings[1]);
+					//message ("\tConfig wants to report held seconds for %s", settings[1]);
 					this._reportheld.append(settings[1]);
 				}
 			}

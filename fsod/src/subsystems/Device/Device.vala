@@ -41,7 +41,11 @@ public class Device: Subsystem.Manager {
 		if(this.library == null) {
 			warning ("library is null, possibly some symbol error");
 			return false;
-		}		 
+		}		
+
+		/* Don't load the plugin is disable key is present */
+		if(this.conf.has_key(name, "disable"))
+			return true;
 
 		/* If the plugin uses sysfs, check if the device class exists */
 		if(this.conf.has_key (name, "device_class")) {
@@ -62,9 +66,8 @@ public class Device: Subsystem.Manager {
 			message ("Weird error %s", Module.error());
 		 }
 		else
-			this.library.make_resident();
-		
-		
+			this.library.make_resident(); /* Prevent unloading */
+				
 		return success;
 	}
 }
