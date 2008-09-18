@@ -6,6 +6,7 @@ namespace FSO {
 	public class Service : GLib.Object {
 		public GLib.HashTable<string,weak void*> fso_objects;
 		protected static string dev_name;
+		public uint request_name (string name);
 		[CCode (array_length_pos = 0, delegate_target_pos = 0)]
 		public Service ();
 	}

@@ -108,9 +108,7 @@ public class Device: GLib.Object {
 
 public bool factory(FSO.Service service) {
 	
-	dynamic DBus.Object bus = FSO.connection.get_object ("org.freedesktop.DBus", 
-														 "/org/freedesktop/DBus", "org.freedesktop.DBus");
-	uint result = bus.RequestName ("org.freesmartphone.odeviced", (uint) 0);
+	uint result = service.request_name("odeviced");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 		try {
 			Dir dir = Dir.open("/usr/lib/fsod/subsystems/Device", 0);

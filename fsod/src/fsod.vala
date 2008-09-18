@@ -75,7 +75,15 @@ namespace FSO {
 				message (error.message);
 			}
 		}
-						
+
+		
+		[DBus (visible = false)]
+		public uint request_name (string name) {						
+			dynamic DBus.Object bus = FSO.connection.get_object ("org.freedesktop.DBus", 
+																 "/org/freedesktop/DBus", "org.freedesktop.DBus");
+			return bus.RequestName ("org.freesmartphone." + name, (uint) 0);
+		}
+	
 
 		/* Private methods ... */
 		private bool load(string path) {
@@ -104,6 +112,7 @@ namespace FSO {
 			return false;
 		}
 
+
 		private bool timeout() {
 			log ("FSO Service", LogLevelFlags.LEVEL_INFO, "Timeout");
 			return true;
@@ -113,7 +122,8 @@ namespace FSO {
 		private bool idle() { 
 			log ("FSO Service", LogLevelFlags.LEVEL_INFO, "idle");
 			return false;
-		}		  
+		}	
+	  
 
 		static void main(string[] args) {
 			MainLoop loop = new MainLoop (null, false);	

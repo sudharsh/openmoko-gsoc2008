@@ -4,6 +4,13 @@
 	<object name="Service" parent="GLib.Object" type-name="FSOService" get-type="fso_service_get_type">
 		<field name="fso_objects"/>
 		<field name="fso_service_dev_name"/>
+		<method name="request_name" symbol="fso_service_request_name">
+			<parameters>
+				<parameter name="self" type="FSO.Service*"/>
+				<parameter name="name" type="const char*"/>
+			</parameters>
+			<return-type type="uint" transfer="full"/>
+		</method>
 		<constructor name="new" symbol="fso_service_new">
 			<parameters>
 			</parameters>
