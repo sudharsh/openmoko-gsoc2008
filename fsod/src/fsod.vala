@@ -21,7 +21,6 @@
 
 using GLib;
 using DBus;
-using Subsystem;
 
 namespace FSO {
 
@@ -31,10 +30,10 @@ namespace FSO {
 	public class Service : GLib.Object {
 	
 		private KeyFile conf_file = new KeyFile();
-		HashTable<string, Subsystem.Manager> loadedTable = new HashTable<string, Subsystem.Manager>((HashFunc)str_hash,
+		HashTable<string, void> loadedTable = new HashTable<string, void>((HashFunc)str_hash,
 																							(EqualFunc)str_equal);
 
-		private delegate bool InitFunc();
+		private delegate bool FactoryFunc();
 		protected static string dev_name = new string();
 		Module library;
 		private string[] enableList;
@@ -78,24 +77,25 @@ namespace FSO {
 
 		/* Private methods ... */
 		private bool load(string path) {
-			bool success = false;
+			
 			library = Module.open (path, ModuleFlags.BIND_LAZY);
 			if (this.library == null) {
 				log ("FSO Service", LogLevelFlags.LEVEL_WARNING, 
 					 "Library NULL");
-				return success;
+				return false;
 			}
 			var _init = null;
 			if (!this.library.symbol("factory", out _init)) {
 				log ("FSO Service", LogLevelFlags.LEVEL_WARNING,
 					 "factory function not found");
-				return success;
+				return false;
 			}
-			InitFunc _func = (InitFunc)_init;
-			success = _func();
-			if (success) {
+			InitFunc factory_func = (InitFunc)_init;
+			var objects = _func();
+			if (success!=null) {
 				log ("FSO Service", LogLevelFlags.LEVEL_INFO,
 					 "%s loaded", path);
+				
 				return success;
 			}
 

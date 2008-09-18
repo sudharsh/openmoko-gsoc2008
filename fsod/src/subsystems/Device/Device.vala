@@ -20,21 +20,53 @@
  */ 
 
 using FSO;
-using Subsystem;
 using GLib;
 using DBus;
 using ODeviced;
 
-public class Device: Subsystem.Manager {
+public class Device: GLib.Object {
 
-	delegate bool InitFunc(Device dev);
-
-	Device (string name, string path) {
-			this.name = name;
-			this.path = path;
+	public Module library;
+	private string _dbus_iface;
+	public string dbus_iface {
+		get { return _dbus_iface; }
 	}
-
-	public override bool init_subsystem() {		
+	
+	public List<string> dbus_object_paths = new List<string> ();
+	
+	private KeyFile _conf = new KeyFile();
+	public KeyFile conf {
+		get { return _conf; }
+	}
+	
+	public string path { 
+		get;
+		construct;
+	}
+	
+	public string name {
+		get;
+		construct;
+	}
+	
+	construct {
+		var _conf_path  = "/usr/share/fsod/subsystems/Device" + "/" + this.name + ".plugin";
+		try {
+			this._conf.load_from_file(_conf_path, KeyFileFlags.NONE);
+			this._conf.set_list_separator(',');
+			this._dbus_iface = this._conf.get_string (this.name, "dbus_interface");
+		}
+		catch (GLib.Error error) {
+			critical("Plugin configuration file for %s malformed/not found : %s", this.name, error.message);
+		}
+	}delegate bool InitFunc(Device dev);
+	
+	Device (string name, string path) {
+		this.name = name;
+		this.path = path;
+	}
+	
+	public bool load_plugins() {		
 		/* Resolve symbols only when necessary and don't pollute the global namespace */
 		log("Device", LogLevelFlags.LEVEL_INFO, "Loading plugin at %s", this.path);
 		this.library = Module.open(this.path, ModuleFlags.BIND_LAZY | ModuleFlags.BIND_LOCAL);				
@@ -71,6 +103,7 @@ public class Device: Subsystem.Manager {
 		return success;
 	}
 }
+
  
 
 public bool factory() {
@@ -86,7 +119,7 @@ public bool factory() {
 				var path = "/usr/lib/fsod/subsystems/Device/" + plugin;
 				if(plugin.has_suffix (".so")) {
 					Device dev = new Device(plugin.split(".")[0], path);
-					dev.init_subsystem();						
+					dev.load_plugins();						
 				}
 				plugin = dir.read_name();
 			}
@@ -98,7 +131,7 @@ public bool factory() {
 	}
 	return false;
 }
-					
+			
 					
 				
 				

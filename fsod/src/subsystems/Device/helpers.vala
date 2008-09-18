@@ -20,12 +20,12 @@
 
 using GLib;
 using DBus;
-using Subsystem;
 using FSO;
+using Device;
 
 namespace ODeviced {
 
-	public static void register_dbus_object(Manager plugin, GLib.Object interface_obj) {
+	public static void register_dbus_object(Device plugin, GLib.Object interface_obj) {
 		
 		try {
 			if(plugin.conf.has_group(plugin.name)) {
@@ -47,7 +47,7 @@ namespace ODeviced {
 	}
 
 
-	public static List? compute_objects(Manager plugin, GLib.Type klass) {
+	public static List? compute_objects(Device plugin, GLib.Type klass) {
 	
 		List<GLib.Object> objList = new List<GLib.Object>();
 		string dev_class;
