@@ -106,7 +106,7 @@ public class Device: GLib.Object {
 
  
 
-public bool factory() {
+public bool factory(FSO.Service service) {
 	
 	dynamic DBus.Object bus = FSO.connection.get_object ("org.freedesktop.DBus", 
 														 "/org/freedesktop/DBus", "org.freedesktop.DBus");
@@ -120,9 +120,10 @@ public bool factory() {
 				if(plugin.has_suffix (".so")) {
 					Device dev = new Device(plugin.split(".")[0], path);
 					dev.load_plugins();						
+					service.fso_objects.insert("Device", dev);
 				}
 				plugin = dir.read_name();
-			}
+			}			
 			return true;
 		}
 		catch (GLib.Error error) {
