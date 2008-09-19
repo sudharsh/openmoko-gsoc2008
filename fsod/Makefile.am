@@ -27,6 +27,7 @@ dbussystem_DATA = etc/dbus-1/system.d/fsod.conf
 
 fsod_VALASOURCES = \
 	src/fsod.vala \
+	src/subsystem.vala \
 	$(NULL)
 
 fsod_SOURCES = \

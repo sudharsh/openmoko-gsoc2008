@@ -32,14 +32,13 @@ namespace FSO {
 		private KeyFile conf_file = new KeyFile();
 
 		/* hashmap of the objects */
-		public HashTable<string, void *> fso_objects = new HashTable<string, void *>((HashFunc)str_hash,
-																							(EqualFunc)str_equal);
+		public List<Subsystem.Manager> fso_objects  = new List<Subsystem.Manager>();
 
 		private delegate bool FactoryFunc(Service service);
 		protected static string dev_name = new string();
 		Module library;
 		private string[] enableList;
-
+		
 		construct {
 			conf_file.set_list_separator (',');
 			Idle.add(this.idle);
@@ -82,6 +81,16 @@ namespace FSO {
 			dynamic DBus.Object bus = FSO.connection.get_object ("org.freedesktop.DBus", 
 																 "/org/freedesktop/DBus", "org.freedesktop.DBus");
 			return bus.RequestName ("org.freesmartphone." + name, (uint) 0);
+		}
+
+
+		public string[]? ListObjectsByInterface (string iface) {
+
+			foreach (Subsystem.Manager subsystem in this.fso_objects) {
+				if(iface == subsystem.dbus_iface) 
+					return subsystem.ListObjectsByInterface(iface);			  	
+			}
+			return null;
 		}
 	
 

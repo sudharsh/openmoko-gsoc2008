@@ -11,6 +11,13 @@
 			</parameters>
 			<return-type type="uint" transfer="full"/>
 		</method>
+		<method name="ListObjectsByInterface" symbol="fso_service_ListObjectsByInterface">
+			<parameters>
+				<parameter name="self" type="FSO.Service*"/>
+				<parameter name="iface" type="const char*"/>
+			</parameters>
+			<return-type type="char**" transfer="full"/>
+		</method>
 		<constructor name="new" symbol="fso_service_new">
 			<parameters>
 			</parameters>
@@ -18,5 +25,19 @@
 		</constructor>
 	</object>
 	<field name="fso_connection"/>
+</namespace>
+<namespace name="Subsystem">
+	<object name="Manager" parent="GLib.Object" type-name="SubsystemManager" get-type="subsystem_manager_get_type">
+		<field name="library"/>
+		<field name="dbus_iface"/>
+		<field name="dbus_object_paths"/>
+		<method name="ListObjectsByInterface" symbol="subsystem_manager_ListObjectsByInterface">
+			<parameters>
+				<parameter name="self" type="Subsystem.Manager*"/>
+				<parameter name="iface" type="const char*"/>
+			</parameters>
+			<return-type type="char**" transfer="full"/>
+		</method>
+	</object>
 </namespace>
 </api>

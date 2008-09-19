@@ -4,12 +4,23 @@
 namespace FSO {
 	[CCode (cheader_filename = "src/fsod.h")]
 	public class Service : GLib.Object {
-		public GLib.HashTable<string,weak void*> fso_objects;
+		public GLib.List<Subsystem.Manager> fso_objects;
 		protected static string dev_name;
 		public uint request_name (string name);
+		public string[] ListObjectsByInterface (string iface);
 		[CCode (array_length_pos = 0, delegate_target_pos = 0)]
 		public Service ();
 	}
 	[CCode (cheader_filename = "src/fsod.h")]
 	protected static DBus.Connection connection;
+}
+[CCode (cprefix = "Subsystem", lower_case_cprefix = "subsystem_")]
+namespace Subsystem {
+	[CCode (cheader_filename = "src/subsystem.h")]
+	public abstract class Manager : GLib.Object {
+		public GLib.Module library;
+		public string dbus_iface;
+		public GLib.List<string> dbus_object_paths;
+		public abstract string[] ListObjectsByInterface (string iface);
+	}
 }

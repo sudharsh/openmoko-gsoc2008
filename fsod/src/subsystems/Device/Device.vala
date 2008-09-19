@@ -23,23 +23,17 @@ using FSO;
 using GLib;
 using DBus;
 using ODeviced;
+using Subsystem;
 
-public class Device: GLib.Object {
 
-	public Module library;
-	private string _dbus_iface;
-	public string dbus_iface {
-		get { return _dbus_iface; }
-	}
-	
-	public List<string> dbus_object_paths = new List<string> ();
-	
+public class Device: Subsystem.Manager {
+
 	private KeyFile _conf = new KeyFile();
 	public KeyFile conf {
 		get { return _conf; }
 	}
-	
-	public string path { 
+
+   	public string path { 
 		get;
 		construct;
 	}
@@ -54,19 +48,33 @@ public class Device: GLib.Object {
 		try {
 			this._conf.load_from_file(_conf_path, KeyFileFlags.NONE);
 			this._conf.set_list_separator(',');
-			this._dbus_iface = this._conf.get_string (this.name, "dbus_interface");
+			this.dbus_iface = this._conf.get_string (this.name, "dbus_interface");
 		}
 		catch (GLib.Error error) {
 			critical("Plugin configuration file for %s malformed/not found : %s", this.name, error.message);
 		}
-	}delegate bool InitFunc(Device dev);
+	}
+
+	delegate bool InitFunc(Device dev);
 	
 	Device (string name, string path) {
 		this.name = name;
 		this.path = path;
 	}
+
+	public override string[] ListObjectsByInterface(string iface) {
+		uint length = this.dbus_object_paths.length();
+		string[] ret = new string[length];
+	   	int i = 0;  
+		foreach (string path in this.dbus_object_paths) {
+			ret[i] = path;
+			i++;
+		}
+		return ret;		
+	}
+
 	
-	public bool load_plugins() {		
+	public bool init_system() {		
 		/* Resolve symbols only when necessary and don't pollute the global namespace */
 		log("Device", LogLevelFlags.LEVEL_INFO, "Loading plugin at %s", this.path);
 		this.library = Module.open(this.path, ModuleFlags.BIND_LAZY | ModuleFlags.BIND_LOCAL);				
@@ -117,8 +125,8 @@ public bool factory(FSO.Service service) {
 				var path = "/usr/lib/fsod/subsystems/Device/" + plugin;
 				if(plugin.has_suffix (".so")) {
 					Device dev = new Device(plugin.split(".")[0], path);
-					dev.load_plugins();						
-					service.fso_objects.insert("Device", dev);
+					dev.init_system();						
+					service.fso_objects.append((Subsystem.Manager)dev);
 				}
 				plugin = dir.read_name();
 			}			
