@@ -28,6 +28,7 @@ using Subsystem;
 
 public class Device: Subsystem.Manager {
 
+	private Module library;
 	private KeyFile _conf = new KeyFile();
 	public KeyFile conf {
 		get { return _conf; }
