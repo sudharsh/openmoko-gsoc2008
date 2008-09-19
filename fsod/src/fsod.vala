@@ -84,6 +84,7 @@ namespace FSO {
 		}
 
 
+		/* No array of dbus object paths in vala yet. Just return them as a string array */
 		public string[]? ListObjectsByInterface (string iface) {
 
 			foreach (Subsystem.Manager subsystem in this.fso_objects) {
