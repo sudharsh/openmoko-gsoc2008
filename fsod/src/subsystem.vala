@@ -28,8 +28,6 @@ namespace Subsystem {
 
 	public abstract class Manager: GLib.Object {
 
-		public Module library; /* Subsystem shared object */
-
 		public string dbus_iface;
 		public List<string> dbus_object_paths = new List<string> ();
 
