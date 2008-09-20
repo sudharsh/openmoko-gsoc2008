@@ -117,7 +117,7 @@ public class Device: Subsystem.Manager {
 
 public bool DeviceFactory(FSO.Service service) {
 	
-	int result = service.request_name("odeviced");
+	uint result = service.request_name("odeviced");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 		try {
 			Dir dir = Dir.open("/usr/lib/fsod/subsystems/Device", 0);

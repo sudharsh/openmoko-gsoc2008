@@ -9,7 +9,7 @@
 				<parameter name="self" type="FSO.Service*"/>
 				<parameter name="name" type="const char*"/>
 			</parameters>
-			<return-type type="int" transfer="full"/>
+			<return-type type="uint" transfer="full"/>
 		</method>
 		<method name="ListObjectsByInterface" symbol="fso_service_ListObjectsByInterface">
 			<parameters>

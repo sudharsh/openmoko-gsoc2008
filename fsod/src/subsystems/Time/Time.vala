@@ -60,7 +60,7 @@ namespace Time {
 
 public bool TimeFactory(FSO.Service service) {
 
-	int result = service.request_name("otimed");
+	uint result = service.request_name("otimed");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 		Time.Manager manager = new Time.Manager();
 		FSO.connection.register_object ("/org/freesmartphone/Time", manager.iface);

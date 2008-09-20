@@ -83,17 +83,18 @@ namespace FSO {
 
 		
 		[DBus (visible = false)]
-		public int request_name (string name) {
-			int result;
+		public uint request_name (string name) {
+			uint result;
 			try {
 				dynamic DBus.Object bus = FSO.connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
 																	 "org.freedesktop.DBus");
 				result = bus.RequestName ("org.freesmartphone." + name, (uint) 0);
+				
 			}
 			catch (DBus.Error error) {
 				log ("FSO Service", LogLevelFlags.LEVEL_WARNING,
 					 "Check your DBus policy if %s exists: %s", name, error.message);
-				result = -1;
+				result = 100;
 			}
 			return result;
 		}

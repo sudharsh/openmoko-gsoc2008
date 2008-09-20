@@ -6,7 +6,7 @@ namespace FSO {
 	public class Service : GLib.Object {
 		public GLib.List<Subsystem.Manager> fso_objects;
 		protected static string dev_name;
-		public int request_name (string name);
+		public uint request_name (string name);
 		public string[] ListObjectsByInterface (string iface);
 		[CCode (array_length_pos = 0, delegate_target_pos = 0)]
 		public Service ();
