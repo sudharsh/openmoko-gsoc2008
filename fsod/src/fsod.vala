@@ -47,12 +47,18 @@ namespace FSO {
 				conf_file.load_from_file ("/etc/fsod.conf", KeyFileFlags.NONE);
 				if (conf_file.has_group("fsod")) 
 					dev_name = conf_file.get_string ("fsod", "device_name");
+
+				/* Try to load all subsystems in enablelist is not specified */
 				if (conf_file.has_key ("fsod", "enable_subsystems")) {
 					this.enableList = conf_file.get_string_list ("fsod", "enable_subsystems");
-					probe_subsystems();
+					foreach (string subsystem in this.enableList) {
+						load("/usr/lib/fsod/subsystems/" + subsystem, subsystem);
+					}
 				}
-				
+				else
+					probe_subsystems();
 			}
+				
 			catch (GLib.Error error) {
 				print( "FSO Service - %s\n", error.message);
 			}
@@ -66,7 +72,7 @@ namespace FSO {
 				string _subsys = subsys_dir.read_name();
 				while(_subsys != null) {
 					if(_subsys.has_suffix(".so"))
-						load(path + "/" +_subsys);
+						load(path + "/" +_subsys, _subsys.split(".")[0]);
 					_subsys = subsys_dir.read_name();
 				}
 			}
@@ -77,10 +83,19 @@ namespace FSO {
 
 		
 		[DBus (visible = false)]
-		public uint request_name (string name) {						
-			dynamic DBus.Object bus = FSO.connection.get_object ("org.freedesktop.DBus", 
-																 "/org/freedesktop/DBus", "org.freedesktop.DBus");
-			return bus.RequestName ("org.freesmartphone." + name, (uint) 0);
+		public int request_name (string name) {
+			int result;
+			try {
+				dynamic DBus.Object bus = FSO.connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
+																	 "org.freedesktop.DBus");
+				result = bus.RequestName ("org.freesmartphone." + name, (uint) 0);
+			}
+			catch (DBus.Error error) {
+				log ("FSO Service", LogLevelFlags.LEVEL_WARNING,
+					 "Check your DBus policy if %s exists: %s", name, error.message);
+				result = -1;
+			}
+			return result;
 		}
 
 
@@ -96,7 +111,7 @@ namespace FSO {
 	
 
 		/* Private methods ... */
-		private bool load(string path) {
+		private bool load(string path, string name) {
 			
 			library = Module.open (path, ModuleFlags.BIND_LAZY);
 			if (this.library == null) {
@@ -105,7 +120,7 @@ namespace FSO {
 				return false;
 			}
 			var _init = null;
-			if (!this.library.symbol("factory", out _init)) {
+			if (!this.library.symbol(name +"Factory", out _init)) {
 				log ("FSO Service", LogLevelFlags.LEVEL_WARNING,
 					 "factory function not found");
 				return false;
@@ -119,6 +134,8 @@ namespace FSO {
 				return success;
 			}
 
+			log ("FSO Service", LogLevelFlags.LEVEL_WARNING,
+				 "Couldn't load %s", name);
 			return false;
 		}
 

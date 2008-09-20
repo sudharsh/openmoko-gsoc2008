@@ -76,9 +76,9 @@ public class Device: Subsystem.Manager {
 
 	
 	public bool init_system() {		
-		/* Resolve symbols only when necessary and don't pollute the global namespace */
+
 		log("Device", LogLevelFlags.LEVEL_INFO, "Loading plugin at %s", this.path);
-		this.library = Module.open(this.path, ModuleFlags.BIND_LAZY | ModuleFlags.BIND_LOCAL);				
+		this.library = Module.open(this.path, ModuleFlags.BIND_LAZY|ModuleFlags.BIND_LOCAL);				
 		if(this.library == null) {
 			warning ("library is null, possibly some symbol error");
 			return false;
@@ -115,9 +115,9 @@ public class Device: Subsystem.Manager {
 
  
 
-public bool factory(FSO.Service service) {
+public bool DeviceFactory(FSO.Service service) {
 	
-	uint result = service.request_name("odeviced");
+	int result = service.request_name("odeviced");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 		try {
 			Dir dir = Dir.open("/usr/lib/fsod/subsystems/Device", 0);
