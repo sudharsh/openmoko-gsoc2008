@@ -14,6 +14,7 @@ pkg_LTLIBRARIES	= Time.la
 Time_VALASOURCES = Time.vala
 
 Time_la_SOURCES = \
+	time-helpers.c \
 	$(Time_VALASOURCES:.vala=.c) \
 	$(Time_VALASOURCES:.vala=.h)
 
@@ -21,7 +22,8 @@ BUILT_SOURCES = Time.vala.stamp
 
 
 Time.vala.stamp: $(Time_VALASOURCES)
-	$(VALAC) -C --basedir $(top_srcdir) --vapidir $(top_srcdir)/vapi --pkg fsod --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0 \
+	$(VALAC) -C --basedir $(top_srcdir) --vapidir $(top_srcdir)/vapi --pkg fsod --pkg dbus-glib-1 \
+		 --pkg gmodule-2.0 --vapidir ./ --pkg time-helpers --pkg gio-2.0 \
 	$^
 	touch $@
 

@@ -23,14 +23,27 @@ using FSO;
 using DBus;
 using GLib;
 using Subsystem;
+using TimeHelpers;
 
 namespace Time {
 
 	[DBus (name = "org.freesmartphone.Time")]
 	public class DBusIface: GLib.Object {
-		
+
+		public signal void minute(int sec, int min, int hour, int mday,
+								  int mon, int year, int wday, int yday, int isdst);
+		construct {
+			Timeout.add_seconds (60, this.emit_signal);
+		}
+
+		/* FIXME: In the worst case the signal may get emitted with payload that is a minute old */
+		private bool emit_signal() {
+			TimeHelpers.emit_signal(this);
+			return true;
+		}
+
 		public string GetLocalTime() {
-		return "Not Implemented Yet";
+			return "Not Implemented Yet";
 		}
 		
 	}
@@ -44,7 +57,7 @@ namespace Time {
 		}
 		
 		construct {
-			this.dbus_iface = "org.freesmartphone.Time";
+			this.dbus_iface = "org.freesmartphone.Time";		  
 		}
 		
 		public override string[] ListObjectsByInterface(string iface) {
