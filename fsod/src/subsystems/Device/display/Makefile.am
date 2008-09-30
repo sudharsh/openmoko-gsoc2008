@@ -6,8 +6,8 @@ AM_CPPFLAGS = \
 	-ggdb
 
 
-pkgdir		= $(libdir)fsod/subsystems/Device
-displayconfdir	= $(datadir)fsod/subsystems/Device
+pkgdir		= $(libdir)/fsod/subsystems/Device
+displayconfdir	= $(datadir)/fsod/subsystems/Device
 displayconf_DATA   = display.plugin	
 
 pkg_LTLIBRARIES	= display.la
