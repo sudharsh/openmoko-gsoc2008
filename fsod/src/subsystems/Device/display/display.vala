@@ -24,7 +24,7 @@ using ODeviced;
 using FSO;
 using Device;
 
-[DBus (name = "org.freesmartphone.Device.Display")]
+[DBus (name = "org.freesmartphone.Plugin.Display")]
 public class Display: GLib.Object {
 	
 	private int max_brightness;
@@ -43,12 +43,12 @@ public class Display: GLib.Object {
 	}
 
 	[DBus (visible=false)]
-	public Device plugin {
+	public Plugin plugin {
 		get;
 		construct;
 	}
 
-	Display(string node, string dbus_path, Device plugin) {
+	Display(string node, string dbus_path, Plugin plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -100,7 +100,7 @@ namespace display {
 
 	public static List<Display> list;
 
-	public bool init (Device plugin) {
+	public bool init (Plugin plugin) {
 		Type type;
 		type = typeof (Display);
 		list = ODeviced.compute_objects (plugin, type);

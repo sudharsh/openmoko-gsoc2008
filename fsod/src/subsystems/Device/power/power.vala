@@ -27,7 +27,7 @@ using PowerHelpers;
 using FSO;
 using Device;
 
-[DBus (name = "org.freesmartphone.Device.PowerSupply")]
+[DBus (name = "org.freesmartphone.Plugin.PowerSupply")]
 public class Power: GLib.Object {
 
 	private string status = new string();
@@ -65,13 +65,13 @@ public class Power: GLib.Object {
 	}
 
 	[DBus (visible = false)]
-	public Device plugin {
+	public Plugin plugin {
 		get;
 		construct;
 	}
 
 
-	Power(string node, string dbus_path, Device plugin) {
+	Power(string node, string dbus_path, Plugin plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -185,7 +185,7 @@ namespace power {
 
 	public static List<Power> list;
 
-	public bool init (Device plugin) {
+	public bool init (Plugin plugin) {
 		Type type;
 		list = new List<Power>();
 		type = typeof (Power);

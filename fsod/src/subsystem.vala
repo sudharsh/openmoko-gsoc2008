@@ -27,12 +27,8 @@ using DBus;
 namespace Subsystem {
 
 	public abstract class Manager: GLib.Object {
-
-		public string dbus_iface;
-		public List<string> dbus_object_paths = new List<string> ();
-
-		public abstract string[] ListObjectsByInterface(string iface);
-		
+	
+			public abstract string[] ListObjectsByInterface(string iface);		
 	}
 }
 

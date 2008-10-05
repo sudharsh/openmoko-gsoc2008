@@ -32,7 +32,8 @@ namespace FSO {
 		private KeyFile conf_file = new KeyFile();
 
 		/* hashmap of the objects */
-		public List<Subsystem.Manager> fso_objects  = new List<Subsystem.Manager>();
+		public HashTable<string, Subsystem.Manager> fso_objects  = new HashTable<string, Subsystem.Manager>((HashFunc)str_hash,
+																											(EqualFunc)str_equal);
 
 		private delegate bool FactoryFunc(Service service);
 		protected static string dev_name = new string();
@@ -102,12 +103,10 @@ namespace FSO {
 
 		/* No array of dbus object paths in vala yet. Just return them as a string array */
 		public string[]? ListObjectsByInterface (string iface) {
-
-			foreach (Subsystem.Manager subsystem in this.fso_objects) {
-				if(iface == subsystem.dbus_iface) 
-					return subsystem.ListObjectsByInterface(iface);			  	
-			}
-			return null;
+			Subsystem.Manager manager = this.fso_objects.lookup (iface.split(".")[2]);
+			if (manager == null)
+				return null;
+			return manager.ListObjectsByInterface (iface);
 		}
 	
 

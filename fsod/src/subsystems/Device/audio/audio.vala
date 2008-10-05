@@ -106,7 +106,7 @@ namespace audio {
 
 	public static Audio obj;
 
-	public bool init (Device plugin) {		
+	public bool init (Plugin plugin) {		
 		GLib.Thread.init (null);
 		obj = new Audio();
 		if(obj == null)

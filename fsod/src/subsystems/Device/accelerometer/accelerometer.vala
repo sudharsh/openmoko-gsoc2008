@@ -27,7 +27,7 @@ using Device;
 using FSO;
 
 
-[DBus (name = "org.freesmartphone.Device.Accelerometer") ]
+[DBus (name = "org.freesmartphone.Plugin.Accelerometer") ]
 public class Accelerometer: Object {
 
 	private string[] dev_node;
@@ -37,12 +37,12 @@ public class Accelerometer: Object {
 	private List<IOChannel> channels = new List<IOChannel> ();
 	   
 	[DBus (visible=false)]
-	public Device plugin {
+	public Plugin plugin {
 		get;
 		construct;
 	}
 
-	Accelerometer (Device plugin) {
+	Accelerometer (Plugin plugin) {
 		this.plugin = plugin;
 	}
 
@@ -99,7 +99,7 @@ namespace accelerometer {
 
 	public static Accelerometer obj;
 
-	public bool init (Device plugin) {		
+	public bool init (Plugin plugin) {		
 		obj = new Accelerometer(plugin);
 		if(obj == null)
 			return false;

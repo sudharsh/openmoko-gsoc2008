@@ -27,7 +27,7 @@ using FSO;
 using Device;
 using InputHelpers;
 
-[DBus (name = "org.freesmartphone.Device.Input")]
+[DBus (name = "org.freesmartphone.Plugin.Input")]
 public class Input: GLib.Object {
 
 	private string device = new string();
@@ -54,12 +54,12 @@ public class Input: GLib.Object {
 	public signal void @event(string name, string action, int seconds);
 
 	[DBus (visible = false)]
-	public Device plugin {
+	public Plugin plugin {
 		get;
 		construct;
 	}
 
-	Input (Device plugin) {
+	Input (Plugin plugin) {
 		this.plugin = plugin;
 	}
 
@@ -113,7 +113,7 @@ namespace input {
 
 	public static Input obj;
 
-	public bool init (Device plugin) {		
+	public bool init (Plugin plugin) {		
 		obj = new Input(plugin);
 		if(obj == null)
 			return false;

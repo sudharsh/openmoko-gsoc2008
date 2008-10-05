@@ -27,14 +27,14 @@ using FSO;
 using Device;
 
 
-[DBus (name = "org.freesmartphone.Device.IdleNotifier") ]
+[DBus (name = "org.freesmartphone.Plugin.IdleNotifier") ]
 public class IdleNotifier: GLib.Object {
 
 	public signal void state (string curr_state);
 
 	private void emit_signal (string _state) {
 		this.state (_state);
-		log ("Device.IdleNotifier", LogLevelFlags.LEVEL_INFO, "Switching to %s state", _state);
+		log ("Plugin.IdleNotifier", LogLevelFlags.LEVEL_INFO, "Switching to %s state", _state);
 		this._current_state = _state;
 	}
 
@@ -54,13 +54,13 @@ public class IdleNotifier: GLib.Object {
 	public uint tag;
 		
 	[DBus (visible=false)]
-	public Device plugin {
+	public Plugin plugin {
 		get;
 		construct;
 	}
 
 
-	IdleNotifier (Device plugin) {
+	IdleNotifier (Plugin plugin) {
 		this.plugin = plugin;
 	}
 
@@ -176,7 +176,7 @@ namespace idlenotifier {
 
 	public static IdleNotifier obj;
 
-	public bool init (Device plugin) {		
+	public bool init (Plugin plugin) {		
 		obj = new IdleNotifier(plugin);
 		if(obj == null)
 			return false;

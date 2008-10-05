@@ -26,7 +26,7 @@ using WifiHelpers;
 using FSO;
 using Device;
 
-[DBus (name = "org.freesmartphone.Device.PowerControl")]
+[DBus (name = "org.freesmartphone.Plugin.PowerControl")]
 public abstract class GenericPowerControl: GLib.Object {
 	
 	[DBus (visible = false)]
@@ -88,17 +88,17 @@ public class Bluetooth: GenericPowerControl {
 	
 	private string _bluetooth_node = new string();
 
-	private string _dbus_path = "/org/freesmartphone/Device/PowerControl/Bluetooth";
+	private string _dbus_path = "/org/freesmartphone/Plugin/PowerControl/Bluetooth";
 	public string dbus_path {
 		get { return _dbus_path; }
 	}
 
-	public Device plugin {
+	public Plugin plugin {
 		get;
 		construct;
 	}
 
-	Bluetooth (Device plugin) {
+	Bluetooth (Plugin plugin) {
 		this.plugin = plugin;
 	}
 
@@ -117,17 +117,17 @@ public class GSM: GenericPowerControl {
 	
 	private string _gsm_node = new string();
 
-	private string _dbus_path = "/org/freesmartphone/Device/PowerControl/GSM";
+	private string _dbus_path = "/org/freesmartphone/Plugin/PowerControl/GSM";
 	public string dbus_path {
 		get { return _dbus_path; }
 	}
 
-	public Device plugin {
+	public Plugin plugin {
 		get;
 		construct;
 	}
 
-	GSM (Device plugin) {
+	GSM (Plugin plugin) {
 		this.plugin = plugin;
 	}
 
@@ -145,17 +145,17 @@ public class GSM: GenericPowerControl {
 public class UsbHost: GenericPowerControl {
 	
 	private string modenode = new string();
-	private string _dbus_path = "/org/freesmartphone/Device/PowerControl/UsbHost";
+	private string _dbus_path = "/org/freesmartphone/Plugin/PowerControl/UsbHost";
 	public string dbus_path {
 		get { return _dbus_path; }
 	}
 
-	public Device plugin {
+	public Plugin plugin {
 		get;
 		construct;
 	}
 
-	UsbHost (Device plugin) {
+	UsbHost (Plugin plugin) {
 		this.plugin = plugin;
 	}
 
@@ -181,17 +181,17 @@ public class GPS: GenericPowerControl {
 	
 	private string _gps_node = new string();
 
-	private string _dbus_path = "/org/freesmartphone/Device/PowerControl/GPS";
+	private string _dbus_path = "/org/freesmartphone/Plugin/PowerControl/GPS";
 	public string dbus_path {
 		get { return _dbus_path; }
 	}
 
-	public Device plugin {
+	public Plugin plugin {
 		get;
 		construct;
 	}
 
-	GPS (Device plugin) {
+	GPS (Plugin plugin) {
 		this.plugin = plugin;
 	}
 
@@ -210,18 +210,18 @@ public class GPS: GenericPowerControl {
 public class Wifi: GenericPowerControl {
 
 	private string default_iface = new string();
-	private string _dbus_path = "/org/freesmartphone/Device/PowerControl/WiFi";
+	private string _dbus_path = "/org/freesmartphone/Plugin/PowerControl/WiFi";
 		
    	public string dbus_path {
 		get { return _dbus_path; }
 	}
 	
-	public Device plugin {
+	public Plugin plugin {
 		get;
 		construct;
 	}
 
-	Wifi (Device plugin) {
+	Wifi (Plugin plugin) {
 		this.plugin = plugin;
 	}
 
@@ -251,7 +251,7 @@ namespace powercontrol {
 	public static GPS gps_obj;
 	public static UsbHost usbhost_obj;
 	
-	public bool init (Device plugin) {
+	public bool init (Plugin plugin) {
 
 		bool success = true;
 		string device = ODeviced.get_device();

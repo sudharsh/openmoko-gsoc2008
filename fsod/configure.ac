@@ -72,5 +72,4 @@ AC_OUTPUT([
 	src/subsystems/Device/rtc/Makefile
 	src/subsystems/Device/led/Makefile
 	src/subsystems/Device/display/Makefile
-	src/subsystems/Time/Makefile
 	])

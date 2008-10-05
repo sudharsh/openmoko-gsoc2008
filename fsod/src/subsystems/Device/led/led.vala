@@ -24,7 +24,7 @@ using ODeviced;
 using FSO;
 using Device;
 
-[DBus (name = "org.freesmartphone.Device.LED")]
+[DBus (name = "org.freesmartphone.Plugin.LED")]
 public class LED:GLib.Object {
 	
 	private string name = new string();
@@ -42,13 +42,13 @@ public class LED:GLib.Object {
 	}
 
 	[DBus (visible=false)]
-	public Device plugin {
+	public Plugin plugin {
 		get;
 		construct;
 	}
 
 
-	LED(string node, string dbus_path, Device plugin) {
+	LED(string node, string dbus_path, Plugin plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -86,7 +86,7 @@ namespace led {
 
 	public static List<LED> list;
 
-	public bool init (Device plugin) {
+	public bool init (Plugin plugin) {
 		Type type;
 		type = typeof (LED);
 		list = ODeviced.compute_objects (plugin, type);

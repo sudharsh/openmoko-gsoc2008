@@ -27,7 +27,7 @@ using RTCHelpers;
 using FSO;
 using Device;
 
-[DBus (name = "org.freesmartphone.Device.RealTimeClock")]
+[DBus (name = "org.freesmartphone.Plugin.RealTimeClock")]
 public class RealTimeClock: GLib.Object {
 	
 	private string name = new string();
@@ -47,13 +47,13 @@ public class RealTimeClock: GLib.Object {
 	}
 
 	[DBus (visible=false)]
-	public Device plugin {
+	public Plugin plugin {
 		get;
 		construct;
 	}
 
 
-	RealTimeClock (string node, string dbus_path, Device plugin) {
+	RealTimeClock (string node, string dbus_path, Plugin plugin) {
 		this.node = node;
 		this.dbus_path = dbus_path;
 		this.plugin = plugin;
@@ -114,7 +114,7 @@ namespace rtc {
 
 	public static List<RealTimeClock> list;
 
-	public bool init (Device plugin) {
+	public bool init (Plugin plugin) {
 		Type type;
 		list = new List<RealTimeClock>();
 		type = typeof (RealTimeClock);
