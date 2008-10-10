@@ -15,6 +15,7 @@ pkg_LTLIBRARIES	= display.la
 display_VALASOURCES = display.vala
 
 display_la_SOURCES = \
+	display-helpers.c \
 	$(display_VALASOURCES:.vala=.c) \
 	$(display_VALASOURCES:.vala=.h)
 
@@ -22,7 +23,7 @@ BUILT_SOURCES = display.vala.stamp
 
 
 display.vala.stamp: $(display_VALASOURCES)
-	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg fsod --pkg Device --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
+	$(VALAC) --basedir $(top_srcdir) --ccode --vapidir $(top_srcdir)/vapi --pkg fsod --vapidir $(top_srcdir)/ --pkg Device --vapidir ./ --pkg display-helpers --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
 	$^
 	touch $@
 

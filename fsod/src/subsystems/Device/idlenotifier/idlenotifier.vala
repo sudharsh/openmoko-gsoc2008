@@ -77,7 +77,7 @@ public class IdleNotifier: GLib.Object {
 		this.watches  = plugin.conf.get_string_list (device, "watchfor");
 
 		foreach (string node in this.watches) {
-			IOChannel channel = new IOChannel.file ("/dev/input/" + node, "r");
+			var channel = new IOChannel.file ("/dev/input/" + node, "r");
 			/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
 			channel.add_watch (IOCondition.IN, (IOFunc)IdleHelpers.on_activity);
 		}

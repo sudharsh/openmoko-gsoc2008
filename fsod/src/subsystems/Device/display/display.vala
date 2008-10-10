@@ -28,7 +28,9 @@ using Device;
 public class Display: GLib.Object {
 	
 	private int max_brightness;
+	private int curr_brightness;
 	private string name = new string();
+	private int fb_fd;
 
 	[DBus (visible=false)]
 	public string node {
@@ -58,6 +60,9 @@ public class Display: GLib.Object {
 		var dev = ODeviced.get_device();
 		this.name = ODeviced.compute_name(dbus_path);
 		this.max_brightness = ODeviced.read_integer(this.node + "/max_brightness");
+		this.curr_brightness = this.GetBrightness();
+		var _fb = new IOChannel.file ("/dev/fb0", "r");
+		this.fb_fd = _fb.unix_get_fd(); 
 	}
 		
 	public int GetMaximumBrightness() {
@@ -65,9 +70,17 @@ public class Display: GLib.Object {
 	}
 
 	public bool SetBrightness(int brightness) {
+		int value = GetBrightness();
 		if(brightness > this.max_brightness)
 			return false;
-		ODeviced.write_integer(this.node + "/brightness", brightness);
+		if(this.curr_brightness!=value) {
+			ODeviced.write_integer(this.node + "/brightness", brightness);
+			if (this.curr_brightness == 0) 
+				DisplayHelpers.set_fb(true, this.fb_fd);
+			else if(value == 0)
+				DisplayHelpers.set_fb(false, this.fb_fd);
+			this.curr_brightness = value;
+		}
 		return true;
 	}
 
