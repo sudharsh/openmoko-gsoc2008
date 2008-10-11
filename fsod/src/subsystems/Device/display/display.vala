@@ -66,6 +66,7 @@ public class Display: GLib.Object {
 			this.fb_fd = _fb.unix_get_fd();
 		}
 		catch (GLib.Error error) {
+			this.fb_fd = -1;
 			warning (error.message);
 		}
 	}
@@ -112,7 +113,6 @@ public class Display: GLib.Object {
 
 
 }
-
 
 namespace display {
 
