@@ -61,8 +61,13 @@ public class Display: GLib.Object {
 		this.name = ODeviced.compute_name(dbus_path);
 		this.max_brightness = ODeviced.read_integer(this.node + "/max_brightness");
 		this.curr_brightness = this.GetBrightness();
-		var _fb = new IOChannel.file ("/dev/fb0", "r");
-		this.fb_fd = _fb.unix_get_fd(); 
+		try {
+			var _fb = new IOChannel.file ("/dev/fb0", "r");
+			this.fb_fd = _fb.unix_get_fd();
+		}
+		catch (GLib.Error error) {
+			warning (error.message);
+		}
 	}
 		
 	public int GetMaximumBrightness() {

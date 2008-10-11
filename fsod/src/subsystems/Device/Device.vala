@@ -115,17 +115,16 @@ public class Plugin: GLib.Object {
 
 	public bool load_plugin() {		
 
+		/* Don't load the plugin is disable key is present */
+		if(this._conf.has_key(name, "disable"))
+			return true;
+
 		log("Device", LogLevelFlags.LEVEL_INFO, "Loading plugin at %s", this.path);
 		this.library = Module.open(this.path, ModuleFlags.BIND_LAZY|ModuleFlags.BIND_LOCAL);				
 		if(this.library == null) {
 			warning ("library is null, possibly some symbol error");
 			return false;
 		}		
-
-		/* Don't load the plugin is disable key is present */
-		if(this._conf.has_key(name, "disable"))
-			return true;
-
 		/* If the plugin uses sysfs, check if the device class exists */
 		if(this._conf.has_key (name, "device_class")) {
 			var _dev = this._conf.get_string (name, "device_class");

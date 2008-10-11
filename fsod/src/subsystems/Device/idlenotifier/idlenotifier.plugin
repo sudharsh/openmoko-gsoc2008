@@ -4,6 +4,8 @@ dbus_interface=org.freesmartphone.Device.IdleNotifier
 # FIXME: Set this at runtime?
 dbus_object_path=/org/freesmartphone/Device/IdleNotifier/0
 
+# FIXME: idlenotifier plugin segfaults
+disable=true
 
 # Timouts in seconds, -1 to disable
 [FreeRunner]
@@ -16,3 +18,4 @@ AWAKE = -1
 BUSY = -1
 SUSPEND = 0
 watchfor=event0,event1 
+
