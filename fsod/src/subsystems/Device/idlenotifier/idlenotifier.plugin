@@ -9,13 +9,13 @@ disable=true
 
 # Timouts in seconds, -1 to disable
 [FreeRunner]
-IDLE = 10
-IDLE_DIM = 20
-IDLE_PRELOCK = 12
-LOCK = 2
-SUSPEND = 20
-AWAKE = -1
-BUSY = -1
-SUSPEND = 0
+idle = 10
+idle_dim = 20
+idle_prelock = 12
+lock = 2
+suspend = 20
+awake = -1
+busy = -1
+suspend = 0
 watchfor=event0,event1 
 

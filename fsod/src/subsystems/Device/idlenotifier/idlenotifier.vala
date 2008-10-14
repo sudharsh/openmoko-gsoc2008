@@ -38,7 +38,7 @@ public class IdleNotifier: GLib.Object {
 		this._current_state = _state;
 	}
 
-	private string _current_state = "AWAKE";
+	private string _current_state = "awake";
 	[DBus (visible = false)]
 	public string current_state {
 		get { return _current_state; }
@@ -67,13 +67,13 @@ public class IdleNotifier: GLib.Object {
 
 	construct {
 		this.device = ODeviced.get_device();
-		this.timeouts.insert ("IDLE", plugin.conf.get_integer (this.device, "IDLE"));
-		this.timeouts.insert ("IDLE_DIM", plugin.conf.get_integer (this.device, "IDLE_DIM"));
-		this.timeouts.insert ("IDLE_PRELOCK", plugin.conf.get_integer (this.device, "IDLE_PRELOCK"));
-		this.timeouts.insert ("SUSPEND", plugin.conf.get_integer (this.device, "SUSPEND"));
-		this.timeouts.insert ("LOCK", plugin.conf.get_integer (this.device, "LOCK"));
-		this.timeouts.insert ("AWAKE", plugin.conf.get_integer (this.device, "AWAKE"));
-		this.timeouts.insert ("BUSY", plugin.conf.get_integer (this.device, "BUSY"));
+		this.timeouts.insert ("idle", plugin.conf.get_integer (this.device, "idle"));
+		this.timeouts.insert ("idle_dim", plugin.conf.get_integer (this.device, "idle_dim"));
+		this.timeouts.insert ("idle_prelock", plugin.conf.get_integer (this.device, "idle_prelock"));
+		this.timeouts.insert ("suspend", plugin.conf.get_integer (this.device, "suspend"));
+		this.timeouts.insert ("lock", plugin.conf.get_integer (this.device, "lock"));
+		this.timeouts.insert ("awake", plugin.conf.get_integer (this.device, "awake"));
+		this.timeouts.insert ("busy", plugin.conf.get_integer (this.device, "busy"));
 		this.watches  = plugin.conf.get_string_list (device, "watchfor");
 
 		foreach (string node in this.watches) {
@@ -87,47 +87,47 @@ public class IdleNotifier: GLib.Object {
 
 	
 	private bool onBusy() {
-		this.emit_signal ("BUSY");
-		int secs = this.timeouts.lookup("IDLE");
+		this.emit_signal ("busy");
+		int secs = this.timeouts.lookup("idle");
 		if (secs > 0)
 			this.tag = Timeout.add_seconds (secs, this.onIdle);
 		return false;
 	}
 		
 	private bool onIdle() {
-		this.emit_signal ("IDLE");
-		int secs = this.timeouts.lookup("IDLE_DIM");
+		this.emit_signal ("idle");
+		int secs = this.timeouts.lookup("idle_dim");
 		if (secs > 0)
 			this.tag = Timeout.add_seconds (secs, this.onIdleDim);
 		return false;
 	}
 
 	private bool onIdleDim() {
-		this.emit_signal ("IDLE_DIM");
-		int secs = this.timeouts.lookup("IDLE_PRELOCK");
+		this.emit_signal ("idle_dim");
+		int secs = this.timeouts.lookup("idle_prelock");
 		if (secs > 0)
 			this.tag = Timeout.add_seconds (secs, this.onIdlePrelock);
 		return false;
 	}
 
 	private bool onIdlePrelock() {
-		this.emit_signal ("IDLE_PRELOCK");
-		int secs = this.timeouts.lookup("IDLE_LOCK");
+		this.emit_signal ("idle_prelock");
+		int secs = this.timeouts.lookup("idle_lock");
 		if (secs > 0)
 			this.tag = Timeout.add_seconds (secs, this.onLock);
 		return false;
 	}
 
 	private bool onLock() {
-		this.emit_signal ("LOCK");
-		int secs = this.timeouts.lookup("SUSPEND");
+		this.emit_signal ("lock");
+		int secs = this.timeouts.lookup("suspend");
 		if (secs > 0)
 			this.tag = Timeout.add_seconds (secs, this.onSuspend);
 		return false;
 	}
 
 	private bool onSuspend() {
-		this.emit_signal ("SUSPEND");
+		this.emit_signal ("suspend");
 		return false;
 	}
 
@@ -145,22 +145,22 @@ public class IdleNotifier: GLib.Object {
 			Source.remove(this.tag);
 			
 		switch (_state) {
-		case "BUSY":
+		case "busy":
 			onBusy();
 			break;
-		case "IDLE":
+		case "idle":
 			onIdle();
 			break;
-		case "IDLE_DIM":
+		case "idle_dim":
 			onIdleDim();
 			break;
-		case "IDLE_PRELOCK":
+		case "idle_prelock":
 			onIdlePrelock();
 			break;
-		case "LOCK":
+		case "lock":
 			onLock();
 			break;
-		case "SUSPEND":
+		case "suspend":
 			onSuspend();
 			break;
 		default:
