@@ -46,8 +46,7 @@ public class IdleNotifier: GLib.Object {
 
 	private string device = new string();
 	private string[] watches;
-	private PollFD[] fds;
-	   
+		   
 	private HashTable<string, int> timeouts = new HashTable<string, int>((HashFunc)str_hash, (EqualFunc)str_equal);
 
 	[DBus (visible=false)]

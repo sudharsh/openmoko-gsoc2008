@@ -37,7 +37,7 @@ namespace FSO {
 
 		private delegate bool FactoryFunc(Service service);
 		protected static string dev_name = new string();
-		Module library;
+		private Module library;
 		private string[] enableList;
 		
 		construct {
@@ -49,7 +49,7 @@ namespace FSO {
 				if (conf_file.has_group("fsod")) 
 					dev_name = conf_file.get_string ("fsod", "device_name");
 
-				/* Try to load all subsystems in enablelist is not specified */
+				/* Try to load all subsystems if there is no enable_subsystems key */
 				if (conf_file.has_key ("fsod", "enable_subsystems")) {
 					this.enableList = conf_file.get_string_list ("fsod", "enable_subsystems");
 					foreach (string subsystem in this.enableList) {

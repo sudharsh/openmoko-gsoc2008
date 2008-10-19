@@ -27,8 +27,9 @@ using DBus;
 namespace Subsystem {
 
 	public abstract class Manager: GLib.Object {
-	
-			public abstract string[] ListObjectsByInterface(string iface);		
+
+		public string version = new string();
+		public abstract string[] ListObjectsByInterface(string iface);		
 	}
 }
 

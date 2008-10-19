@@ -29,10 +29,16 @@ using Subsystem;
 public class Device: Subsystem.Manager {
 
 	private List<Plugin> plugins = new List<Plugin>();
-
+	private KeyFile subsystem_conf = new KeyFile();
+	
 	construct {
 		try {
 			Dir dir = Dir.open("/usr/lib/fsod/subsystems/Device", 0);
+			
+			subsystem_conf.load_from_file("/usr/share/fsod/subsystems/Device.conf", KeyFileFlags.NONE);
+			subsystem_conf.set_list_separator(',');
+			this.version = subsystem_conf.get_string("Device", "version");
+
 			string plugin_name = dir.read_name();
 			while (plugin_name!=null) {
 				var path = "/usr/lib/fsod/subsystems/Device/" + plugin_name;
@@ -114,38 +120,45 @@ public class Plugin: GLib.Object {
 
 
 	public bool load_plugin() {		
+		
+		try {
+			/* Don't load the plugin if disable key is present */
+			if(this._conf.has_key(name, "disable"))
+				return true;
 
-		/* Don't load the plugin is disable key is present */
-		if(this._conf.has_key(name, "disable"))
-			return true;
+			/* If the plugin uses sysfs, check if the device class exists */
+			if(this._conf.has_key (name, "device_class")) {
+				var _dev = this._conf.get_string (name, "device_class");
+				if (!FileUtils.test ("/sys/class/" + _dev, FileTest.IS_DIR)) 
+					return false;	
+			}
+		}
+		catch (GLib.KeyFileError error) {
+			log("Device", LogLevelFlags.LEVEL_WARNING, error.message);
+		}
 
-		log("Device", LogLevelFlags.LEVEL_INFO, "Loading plugin at %s", this.path);
+		log("Device", LogLevelFlags.LEVEL_INFO, "Loading Device plugin at %s", this.path);
 		this.library = Module.open(this.path, ModuleFlags.BIND_LAZY|ModuleFlags.BIND_LOCAL);				
 		if(this.library == null) {
-			warning ("library is null, possibly some symbol error");
+			log("Device", LogLevelFlags.LEVEL_WARNING, "Library is null, possibly some symbol lookup error");
 			return false;
 		}		
-		/* If the plugin uses sysfs, check if the device class exists */
-		if(this._conf.has_key (name, "device_class")) {
-			var _dev = this._conf.get_string (name, "device_class");
-			if (!FileUtils.test ("/sys/class/" + _dev, FileTest.IS_DIR)) 
-				return false;	
-		}	
+			
 		var _symbol = null;
 		if(!this.library.symbol(name + "_init", out _symbol)) {
 			log("Device", LogLevelFlags.LEVEL_WARNING, "Malformed odeviced plugin");
 			return false;
 		}	
 		InitFunc func = (InitFunc)_symbol;
-
+		
 		/* This calls the foo_init functions of the Device plugins */
-		var success = func(this);
+		bool success = func(this);
 		if (!success) {
 			message ("Weird error %s", Module.error());
-		 }
+		}
 		else
 			this.library.make_resident(); /* Prevent unloading */
-				
+		
 		return success;
 	}
 }

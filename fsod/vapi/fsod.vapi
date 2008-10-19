@@ -18,6 +18,7 @@ namespace FSO {
 namespace Subsystem {
 	[CCode (cheader_filename = "src/subsystem.h")]
 	public abstract class Manager : GLib.Object {
+		public string version;
 		public abstract string[] ListObjectsByInterface (string iface);
 	}
 }

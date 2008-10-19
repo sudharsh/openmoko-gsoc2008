@@ -255,8 +255,14 @@ namespace powercontrol {
 
 		bool success = true;
 		string device = ODeviced.get_device();
-		var enable = plugin.conf.get_string_list (device, "enable");
-		
+		string[] enable;
+		try {
+			enable = plugin.conf.get_string_list (device, "enable");
+		}
+		catch (GLib.KeyFileError error) {
+			log("Device:powercontrol", LogLevelFlags.LEVEL_WARNING, error.message);
+		}
+					
 		/* FIXME: refactor this */
 		foreach (string klass in enable) {
 			switch (klass){

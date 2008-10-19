@@ -28,6 +28,7 @@
 </namespace>
 <namespace name="Subsystem">
 	<object name="Manager" parent="GLib.Object" type-name="SubsystemManager" get-type="subsystem_manager_get_type">
+		<field name="version"/>
 		<method name="ListObjectsByInterface" symbol="subsystem_manager_ListObjectsByInterface">
 			<parameters>
 				<parameter name="self" type="Subsystem.Manager*"/>
