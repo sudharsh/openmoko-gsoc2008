@@ -34,8 +34,8 @@ gboolean on_activity (GIOChannel *source, GIOCondition *condition) {
 	if (read (fd, event, sizeof(struct input_event)) < 0)
 		perror ("read");
 
-	if (g_strcmp0(curr_state, "BUSY")) 
-		idle_notifier_SetState(idlenotifier_obj, "BUSY");
+	if (g_strcmp0(curr_state, "busy")) 
+		idle_notifier_SetState(idlenotifier_obj, "busy");
 	
 	g_free (event);
 	return TRUE;

@@ -34,7 +34,7 @@ public class IdleNotifier: GLib.Object {
 
 	private void emit_signal (string _state) {
 		this.state (_state);
-		log ("Plugin.IdleNotifier", LogLevelFlags.LEVEL_INFO, "Switching to %s state", _state);
+		log ("Device.IdleNotifier", LogLevelFlags.LEVEL_INFO, "Switching to %s state", _state);
 		this._current_state = _state;
 	}
 
@@ -73,14 +73,19 @@ public class IdleNotifier: GLib.Object {
 		this.timeouts.insert ("lock", plugin.conf.get_integer (this.device, "lock"));
 		this.timeouts.insert ("awake", plugin.conf.get_integer (this.device, "awake"));
 		this.timeouts.insert ("busy", plugin.conf.get_integer (this.device, "busy"));
-		this.watches  = plugin.conf.get_string_list (device, "watchfor");
-
-		foreach (string node in this.watches) {
-			var channel = new IOChannel.file ("/dev/input/" + node, "r");
-			/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
-			channel.add_watch (IOCondition.IN, (IOFunc)IdleHelpers.on_activity);
+		try {
+			this.watches  = plugin.conf.get_string_list (device, "watchfor");
+			foreach (string node in this.watches) {
+				var channel = new IOChannel.file ("/dev/input/" + node, "r");
+				/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
+				if(channel != null)
+					channel.add_watch (IOCondition.IN, (IOFunc)IdleHelpers.on_activity);
+			}
+			tag = Timeout.add_seconds (2, this.onIdle);
 		}
-		tag = Timeout.add_seconds (2, this.onIdle);
+		catch (GLib.KeyFileError error) {
+			log ("Device:IdleNotifier", LogLevelFlags.LEVEL_WARNING, error.message);
+		}
 			
 	}
 

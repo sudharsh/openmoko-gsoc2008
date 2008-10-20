@@ -70,7 +70,7 @@ public class Input: GLib.Object {
 			this.device = "Freerunner";
 			compute_watches ();
 		   
-			var input_nodes = plugin.conf.get_string_list (this.device, "input_nodes");
+			string[] input_nodes = plugin.conf.get_string_list (this.device, "input_nodes");
 
 			foreach (string input_node in input_nodes) {
 					string device_node = this.dev_node + "/" + input_node;
@@ -81,8 +81,8 @@ public class Input: GLib.Object {
 			}
 			
 		}
-		catch (GLib.Error error) {
-			message (error.message);
+		catch (GLib.KeyFileError error) {
+			log ("Device:Input", LogLevelFlags.LEVEL_WARNING, error.message);
 		}
 
 	}

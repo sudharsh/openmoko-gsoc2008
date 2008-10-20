@@ -122,9 +122,10 @@ public class Plugin: GLib.Object {
 	public bool load_plugin() {		
 		
 		try {
+			string _device = ODeviced.get_device();
 			/* Don't load the plugin if disable key is present */
-			if(this._conf.has_key(name, "disable"))
-				return true;
+			if((this._conf.has_key(_device, "disable")) && (this._conf.get_string(_device, "disable") == "true"))
+					return true;
 
 			/* If the plugin uses sysfs, check if the device class exists */
 			if(this._conf.has_key (name, "device_class")) {
