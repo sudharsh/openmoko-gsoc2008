@@ -7,8 +7,7 @@ namespace FSO {
 		public GLib.HashTable<string,Subsystem.Manager> fso_objects;
 		protected static string dev_name;
 		public uint request_name (string name);
-		public string[] ListObjectsByInterface (string iface);
-		[CCode (array_length_pos = 0, delegate_target_pos = 0)]
+		public string[]? ListObjectsByInterface (string iface);
 		public Service ();
 	}
 	[CCode (cheader_filename = "src/fsod.h")]
