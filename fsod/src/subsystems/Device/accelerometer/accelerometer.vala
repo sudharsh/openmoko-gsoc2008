@@ -27,7 +27,7 @@ using Device;
 using FSO;
 
 
-[DBus (name = "org.freesmartphone.Plugin.Accelerometer") ]
+[DBus (name = "org.freesmartphone.Device.Accelerometer") ]
 public class Accelerometer: Object {
 
 	private string[] dev_node;

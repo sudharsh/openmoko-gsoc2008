@@ -27,7 +27,7 @@ using RTCHelpers;
 using FSO;
 using Device;
 
-[DBus (name = "org.freesmartphone.Plugin.RealTimeClock")]
+[DBus (name = "org.freesmartphone.Device.RealTimeClock")]
 public class RealTimeClock: GLib.Object {
 	
 	private string name = new string();

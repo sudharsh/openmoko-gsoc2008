@@ -27,7 +27,7 @@ using FSO;
 using Device;
 using InputHelpers;
 
-[DBus (name = "org.freesmartphone.Plugin.Input")]
+[DBus (name = "org.freesmartphone.Device.Input")]
 public class Input: GLib.Object {
 
 	private string device = new string();

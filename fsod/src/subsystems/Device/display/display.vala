@@ -24,7 +24,7 @@ using ODeviced;
 using FSO;
 using Device;
 
-[DBus (name = "org.freesmartphone.Plugin.Display")]
+[DBus (name = "org.freesmartphone.Device.Display")]
 public class Display: GLib.Object {
 	
 	private int max_brightness;

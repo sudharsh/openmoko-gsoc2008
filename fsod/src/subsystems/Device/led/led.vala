@@ -24,7 +24,7 @@ using ODeviced;
 using FSO;
 using Device;
 
-[DBus (name = "org.freesmartphone.Plugin.LED")]
+[DBus (name = "org.freesmartphone.Device.LED")]
 public class LED:GLib.Object {
 	
 	private string name = new string();

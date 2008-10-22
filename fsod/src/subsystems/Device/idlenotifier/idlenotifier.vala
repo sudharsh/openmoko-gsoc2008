@@ -27,7 +27,7 @@ using FSO;
 using Device;
 
 
-[DBus (name = "org.freesmartphone.Plugin.IdleNotifier") ]
+[DBus (name = "org.freesmartphone.Device.IdleNotifier") ]
 public class IdleNotifier: GLib.Object {
 
 	public signal void state (string curr_state);

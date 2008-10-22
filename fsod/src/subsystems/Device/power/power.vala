@@ -27,7 +27,7 @@ using PowerHelpers;
 using FSO;
 using Device;
 
-[DBus (name = "org.freesmartphone.Plugin.PowerSupply")]
+[DBus (name = "org.freesmartphone.Device.PowerSupply")]
 public class Power: GLib.Object {
 
 	private string status = new string();
