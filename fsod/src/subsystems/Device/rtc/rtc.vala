@@ -24,7 +24,7 @@ using DBus;
 using GLib;
 using ODeviced;
 using RTCHelpers;
-using FSO;
+using FSOD;
 using Device;
 
 [DBus (name = "org.freesmartphone.Device.RealTimeClock")]
@@ -106,7 +106,7 @@ public class RealTimeClock: GLib.Object {
 
 void register_dbus (RealTimeClock obj) {
 	GLib.message("Registering DBus object at %s", obj.dbus_path);
-	FSO.connection.register_object(obj.dbus_path, obj);
+	FSOD.connection.register_object(obj.dbus_path, obj);
 }
 	
 		

@@ -23,7 +23,7 @@ using GLib;
 using ODeviced;
 using DBus; 
 using WifiHelpers;
-using FSO;
+using FSOD;
 using Device;
 
 [DBus (name = "org.freesmartphone.Device.PowerControl")]
@@ -271,7 +271,7 @@ namespace powercontrol {
 				wifi_obj = new Wifi (plugin);
 				if (wifi_obj == null)
 					success = false;
-				FSO.connection.register_object (wifi_obj.dbus_path, (GLib.Object)wifi_obj);
+				FSOD.connection.register_object (wifi_obj.dbus_path, (GLib.Object)wifi_obj);
 				plugin.dbus_object_paths.append (wifi_obj.dbus_path);
 				print ("\tPowerControl: INFO: Registered %s\n", klass);
 				break;
@@ -280,7 +280,7 @@ namespace powercontrol {
 				blt_obj = new Bluetooth (plugin);
 				if (blt_obj == null)
 					success = false;
-				FSO.connection.register_object (blt_obj.dbus_path, (GLib.Object)blt_obj);
+				FSOD.connection.register_object (blt_obj.dbus_path, (GLib.Object)blt_obj);
 				plugin.dbus_object_paths.append (blt_obj.dbus_path);
 				print ("\tPowerControl: INFO: Registered %s\n", klass);	
 				break;
@@ -289,7 +289,7 @@ namespace powercontrol {
 				gsm_obj = new GSM (plugin);
 				if (gsm_obj == null)
 					success = false;
-				FSO.connection.register_object (gsm_obj.dbus_path, (GLib.Object)gsm_obj);
+				FSOD.connection.register_object (gsm_obj.dbus_path, (GLib.Object)gsm_obj);
 				plugin.dbus_object_paths.append (gsm_obj.dbus_path);
 				print ("\tPowerControl: INFO: Registered %s\n", klass);	
 				break;
@@ -298,7 +298,7 @@ namespace powercontrol {
 				gps_obj = new GPS (plugin);
 				if (gps_obj == null)
 					success = false;
-				FSO.connection.register_object (gps_obj.dbus_path, (GLib.Object)gps_obj);
+				FSOD.connection.register_object (gps_obj.dbus_path, (GLib.Object)gps_obj);
 				plugin.dbus_object_paths.append (gps_obj.dbus_path);
 				print ("\tPowerControl: INFO: Registered %s\n", klass);	
 				break;
@@ -307,7 +307,7 @@ namespace powercontrol {
 				usbhost_obj = new UsbHost (plugin);
 				if (usbhost_obj == null)
 					success = false;
-				FSO.connection.register_object (usbhost_obj.dbus_path, (GLib.Object)usbhost_obj);
+				FSOD.connection.register_object (usbhost_obj.dbus_path, (GLib.Object)usbhost_obj);
 				plugin.dbus_object_paths.append (usbhost_obj.dbus_path);
 				print ("\tPowerControl: INFO: Registered %s\n", klass);	
 				break;

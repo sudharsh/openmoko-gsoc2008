@@ -23,7 +23,7 @@
 using GLib;
 using ODeviced;
 using IdleHelpers;
-using FSO;
+using FSOD;
 using Device;
 
 

@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
 <api version="1.0">
-<namespace name="FSO">
-	<object name="Service" parent="GLib.Object" type-name="FSOService" get-type="fso_service_get_type">
+<namespace name="FSOD">
+	<object name="Service" parent="GLib.Object" type-name="FSODService" get-type="fso_service_get_type">
 		<field name="fso_objects"/>
 		<field name="fso_service_dev_name"/>
 		<method name="request_name" symbol="fso_service_request_name">
 			<parameters>
-				<parameter name="self" type="FSO.Service*"/>
+				<parameter name="self" type="FSOD.Service*"/>
 				<parameter name="name" type="const char*"/>
 			</parameters>
 			<return-type type="uint" transfer="full"/>
 		</method>
 		<method name="ListObjectsByInterface" symbol="fso_service_ListObjectsByInterface">
 			<parameters>
-				<parameter name="self" type="FSO.Service*"/>
+				<parameter name="self" type="FSOD.Service*"/>
 				<parameter name="iface" type="const char*"/>
 			</parameters>
 			<return-type type="char**" transfer="full"/>
@@ -21,7 +21,7 @@
 		<constructor name="new" symbol="fso_service_new">
 			<parameters>
 			</parameters>
-			<return-type type="FSO.Service*"/>
+			<return-type type="FSOD.Service*"/>
 		</constructor>
 	</object>
 	<field name="fso_connection"/>

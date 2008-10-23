@@ -24,7 +24,7 @@ using GLib;
 using ODeviced;
 using AccelHelpers;
 using Device;
-using FSO;
+using FSOD;
 
 
 [DBus (name = "org.freesmartphone.Device.Accelerometer") ]

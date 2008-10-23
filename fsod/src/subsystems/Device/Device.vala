@@ -19,7 +19,7 @@
  *
  */ 
 
-using FSO;
+using FSOD;
 using GLib;
 using DBus;
 using ODeviced;
@@ -166,7 +166,7 @@ public class Plugin: GLib.Object {
 
  
 
-public bool DeviceFactory(FSO.Service service) {
+public bool DeviceFactory(FSOD.Service service) {
 	
 	uint result = service.request_name("odeviced");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {

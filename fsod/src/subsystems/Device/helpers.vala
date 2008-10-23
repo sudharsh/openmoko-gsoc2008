@@ -20,7 +20,7 @@
 
 using GLib;
 using DBus;
-using FSO;
+using FSOD;
 using Device;
 
 namespace ODeviced {
@@ -30,7 +30,7 @@ namespace ODeviced {
 		try {
 			if(plugin.conf.has_group(plugin.name)) {
 				var at_path = plugin.conf.get_string(plugin.name, "dbus_object_path");
-				FSO.connection.register_object (at_path, interface_obj);
+				FSOD.connection.register_object (at_path, interface_obj);
 				plugin.dbus_object_paths.append (at_path);
 			}
 			else
@@ -43,7 +43,7 @@ namespace ODeviced {
 	
 
 	public static string get_device () {
-		return FSO.Service.dev_name;
+		return FSOD.Service.dev_name;
 	}
 
 

@@ -22,7 +22,7 @@
 /* Python subsystem for loading python modules */
 
 using GLib;
-using FSO;
+using FSOD;
 using Subsystem;
 
 public class PythonManager : Subsystem.Manager {

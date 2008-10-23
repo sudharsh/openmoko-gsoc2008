@@ -24,7 +24,7 @@ using DBus;
 using GLib;
 using ODeviced;
 using PowerHelpers;
-using FSO;
+using FSOD;
 using Device;
 
 [DBus (name = "org.freesmartphone.Device.PowerSupply")]
@@ -176,7 +176,7 @@ public class Power: GLib.Object {
 
 void register_dbus (Power obj) {
 	GLib.message("Registering DBus object at %s", obj.dbus_path);
-	FSO.connection.register_object(obj.dbus_path, obj);
+	FSOD.connection.register_object(obj.dbus_path, obj);
 }
 
 

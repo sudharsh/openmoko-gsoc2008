@@ -22,7 +22,7 @@
 using GLib;
 using DBus;
 
-namespace FSO {
+namespace FSOD {
 
 	protected static DBus.Connection connection;
 
@@ -61,7 +61,7 @@ namespace FSO {
 			}
 				
 			catch (GLib.Error error) {
-				print( "FSO Service - %s\n", error.message);
+				print( "FSOD Service - %s\n", error.message);
 			}
 		}
  		
@@ -87,13 +87,13 @@ namespace FSO {
 		public uint request_name (string name) {
 			uint result;
 			try {
-				dynamic DBus.Object bus = FSO.connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
+				dynamic DBus.Object bus = FSOD.connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
 																	 "org.freedesktop.DBus");
 				result = bus.RequestName ("org.freesmartphone." + name, (uint) 0);
 				
 			}
 			catch (DBus.Error error) {
-				log ("FSO Service", LogLevelFlags.LEVEL_WARNING,
+				log ("FSOD Service", LogLevelFlags.LEVEL_WARNING,
 					 "Check your DBus policy if %s exists: %s", name, error.message);
 				result = 100;
 			}
@@ -115,39 +115,39 @@ namespace FSO {
 			
 			library = Module.open (path, ModuleFlags.BIND_LAZY);
 			if (this.library == null) {
-				log ("FSO Service", LogLevelFlags.LEVEL_WARNING, 
+				log ("FSOD Service", LogLevelFlags.LEVEL_WARNING, 
 					 "Library NULL");
 				return false;
 			}
 			var _init = null;
 			if (!this.library.symbol(name +"Factory", out _init)) {
-				log ("FSO Service", LogLevelFlags.LEVEL_WARNING,
+				log ("FSOD Service", LogLevelFlags.LEVEL_WARNING,
 					 "factory function not found");
 				return false;
 			}
 			FactoryFunc factory_func = (FactoryFunc)_init;
 			bool success = factory_func(this);
 			if (success) {
-				log ("FSO Service", LogLevelFlags.LEVEL_INFO,
+				log ("FSOD Service", LogLevelFlags.LEVEL_INFO,
 					 "%s loaded", path);
 				
 				return success;
 			}
 
-			log ("FSO Service", LogLevelFlags.LEVEL_WARNING,
+			log ("FSOD Service", LogLevelFlags.LEVEL_WARNING,
 				 "Couldn't load %s", name);
 			return false;
 		}
 
 
 		private bool timeout() {
-			log ("FSO Service", LogLevelFlags.LEVEL_INFO, "Timeout");
+			log ("FSOD Service", LogLevelFlags.LEVEL_INFO, "Timeout");
 			return true;
 		}
 
 
 		private bool idle() { 
-			log ("FSO Service", LogLevelFlags.LEVEL_INFO, "idle");
+			log ("FSOD Service", LogLevelFlags.LEVEL_INFO, "idle");
 			return false;
 		}	
 	  
@@ -165,7 +165,7 @@ namespace FSO {
 					connection.register_object ("/org/freesmartphone/Framework", service);
 					
 					if(!GLib.Module.supported()) {
-						log("FSO Service", LogLevelFlags.LEVEL_ERROR, 
+						log("FSOD Service", LogLevelFlags.LEVEL_ERROR, 
 							"Modules are not supported in the current system");
 					}		
        			

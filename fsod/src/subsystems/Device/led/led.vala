@@ -21,7 +21,7 @@
 
 using DBus;
 using ODeviced;
-using FSO;
+using FSOD;
 using Device;
 
 [DBus (name = "org.freesmartphone.Device.LED")]
@@ -104,5 +104,5 @@ namespace led {
 
 static void register_dbus (LED obj) {
 	GLib.message("Registering DBus object at %s", obj.dbus_path);
-	FSO.connection.register_object(obj.dbus_path, obj);
+	FSOD.connection.register_object(obj.dbus_path, obj);
 }

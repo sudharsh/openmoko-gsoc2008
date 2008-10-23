@@ -29,12 +29,12 @@
 G_BEGIN_DECLS
 
 
-#define TYPE_FSOD_PYTHON_PLUGIN (fsod_python_object_get_type ())
-#define FSOD_PYTHON_PLUGIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_FSOD_PYTHON_PLUGIN, FsodPythonPlugin))
-#define FSOD_PYTHON_PLUGIN_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_FSOD_PYTHON_PLUGIN, FsodPythonPluginClass))
-#define IS_FSOD_PYTHON_PLUGIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_FSOD_PYTHON_PLUGIN))
-#define IS_FSOD_PYTHON_PLUGIN_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_FSOD_PYTHON_PLUGIN))
-#define FSOD_PYTHON_PLUGIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_FSOD_PYTHON_PLUGIN, FsodPythonPluginClass))
+#define FSOD_TYPE_PYTHON_PLUGIN (fsod_python_object_get_type ())
+#define FSOD_PYTHON_PLUGIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), FSOD_TYPE_PYTHON_PLUGIN, FsodPythonPlugin))
+#define FSOD_PYTHON_PLUGIN_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), FSOD_PYTHON_PLUGIN, FsodPythonPluginClass))
+#define FSOD_IS_PYTHON_PLUGIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), FSOD_TYPE_PYTHON_PLUGIN))
+#define FSOD_IS_PYTHON_PLUGIN_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), FSOD_TYPE_PYTHON_PLUGIN))
+#define FSOD_PYTHON_PLUGIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), FSOD_TYPE_PYTHON_PLUGIN, FsodPythonPluginClass))
 
 
 typedef struct _FsodPythonPlugin      FsodPythonPlugin;
@@ -56,8 +56,4 @@ GType fsod_python_plugin_get_type (GTypeModule *module, PyObject *type);
 
 G_END_DECLS
 #endif
-
-
-
-
 

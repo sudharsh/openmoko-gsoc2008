@@ -19,7 +19,7 @@
  *
  */ 
 
-using FSO; 
+using FSOD; 
 using DBus;
 using GLib;
 using Subsystem;
@@ -71,12 +71,12 @@ namespace Time {
 }
 	
 
-public bool TimeFactory(FSO.Service service) {
+public bool TimeFactory(FSOD.Service service) {
 
 	uint result = service.request_name("otimed");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 		Time.Manager manager = new Time.Manager();
-		FSO.connection.register_object ("/org/freesmartphone/Time", manager.iface);
+		FSOD.connection.register_object ("/org/freesmartphone/Time", manager.iface);
 		service.fso_objects.append((Subsystem.Manager) manager);
 		return true;
 	}

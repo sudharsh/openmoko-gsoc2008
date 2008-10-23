@@ -20,7 +20,7 @@
  */ 
 
 using GLib;
-using FSO;
+using FSOD;
 using DBus;
 
 /* abstract manager for fsod subsystems, override this in your subsystems */

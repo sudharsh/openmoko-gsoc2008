@@ -23,7 +23,7 @@
 using DBus;
 using GLib;
 using ODeviced;
-using FSO;
+using FSOD;
 using Device;
 using InputHelpers;
 

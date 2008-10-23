@@ -22,7 +22,7 @@
 using DBus;
 using ODeviced;
 using Gst;
-using FSO;
+using FSOD;
 using Device;
 
 class GstPlayer : GLib.Object {
