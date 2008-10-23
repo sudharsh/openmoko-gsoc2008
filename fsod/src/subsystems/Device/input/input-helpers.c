@@ -29,12 +29,13 @@
 #include "input.h"
 #include "input-helpers.h"
 
+
 static gboolean held_key_timeout (struct held_key_payload *hk);
 static gboolean list_has (GList *list, gchar *data);
 static gboolean process_event ();
 
-gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
 
+gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
 	struct input_event *event;
 	event = g_new (struct input_event, 1);
 	int fd = g_io_channel_unix_get_fd (channel);	
@@ -51,7 +52,7 @@ gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
 }
 
 	
-static gboolean process_event () {	
+static gboolean process_event () {
 
 	static struct held_key_payload hk;
 	GHashTable *watches = input_get_watches (input_obj);
@@ -60,9 +61,8 @@ static gboolean process_event () {
 
 	struct input_event *event;
        	
-       	while ( event = (struct input_event *)g_queue_pop_head (input_obj->event_q) ) {
-		
-  		g_print ("Input: event, value:%d code:%u type:%u\n", event->value, event->code, event->type);
+       	while ( event = (struct input_event *)g_queue_pop_head (input_obj->event_q) )	{
+		g_print ("Input: event, value:%d code:%u type:%u\n", event->value, event->code, event->type);
 		event_source = g_hash_table_lookup (watches, event->code);
 		if (!event_source) {
 			g_print ("\tNo watch added for event code %u\n", event->code);
