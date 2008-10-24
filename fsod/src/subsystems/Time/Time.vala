@@ -71,7 +71,7 @@ namespace Time {
 }
 	
 
-public bool TimeFactory(FSOD.Service service) {
+public bool InitTime(FSOD.Service service) {
 
 	uint result = service.request_name("otimed");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {

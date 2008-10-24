@@ -37,22 +37,26 @@ G_BEGIN_DECLS
 #define FSOD_PYTHON_PLUGIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), FSOD_TYPE_PYTHON_PLUGIN, FsodPythonPluginClass))
 
 
-typedef struct _FsodPythonPlugin      FsodPythonPlugin;
-typedef struct _FsodPythonPluginClass FsodPythonPluginClass;
+typedef struct _FSODPythonPlugin      FSODPythonPlugin;
+typedef struct _FSODPythonPluginClass FSODPythonPluginClass;
 
 
-struct _FsodPythonPlugin {
+struct _FSODPythonPlugin {
 	GObject parent;
+	GList *dbus_object_paths;
 	PyObject *instance;
 };
 
-struct _FsodPythonPluginClass {
+struct _FSODPythonPluginClass {
 	GObjectClass parent_class;
 	PyObject *type;
 };
 
 
 GType fsod_python_plugin_get_type (GTypeModule *module, PyObject *type);
+
+/* Merely initializes the python interpreter for us. Calling once should do */
+void fsod_init_python();
 
 G_END_DECLS
 #endif

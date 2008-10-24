@@ -25,6 +25,7 @@ using DBus;
 using ODeviced;
 using Subsystem;
 
+/* The Device subsystem loads Plugin Objects upon initialization */
 
 public class Device: Subsystem.Manager {
 
@@ -155,7 +156,7 @@ public class Plugin: GLib.Object {
 		/* This calls the foo_init functions of the Device plugins */
 		bool success = func(this);
 		if (!success) {
-			message ("Weird error %s", Module.error());
+			log("Device", LogLevelFlags.LEVEL_WARNING, "Error loading %s plugin : %s", this.name, Module.error());
 		}
 		else
 			this.library.make_resident(); /* Prevent unloading */
@@ -166,7 +167,7 @@ public class Plugin: GLib.Object {
 
  
 
-public bool DeviceFactory(FSOD.Service service) {
+public bool InitDevice(FSOD.Service service) {
 	
 	uint result = service.request_name("odeviced");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {

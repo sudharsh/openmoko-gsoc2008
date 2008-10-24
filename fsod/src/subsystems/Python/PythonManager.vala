@@ -27,9 +27,23 @@ using Subsystem;
 
 public class PythonManager : Subsystem.Manager {
 	
+	private const string modules_path = "/usr/lib/fsod/subsystems/Python/";
+	construct {
+		FSOD.init_python();
+	}
+	
 	public override string[] ListObjectsByInterface(string iface) {
 		string[] ret = { "Not", "Implemented", "Yet" };
 		return ret;
 	}
 
+}
+
+
+public bool InitPythonManager(FSOD.Service service) {
+	PythonManager obj = new PythonManager();
+	if (obj == null)
+		return false;
+	
+	return true;
 }

@@ -26,9 +26,24 @@
 
 static GObjectClass *parent_class;
 
-static void fsod_python_plugin_init (FsodPythonPlugin *object) {
-	FsodPythonPluginClass *class;
-	class = (FsodPythonPluginClass*) (((GTypeInstance*) object)->g_class);
+/* Just initialize the interpreter, nothing much for now */
+void fsod_init_python() {
+	
+	if (Py_IsInitialized()) {
+		g_log ("Python", G_LOG_LEVEL_INFO, "Interpreter already initialized");
+		return;
+	}
+	
+	g_log ("Python", G_LOG_LEVEL_INFO, "Trying to initialize the python plugin system");
+	Py_Initialize();
+}
+
+
+
+
+static void fsod_python_plugin_init (FSODPythonPlugin *object) {
+	FSODPythonPluginClass *class;
+	class = (FSODPythonPluginClass*) (((GTypeInstance*) object)->g_class);
 
 	object->instance = PyObject_CallObject (class->type, NULL);
 	if (object->instance == NULL)
@@ -36,42 +51,42 @@ static void fsod_python_plugin_init (FsodPythonPlugin *object) {
 }
 
 static void fsod_python_plugin_finalize (GObject *object) {
-	Py_DECREF (((FsodPythonPlugin *) object)->instance);
+	Py_DECREF (((FSODPythonPlugin *) object)->instance);
 	G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
-static void fsod_python_plugin_class_init (FsodPythonPluginClass *klass,
+static void fsod_python_plugin_class_init (FSODPythonPluginClass *klass,
 					   gpointer class_data)
 {
-	FsodPythonPluginClass *plugin_class = FSOD_PYTHON_PLUGIN_CLASS (klass);
 	parent_class = g_type_class_peek_parent (klass);
 	klass->type = (PyObject*) class_data;
 	G_OBJECT_CLASS (klass)->finalize = fsod_python_plugin_finalize;
 
-}
+	
 
+}
 
 GType fsod_python_plugin_get_type (GTypeModule *module, PyObject *type) {
 	GType gtype;
 	gchar *type_name;
 
 	GTypeInfo info = {
-		sizeof (FsodPythonPluginClass),
+		sizeof (FSODPythonPluginClass),
 		NULL,           /* base_init */
 		NULL,           /* base_finalize */
 		(GClassInitFunc) fsod_python_plugin_class_init,
 		NULL,           /* class_finalize */
 		type,           /* class_data */
-		sizeof (FsodPythonPlugin),
+		sizeof (FSODPythonPlugin),
 		0,              /* n_preallocs */
 		(GInstanceInitFunc) fsod_python_plugin_init,
 	};
 	Py_INCREF (type);
-	type_name = g_strdup_printf ("%s+FsodPythonPlugin",
+	type_name = g_strdup_printf ("%s+FSODPythonPlugin",
 				     PyString_AsString (PyObject_GetAttrString (type, "__name__")));
 
 	gtype = g_type_module_register_type (module, 
-					     TYPE_FSOD_PYTHON_PLUGIN,
+					     FSOD_TYPE_PYTHON_PLUGIN,
 					     type_name,
 					     &info, 0);
 	g_free (type_name);

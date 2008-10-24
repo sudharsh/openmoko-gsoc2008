@@ -31,7 +31,7 @@ using InputHelpers;
 public class Input: GLib.Object {
 
 	private string device = new string();
-	private string dev_node = "/dev/input";
+	private const string dev_node = "/dev/input";
 	public uint tag;
 
 	private HashTable<uint, string> _watches = new HashTable<uint, string> ((HashFunc)direct_hash, (EqualFunc)direct_equal);

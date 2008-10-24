@@ -116,11 +116,11 @@ namespace FSOD {
 			library = Module.open (path, ModuleFlags.BIND_LAZY);
 			if (this.library == null) {
 				log ("FSOD Service", LogLevelFlags.LEVEL_WARNING, 
-					 "Library NULL");
+					 "Module.open returned null when loading %s: %s", name, Module.error());
 				return false;
 			}
 			var _init = null;
-			if (!this.library.symbol(name +"Factory", out _init)) {
+			if (!this.library.symbol("Init" + name, out _init)) {
 				log ("FSOD Service", LogLevelFlags.LEVEL_WARNING,
 					 "factory function not found");
 				return false;

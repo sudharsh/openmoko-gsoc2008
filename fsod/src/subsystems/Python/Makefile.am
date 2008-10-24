@@ -23,7 +23,7 @@ BUILT_SOURCES = PythonManager.vala.stamp
 
 
 PythonManager.vala.stamp: $(PythonManager_VALASOURCES)
-	$(VALAC) -C --basedir $(top_srcdir) --vapidir $(top_srcdir)/vapi --pkg fsod --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
+	$(VALAC) -C --basedir $(top_srcdir) --vapidir $(top_srcdir)/vapi --pkg fsod --pkg dbus-glib-1 --pkg gmodule-2.0 --vapidir ./ --pkg fsod-python-plugin --pkg gio-2.0  \
 	$^
 	touch $@
 

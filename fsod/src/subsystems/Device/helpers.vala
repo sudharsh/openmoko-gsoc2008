@@ -34,10 +34,10 @@ namespace ODeviced {
 				plugin.dbus_object_paths.append (at_path);
 			}
 			else
-				critical("Malformed plugin configuration file");
+				log("Device." + plugin.name, LogLevelFlags.LEVEL_WARNING, "Malformed plugin configuration file");
 		}
 		catch (GLib.Error error) {
-			critical(error.message);
+			log("Device." + plugin.name, LogLevelFlags.LEVEL_WARNING, error.message);
 		}
 	}
 	
@@ -75,10 +75,10 @@ namespace ODeviced {
 				}
 			}
 			catch (GLib.FileError e) {
-				message ("Device class: %s doesn't exist", dev_class);
+				log("Device." + plugin.name, LogLevelFlags.LEVEL_WARNING, "device class %s doesn't exist", dev_class);
 			}
 			catch (GLib.KeyFileError e) {
-				message ("%s %s", plugin.name, e.message);
+				log("Device." + plugin.name, LogLevelFlags.LEVEL_WARNING, e.message);
 			}
 		}
 		return objList;
@@ -101,7 +101,7 @@ namespace ODeviced {
 			return regex.replace_literal (dbus_path, -1, 0, "_", RegexMatchFlags.NOTEMPTY);
 		}
 		catch (GLib.RegexError error) {
-			message ("Couldn't cleanup dbus_path: %s", error.message);
+			log("Device.Helpers", LogLevelFlags.LEVEL_WARNING, "Couldn't cleanup dbus_path: %s", error.message);	
 		}
 		return dbus_path;
 	}		
