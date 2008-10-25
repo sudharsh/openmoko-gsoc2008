@@ -21,10 +21,10 @@
 
 
 #include "fsod-python-plugin.h"
-#include <config.h>
 
-/* Hard coded. Pure evil */
-#define MODULE_PATH "/usr/lib/fsod/subsystems/Python"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 static GObjectClass *parent_class;
 
@@ -116,7 +116,7 @@ static GObject * fsod_python_plugin_constructor (GType type,
 	
 	/* Try to load the python module at priv->_module_name */
 	path = PySys_GetObject ("path");
-	module_path = PyString_FromString (MODULE_PATH);
+	module_path = PyString_FromString (FSOD_PYTHON_PLUGINS_PATH);
 	PyList_Insert (path, 0, module_path);
 	Py_DECREF (module_path);
 	

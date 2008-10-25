@@ -42,6 +42,11 @@ AC_SUBST(GMODULE_LIBS)
 AC_SUBST(GSTREAMER_CFLAGS)
 AC_SUBST(GSTREAMER_LIBS)
 
+dnl Some variables
+AS_AC_EXPAND(DATADIR, $datadir)
+AS_AC_EXPAND(LIBDIR, $libdir)
+
+
 dnl dbus
 DBUS_GLIB_BIN="`$PKG_CONFIG --variable=exec_prefix dbus-glib-1`/bin"
 AC_ARG_WITH(dbusbindir,[  --with-dbusbindir=DIR  dbus tools in DIR], [DBUS_GLIB_BIN="$withval"])
@@ -56,8 +61,9 @@ DBUS_SYSTEM_DIR="/etc/dbus-1/system.d"
 AC_SUBST(DBUS_SYSTEM_DIR)
 AC_DEFINE_UNQUOTED(DBUS_SYSTEM_DIR, "$DBUS_SYSTEM_DIR", [Where system.d dir is])
 
+
 dnl Python Plugin support, copied rather shamelessy from gedit
-AC_MSG_CHECKING([Should I build python support?])
+AC_MSG_CHECKING([whether python support is requested])
 AC_ARG_ENABLE([python],
 	AS_HELP_STRING([--enable-python],[Enable python plugin support]),
 	[enable_python=$enableval have_python=$enableval],
@@ -90,6 +96,10 @@ if test "x$have_python" != "xno"; then
 	AC_SUBST([PYTHON_LIB_LOC])
 	AC_SUBST([PYTHON_CFLAGS])
 	AC_SUBST([PYTHON_EXTRA_LIBS])
+	FSOD_PYTHON_PLUGINS_PATH="$LIBDIR/fsod/subsystems/Python"
+	AC_SUBST(FSOD_PYTHON_PLUGINS_PATH)	
+	echo "FSOD python scripts location ${FSOD_PYTHON_PLUGINS_PATH}"
+	AC_DEFINE_UNQUOTED(FSOD_PYTHON_PLUGINS_PATH, "$FSOD_PYTHON_PLUGINS_PATH", [Where fsod python scripts are located])
 fi	
 
 if test "x$have_python" != "xyes"; then
