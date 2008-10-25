@@ -28,8 +28,31 @@ using Subsystem;
 public class PythonManager : Subsystem.Manager {
 	
 	private const string modules_path = "/usr/lib/fsod/subsystems/Python/";
+	private List<FSOD.PythonPlugin> plugins = new List<FSOD.PythonPlugin>();
+
 	construct {
+		/* Initialize the python interpreter and such */
 		FSOD.init_python();
+		try {
+			Dir dir = Dir.open(modules_path, 0);
+			var module_name = dir.read_name();
+			while (module_name != null) {
+				if (module_name.has_suffix(".py")) {
+					FSOD.PythonPlugin plugin = new FSOD.PythonPlugin(module_name.split(".")[0]);
+					if (plugin == null) {
+						continue;
+					}
+					plugins.append(plugin);
+				}
+
+				module_name = dir.read_name();
+			}
+			
+		}
+		catch (GLib.Error error) {
+			log ("PythonManager", LogLevelFlags.LEVEL_WARNING, error.message);
+		}
+						
 	}
 	
 	public override string[] ListObjectsByInterface(string iface) {

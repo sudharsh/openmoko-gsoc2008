@@ -8,6 +8,10 @@ AM_CPPFLAGS = \
 	-ggdb
 
 
+pythonmodulesdir = $(libdir)/fsod/subsystems/Python
+pythonmodules_DATA = test.py
+
+
 pkgdir = $(libdir)/fsod/subsystems
 pkg_LTLIBRARIES	= PythonManager.la
 
@@ -39,6 +43,7 @@ PythonManager_la_DEPENDENCIES = $(top_builddir)/config.h
 
 EXTRA_DIST = \
 	$(PythonManager_VALASOURCES) \
+	pythonmodules_DATA \
 	PythonManager.vala.stamp
 
 CLEANFILES = \

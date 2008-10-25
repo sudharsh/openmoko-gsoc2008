@@ -29,35 +29,40 @@
 G_BEGIN_DECLS
 
 
-#define FSOD_TYPE_PYTHON_PLUGIN (fsod_python_object_get_type ())
-#define FSOD_PYTHON_PLUGIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), FSOD_TYPE_PYTHON_PLUGIN, FsodPythonPlugin))
-#define FSOD_PYTHON_PLUGIN_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), FSOD_PYTHON_PLUGIN, FsodPythonPluginClass))
-#define FSOD_IS_PYTHON_PLUGIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), FSOD_TYPE_PYTHON_PLUGIN))
-#define FSOD_IS_PYTHON_PLUGIN_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), FSOD_TYPE_PYTHON_PLUGIN))
-#define FSOD_PYTHON_PLUGIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), FSOD_TYPE_PYTHON_PLUGIN, FsodPythonPluginClass))
-
-
 typedef struct _FSODPythonPlugin      FSODPythonPlugin;
 typedef struct _FSODPythonPluginClass FSODPythonPluginClass;
 
+/* Private fields, defined in fsod-python-plugin.c */
+typedef struct _FSODPythonPluginPrivate FSODPythonPluginPrivate;
 
+
+/* Some Boiler-plate code */
+#define FSOD_TYPE_PYTHON_PLUGIN (fsod_python_plugin_get_type ())
+#define FSOD_PYTHON_PLUGIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), FSOD_TYPE_PYTHON_PLUGIN, FSODPythonPlugin))
+#define FSOD_PYTHON_PLUGIN_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), FSOD_PYTHON_PLUGIN, FSODPythonPluginClass))
+#define FSOD_IS_PYTHON_PLUGIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), FSOD_TYPE_PYTHON_PLUGIN))
+#define FSOD_IS_PYTHON_PLUGIN_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), FSOD_TYPE_PYTHON_PLUGIN))
+#define FSOD_PYTHON_PLUGIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), FSOD_TYPE_PYTHON_PLUGIN, FSODPythonPluginClass))
+
+
+/* FSOD.PythonPlugin class declarations */
 struct _FSODPythonPlugin {
 	GObject parent;
-	GList *dbus_object_paths;
-	PyObject *instance;
+	//GList *dbus_object_paths;
+	FSODPythonPluginPrivate *priv;
 };
 
 struct _FSODPythonPluginClass {
 	GObjectClass parent_class;
-	PyObject *type;
 };
 
 
-GType fsod_python_plugin_get_type (GTypeModule *module, PyObject *type);
+FSODPythonPlugin* fsod_python_plugin_new (const gchar *module_path);
+FSODPythonPlugin* fsod_python_plugin_construct (GType object_type, const gchar *module_path);
+GType fsod_python_plugin_get_type ();
 
 /* Merely initializes the python interpreter for us. Calling once should do */
-void fsod_init_python();
+gboolean fsod_init_python();
 
 G_END_DECLS
 #endif
-
