@@ -48,7 +48,6 @@ typedef struct _FSODPythonPluginPrivate FSODPythonPluginPrivate;
 /* FSOD.PythonPlugin class declarations */
 struct _FSODPythonPlugin {
 	GObject parent;
-	//GList *dbus_object_paths;
 	FSODPythonPluginPrivate *priv;
 };
 
@@ -58,7 +57,6 @@ struct _FSODPythonPluginClass {
 
 
 FSODPythonPlugin* fsod_python_plugin_new (const gchar *module_path);
-FSODPythonPlugin* fsod_python_plugin_construct (GType object_type, const gchar *module_path);
 GType fsod_python_plugin_get_type ();
 
 /* Merely initializes the python interpreter for us. Calling once should do */
