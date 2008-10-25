@@ -1,4 +1,4 @@
-/* 
+ /* 
  * fsod-python-plugin.c
  * Written by Sudharshan "Sup3rkiddo" S <sudharsh@gmail.com>
  * All Rights Reserved
@@ -51,6 +51,7 @@ enum {
 /* Private members of PythonPlugin class */
 struct _FSODPythonPluginPrivate {
 	gchar *_module_name;
+	PyObject *module;
 };
 
 
@@ -85,6 +86,7 @@ static void fsod_python_plugin_init (FSODPythonPlugin *object) {
 
 
 static void fsod_python_plugin_finalize (GObject *object) {
+	Py_DECREF(((FSODPythonPlugin *)object)->priv->module);
 	G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
@@ -106,35 +108,48 @@ static GObject * fsod_python_plugin_constructor (GType type,
 	FSODPythonPlugin *self;
 
 	PyObject *path = NULL, *module_path = NULL;
-	PyObject *module = NULL;
 	PyObject *dict = NULL, *func = NULL;
-
+	
 	klass = g_type_class_peek (FSOD_TYPE_PYTHON_PLUGIN);
 	parentclass = G_OBJECT_CLASS (g_type_class_peek_parent(klass));
 	object = parentclass->constructor(type, n_construct_properties, construct_properties);
 	self = FSOD_PYTHON_PLUGIN (object);
 	
-	/* Try to load the python module at priv->_module_name */
+	/* Try to load the python module priv->_module_name */
 	path = PySys_GetObject ("path");
+
+	/* Add $libdir/fsod/subsystems/Python to python path variable */
 	module_path = PyString_FromString (FSOD_PYTHON_PLUGINS_PATH);
 	PyList_Insert (path, 0, module_path);
 	Py_DECREF (module_path);
 	
 	g_message ("\tTrying to import %s", self->priv->_module_name);
-	module = PyImport_ImportModule(self->priv->_module_name);
-	if (module == NULL) {
-		PyErr_Print();
-		PyErr_Clear();
+	self->priv->module = PyImport_ImportModule(self->priv->_module_name);
+	if (self->priv->module == NULL) {
 		g_log ("PythonManager", G_LOG_LEVEL_WARNING, "Couldn't import %s", self->priv->_module_name);
-		return NULL;
+		goto pyerr_occurred;
 	}
 		
-	dict = PyModule_GetDict (module);
+	dict = PyModule_GetDict (self->priv->module);
 	func = PyDict_GetItemString (dict, "factory");
-	PyObject_CallObject (func, NULL);	
-	return object;
+	
+	if (func==NULL || !(PyCallable_Check(func))) {
+		g_log ("PythonManager", G_LOG_LEVEL_WARNING, "Factory function not callable. Possible name conflict in %s",
+		       self->priv->_module_name);
+		goto pyerr_occurred;
+	}
+
+	PyObject_CallObject (func, NULL);
+
+ pyerr_occurred:
+	if(PyErr_Occurred()) {
+		PyErr_Print();
+		PyErr_Clear();
+	}
+
+ 	return object;
 }
-		
+
 
 /* Properties follow */
 static char* fsod_python_plugin_get_module_name (FSODPythonPlugin *self) {
