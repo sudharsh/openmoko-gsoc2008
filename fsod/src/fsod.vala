@@ -21,6 +21,7 @@
 
 using GLib;
 using DBus;
+using Subsystem;
 
 namespace FSOD {
 
@@ -35,7 +36,7 @@ namespace FSOD {
 		public HashTable<string, Subsystem.Manager> fso_objects  = new HashTable<string, Subsystem.Manager>((HashFunc)str_hash,
 																											(EqualFunc)str_equal);
 
-		private delegate bool FactoryFunc(Service service);
+		private delegate Subsystem.Manager FactoryFunc(Service service);
 		protected static string dev_name = new string();
 		private Module library;
 		private string[] enableList;
@@ -104,8 +105,9 @@ namespace FSOD {
 		/* No array of dbus object paths in vala yet. Just return them as a string array */
 		public string[]? ListObjectsByInterface (string iface) {
 			Subsystem.Manager manager = this.fso_objects.lookup (iface.split(".")[2]);
-			if (manager == null)
+			if (manager == null) {
 				return null;
+			}
 			return manager.ListObjectsByInterface (iface);
 		}
 	
@@ -126,12 +128,12 @@ namespace FSOD {
 				return false;
 			}
 			FactoryFunc factory_func = (FactoryFunc)_init;
-			bool success = factory_func(this);
-			if (success) {
+			Subsystem.Manager subsystem = factory_func(this);
+			if (subsystem != null) {
 				log ("FSOD Service", LogLevelFlags.LEVEL_INFO,
 					 "%s loaded", path);
-				
-				return success;
+				this.fso_objects.insert (name, subsystem);
+				return true;
 			}
 
 			log ("FSOD Service", LogLevelFlags.LEVEL_WARNING,

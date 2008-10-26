@@ -71,16 +71,14 @@ namespace Time {
 }
 	
 
-public bool InitTime(FSOD.Service service) {
+public Subsystem.Manager? InitTime(FSOD.Service service) {
 
 	uint result = service.request_name("otimed");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 		Time.Manager manager = new Time.Manager();
-		FSOD.connection.register_object ("/org/freesmartphone/Time", manager.iface);
-		service.fso_objects.append((Subsystem.Manager) manager);
-		return true;
+		return manager;
 	}
-	return false;
+	return null;
 	
 }
 

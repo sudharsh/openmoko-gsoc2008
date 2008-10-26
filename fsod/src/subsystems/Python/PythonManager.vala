@@ -54,6 +54,10 @@ public class PythonManager : Subsystem.Manager {
 		}
 						
 	}
+
+	~PythonManager() {
+		FSOD.finalize_python();
+	}
 	
 	public override string[] ListObjectsByInterface(string iface) {
 		string[] ret = { "Not", "Implemented", "Yet" };
@@ -63,10 +67,7 @@ public class PythonManager : Subsystem.Manager {
 }
 
 
-public bool InitPythonManager(FSOD.Service service) {
+public Subsystem.Manager InitPythonManager(FSOD.Service service) {
 	PythonManager obj = new PythonManager();
-	if (obj == null)
-		return false;
-	
-	return true;
+	return obj;
 }

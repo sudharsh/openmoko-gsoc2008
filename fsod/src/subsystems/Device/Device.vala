@@ -61,14 +61,15 @@ public class Device: Subsystem.Manager {
 	public override string[] ListObjectsByInterface(string iface) {
 		string[] ret;
 		foreach (Plugin plugin in this.plugins) {
-			uint length = plugin.dbus_object_paths.length();
-			ret = new string[length];
-			int i = 0;  
-			foreach (string path in plugin.dbus_object_paths) {
-				ret[i] = path;
-				i++;
+			if (plugin.dbus_iface == iface) {
+				uint length = plugin.dbus_object_paths.length();
+				ret = new string[length];
+				int i = 0;  
+				foreach (string path in plugin.dbus_object_paths) {
+					ret[i] = path;
+					i++;
+				}
 			}
-			
 		}
 		return ret;		
 	}
@@ -167,15 +168,14 @@ public class Plugin: GLib.Object {
 
  
 
-public bool InitDevice(FSOD.Service service) {
+public Subsystem.Manager? InitDevice(FSOD.Service service) {
 	
 	uint result = service.request_name("odeviced");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 		Device dev = new Device();
-		if(dev != null)
-			return true;
+		return dev;
 	}
-	return false;
+	return null;
 }
 			
 					

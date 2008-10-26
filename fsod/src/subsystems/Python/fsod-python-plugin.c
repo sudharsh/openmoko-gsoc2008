@@ -21,6 +21,7 @@
 
 
 #include "fsod-python-plugin.h"
+#include <src/fsod.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -40,6 +41,12 @@ gboolean fsod_init_python() {
 	return TRUE;
 }
 
+void fsod_finalize_python() {
+	while (PyGC_Collect ())
+			;	
+	g_log ("Python", G_LOG_LEVEL_INFO, "Finalizing Python interpreter");
+	Py_Finalize ();
+}
 
 /* PythonPlugin Class GObject code follow */
 #define FSOD_PYTHON_PLUGIN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), FSOD_TYPE_PYTHON_PLUGIN, FSODPythonPluginPrivate))
@@ -86,7 +93,8 @@ static void fsod_python_plugin_init (FSODPythonPlugin *object) {
 
 
 static void fsod_python_plugin_finalize (GObject *object) {
-	Py_DECREF(((FSODPythonPlugin *)object)->priv->module);
+	if(((FSODPythonPlugin *)object)->priv->module)
+		Py_DECREF(((FSODPythonPlugin *)object)->priv->module);
 	G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
@@ -109,7 +117,7 @@ static GObject * fsod_python_plugin_constructor (GType type,
 
 	PyObject *path = NULL, *module_path = NULL;
 	PyObject *dict = NULL, *func = NULL;
-	
+			
 	klass = g_type_class_peek (FSOD_TYPE_PYTHON_PLUGIN);
 	parentclass = G_OBJECT_CLASS (g_type_class_peek_parent(klass));
 	object = parentclass->constructor(type, n_construct_properties, construct_properties);
@@ -132,7 +140,7 @@ static GObject * fsod_python_plugin_constructor (GType type,
 		
 	dict = PyModule_GetDict (self->priv->module);
 	func = PyDict_GetItemString (dict, "factory");
-	
+			
 	if (func==NULL || !(PyCallable_Check(func))) {
 		g_log ("PythonManager", G_LOG_LEVEL_WARNING, "Factory function not callable. Possible name conflict in %s",
 		       self->priv->_module_name);
