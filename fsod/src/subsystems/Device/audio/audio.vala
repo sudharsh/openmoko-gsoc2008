@@ -112,7 +112,7 @@ namespace audio {
 		if(obj == null)
 			return false;
 
-		ODeviced.register_dbus_object (plugin, obj);
+		plugin.register_dbus_object (obj);
 		return true;
 	}
 }

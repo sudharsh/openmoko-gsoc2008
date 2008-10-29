@@ -32,6 +32,15 @@ public class Device: Subsystem.Manager {
 	private List<Plugin> plugins = new List<Plugin>();
 	private KeyFile subsystem_conf = new KeyFile();
 	
+	public DBus.Connection connection {
+		get;
+		construct;
+	}
+
+	Device (DBus.Connection connection) {
+		this.connection = connection;
+	}
+	
 	construct {
 		try {
 			Dir dir = Dir.open("/usr/lib/fsod/subsystems/Device", 0);
@@ -44,7 +53,7 @@ public class Device: Subsystem.Manager {
 			while (plugin_name!=null) {
 				var path = "/usr/lib/fsod/subsystems/Device/" + plugin_name;
 				if(plugin_name.has_suffix (".so")) {
-					Plugin plugin = new Plugin(plugin_name.split(".")[0], path);
+					Plugin plugin = new Plugin(plugin_name.split(".")[0], path, this.connection);
 					plugin.load_plugin();
 					this.plugins.append(plugin);
 				}
@@ -100,11 +109,17 @@ public class Plugin: GLib.Object {
 		construct;
 	}
 
+	public DBus.Connection connection {
+		get;
+		construct;
+	}
+
 	delegate bool InitFunc(Plugin dev);
 
-	Plugin (string name, string path) {
+	Plugin (string name, string path, DBus.Connection connection) {
 		this.name = name;
 		this.path = path;
+		this.connection = connection;
 	}
 
 	
@@ -164,6 +179,23 @@ public class Plugin: GLib.Object {
 		
 		return success;
 	}
+
+
+	public void register_dbus_object(GLib.Object interface_obj) {
+		
+		try {
+			if(this.conf.has_group(this.name)) {
+				var at_path = this.conf.get_string(this.name, "dbus_object_path");
+				this.connection.register_object (at_path, interface_obj);
+				this.dbus_object_paths.append (at_path);
+			}
+			else
+				log("Device." + this.name, LogLevelFlags.LEVEL_WARNING, "Malformed plugin configuration file");
+		}
+		catch (GLib.Error error) {
+			log("Device." + this.name, LogLevelFlags.LEVEL_WARNING, error.message);
+		}
+	}
 }
 
  
@@ -172,7 +204,7 @@ public Subsystem.Manager? InitDevice(FSOD.Service service) {
 	
 	uint result = service.request_name("odeviced");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
-		Device dev = new Device();
+		Device dev = new Device(service.connection);
 		return dev;
 	}
 	return null;

@@ -103,12 +103,6 @@ public class RealTimeClock: GLib.Object {
 
 }
 
-
-void register_dbus (RealTimeClock obj) {
-	GLib.message("Registering DBus object at %s", obj.dbus_path);
-	FSOD.connection.register_object(obj.dbus_path, obj);
-}
-	
 		
 namespace rtc {
 
@@ -123,7 +117,7 @@ namespace rtc {
 			return false;
 		
 		foreach (RealTimeClock _obj in list) {
-			register_dbus (_obj);
+			plugin.connection.register_object (_obj.dbus_path, _obj);
 		}
 		return true;
 	}

@@ -25,23 +25,6 @@ using Device;
 
 namespace ODeviced {
 
-	public static void register_dbus_object(Plugin plugin, GLib.Object interface_obj) {
-		
-		try {
-			if(plugin.conf.has_group(plugin.name)) {
-				var at_path = plugin.conf.get_string(plugin.name, "dbus_object_path");
-				FSOD.connection.register_object (at_path, interface_obj);
-				plugin.dbus_object_paths.append (at_path);
-			}
-			else
-				log("Device." + plugin.name, LogLevelFlags.LEVEL_WARNING, "Malformed plugin configuration file");
-		}
-		catch (GLib.Error error) {
-			log("Device." + plugin.name, LogLevelFlags.LEVEL_WARNING, error.message);
-		}
-	}
-	
-
 	public static string get_device () {
 		return FSOD.Service.dev_name;
 	}

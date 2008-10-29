@@ -25,8 +25,6 @@ using Subsystem;
 
 namespace FSOD {
 
-	protected static DBus.Connection connection;
-
 	[DBus (name = "org.freesmartphone.Objects")]
 	public class Service : GLib.Object {
 	
@@ -40,7 +38,16 @@ namespace FSOD {
 		protected static string dev_name = new string();
 		private Module library;
 		private string[] enableList;
-		
+
+		public DBus.Connection connection {
+			get;
+			construct;
+		}
+
+		Service (DBus.Connection connection) {
+			this.connection = connection;
+		}
+
 		construct {
 			conf_file.set_list_separator (',');
 			Idle.add(this.idle);
@@ -88,7 +95,7 @@ namespace FSOD {
 		public uint request_name (string name) {
 			uint result;
 			try {
-				dynamic DBus.Object bus = FSOD.connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
+				dynamic DBus.Object bus = this.connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
 																	 "org.freedesktop.DBus");
 				result = bus.RequestName ("org.freesmartphone." + name, (uint) 0);
 				
@@ -153,38 +160,38 @@ namespace FSOD {
 			return false;
 		}	
 	  
+	}
 
-		static void main(string[] args) {
-			MainLoop loop = new MainLoop (null, false);	
-			try {
-				connection = DBus.Bus.get(DBus.BusType.SYSTEM);		
-				dynamic DBus.Object bus = connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
-																 "org.freedesktop.DBus");
-				uint result = bus.RequestName ("org.freesmartphone.frameworkd", (uint) 0);				
-				if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
-					print("Starting fsod....\n");
-					Service service = new Service();
-					connection.register_object ("/org/freesmartphone/Framework", service);
-					
-					if(!GLib.Module.supported()) {
-						log("FSOD Service", LogLevelFlags.LEVEL_ERROR, 
-							"Modules are not supported in the current system");
-					}		
-       			
-					loop.run();					
-				}
-				else {
-					/* If odeviced is already running */
+}
+
+
+public static void main(string[] args) {
+	
+	MainLoop loop = new MainLoop (null, false);	
+	try {
+		DBus.Connection connection = DBus.Bus.get(DBus.BusType.SYSTEM);		
+		dynamic DBus.Object bus = connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
+														 "org.freedesktop.DBus");
+		uint result = bus.RequestName ("org.freesmartphone.frameworkd", (uint) 0);				
+		if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
+			print("Starting fsod....\n");
+			FSOD.Service service = new FSOD.Service(connection);
+			connection.register_object ("/org/freesmartphone/Framework", service);
+			if(!GLib.Module.supported()) {
+				log("FSOD Service", LogLevelFlags.LEVEL_ERROR, 
+					"Modules are not supported in the current system");
+			}		
+			
+			loop.run();					
+		}
+		else {
+			/* If odeviced is already running */
 					print("fsod already running!\n");			       
-				}
-				
-			}
-			catch (GLib.Error error) {
-				stderr.printf("%s\n", error.message);
-			}
-		
 		}
 		
 	}
-
+	catch (GLib.Error error) {
+		stderr.printf("%s\n", error.message);
+	}
+	
 }
