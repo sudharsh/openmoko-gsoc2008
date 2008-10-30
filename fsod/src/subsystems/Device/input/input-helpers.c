@@ -88,7 +88,7 @@ static gboolean process_event () {
 			if (input_obj->tag)  
 				g_source_remove (input_obj->tag);
 			
-			g_signal_emit_by_name (input_obj, "event", event_source, "released", 0);
+			g_signal_emit_by_name (input_obj, "event", event_source, "released", hk.held_secs);
 		}
 	}
 	
@@ -115,9 +115,9 @@ static gboolean held_key_timeout (struct held_key_payload *hk) {
 	gchar *event_source = g_hash_table_lookup (watches, hk->code);
 
 	g_get_current_time (&currtime);
-	held_secs = currtime.tv_sec - hk->tv_sec;
-	g_print ("\t%ld %ld %ld\n", held_secs, currtime.tv_sec, hk->tv_sec);
-	g_signal_emit_by_name (input_obj, "event", event_source, "held", held_secs);
+	hk->held_secs = currtime.tv_sec - hk->tv_sec;
+	g_print ("\t%ld %ld %ld\n", hk->held_secs, currtime.tv_sec, hk->tv_sec);
+	g_signal_emit_by_name (input_obj, "event", event_source, "held", hk->held_secs);
        	return TRUE; /* Call me again */
 }
 

@@ -22,6 +22,7 @@
 
 struct held_key_payload {
 	unsigned long tv_sec;
+	int held_secs;
 	unsigned int code;
 };
 
