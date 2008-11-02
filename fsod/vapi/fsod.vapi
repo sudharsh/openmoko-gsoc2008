@@ -6,12 +6,12 @@ namespace FSOD {
 	public class Service : GLib.Object {
 		public GLib.HashTable<string,Subsystem.Manager> fso_objects;
 		protected static string dev_name;
-		public uint request_name (string name);
+		public static void create_service (DBus.Connection connection);
+		public static FSOD.Service? get_service ();
+		public static uint request_name (DBus.Connection connection, string name);
 		public string[]? ListObjectsByInterface (string iface);
-		public Service ();
+		public DBus.Connection connection { get; construct; }
 	}
-	[CCode (cheader_filename = "src/fsod.h")]
-	protected static DBus.Connection connection;
 }
 [CCode (cprefix = "Subsystem", lower_case_cprefix = "subsystem_")]
 namespace Subsystem {

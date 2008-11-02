@@ -22,6 +22,7 @@
 using GLib;
 using DBus;
 using Subsystem;
+using FSOD;
 
 namespace FSOD {
 
@@ -44,11 +45,25 @@ namespace FSOD {
 			construct;
 		}
 
-		Service (DBus.Connection connection) {
+		private static Service instance = null;
+
+		private Service (DBus.Connection connection) {
 			this.connection = connection;
 		}
 
+		public static void create_service(DBus.Connection connection) {
+			if (instance == null)
+				instance = new Service(connection);
+		}
+
+		public static Service? get_service() {
+			if (instance != null)
+				return instance;
+			return null;
+		}					
+
 		construct {
+			this.connection.register_object ("/org/freesmartphone/Framework", this);
 			conf_file.set_list_separator (',');
 			Idle.add(this.idle);
 			Timeout.add_seconds(50, this.timeout);
@@ -91,11 +106,14 @@ namespace FSOD {
 		}
 
 		
+		/* Make this static, kinda dumb but vala generates the same code for bus.RequestName in main.vala
+		   So giving rise to a multiple definition error for the generated code. Use this from main.vala as 
+		   well */
 		[DBus (visible = false)]
-		public uint request_name (string name) {
+		public static uint request_name (DBus.Connection connection, string name) {
 			uint result;
 			try {
-				dynamic DBus.Object bus = this.connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
+				dynamic DBus.Object bus = connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
 																	 "org.freedesktop.DBus");
 				result = bus.RequestName ("org.freesmartphone." + name, (uint) 0);
 				
@@ -125,7 +143,7 @@ namespace FSOD {
 			library = Module.open (path, ModuleFlags.BIND_LAZY);
 			if (this.library == null) {
 				log ("FSOD Service", LogLevelFlags.LEVEL_WARNING, 
-					 "Module.open returned null when loading %s: %s", name, Module.error());
+					 "Module.open returned null when loading %s: %s", name,Module.error());
 				return false;
 			}
 			var _init = null;
@@ -162,36 +180,4 @@ namespace FSOD {
 	  
 	}
 
-}
-
-
-public static void main(string[] args) {
-	
-	MainLoop loop = new MainLoop (null, false);	
-	try {
-		DBus.Connection connection = DBus.Bus.get(DBus.BusType.SYSTEM);		
-		dynamic DBus.Object bus = connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
-														 "org.freedesktop.DBus");
-		uint result = bus.RequestName ("org.freesmartphone.frameworkd", (uint) 0);				
-		if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
-			print("Starting fsod....\n");
-			FSOD.Service service = new FSOD.Service(connection);
-			connection.register_object ("/org/freesmartphone/Framework", service);
-			if(!GLib.Module.supported()) {
-				log("FSOD Service", LogLevelFlags.LEVEL_ERROR, 
-					"Modules are not supported in the current system");
-			}		
-			
-			loop.run();					
-		}
-		else {
-			/* If odeviced is already running */
-					print("fsod already running!\n");			       
-		}
-		
-	}
-	catch (GLib.Error error) {
-		stderr.printf("%s\n", error.message);
-	}
-	
 }

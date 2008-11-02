@@ -202,7 +202,7 @@ public class Plugin: GLib.Object {
 
 public Subsystem.Manager? InitDevice(FSOD.Service service) {
 	
-	uint result = service.request_name("odeviced");
+	uint result = service.request_name(service.connection, "odeviced");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 		Device dev = new Device(service.connection);
 		return dev;

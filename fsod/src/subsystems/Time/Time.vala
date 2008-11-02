@@ -73,7 +73,7 @@ namespace Time {
 
 public Subsystem.Manager? InitTime(FSOD.Service service) {
 
-	uint result = service.request_name("otimed");
+	uint result = service.request_name(service.connection, "otimed");
 	if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 		Time.Manager manager = new Time.Manager();
 		return manager;
