@@ -25,6 +25,8 @@
 
 #include <Python.h>
 #include <glib-object.h>
+#include <src/fsod.h>
+#include <dbus/dbus-glib.h>
 
 G_BEGIN_DECLS
 
@@ -56,11 +58,12 @@ struct _FSODPythonPluginClass {
 };
 
 
-FSODPythonPlugin* fsod_python_plugin_new (const gchar *module_path);
+FSODPythonPlugin* fsod_python_plugin_new (const gchar *module_name, FSODService *service);
 GType fsod_python_plugin_get_type ();
 
 /* Merely initializes the python interpreter for us. Calling once should do */
 gboolean fsod_init_python();
+void fsod_finalize_python();
 
 G_END_DECLS
 #endif

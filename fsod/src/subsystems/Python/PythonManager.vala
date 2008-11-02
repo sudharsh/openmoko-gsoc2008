@@ -30,6 +30,15 @@ public class PythonManager : Subsystem.Manager {
 	private const string modules_path = "/usr/lib/fsod/subsystems/Python/";
 	private List<FSOD.PythonPlugin> plugins = new List<FSOD.PythonPlugin>();
 
+	public FSOD.Service service {
+		get;
+		construct;
+	}
+
+	public PythonManager (FSOD.Service service) {
+		this.service = service;
+	}
+
 	construct {
 		/* Initialize the python interpreter and such */
 		FSOD.init_python();
@@ -38,7 +47,8 @@ public class PythonManager : Subsystem.Manager {
 			var module_name = dir.read_name();
 			while (module_name != null) {
 				if (module_name.has_suffix(".py")) {
-					FSOD.PythonPlugin plugin = new FSOD.PythonPlugin(module_name.split(".")[0]);
+					message (module_name);
+					FSOD.PythonPlugin plugin = new FSOD.PythonPlugin(module_name.split(".")[0], service);
 					if (plugin == null) {
 						continue;
 					}
@@ -68,6 +78,6 @@ public class PythonManager : Subsystem.Manager {
 
 
 public Subsystem.Manager InitPythonManager(FSOD.Service service) {
-	PythonManager obj = new PythonManager();
+	PythonManager obj = new PythonManager(service);
 	return obj;
 }

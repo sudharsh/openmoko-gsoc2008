@@ -1,0 +1,16 @@
+%%
+headers
+#define NO_IMPORT_PYGOBJECT
+#include "pygobject.h"
+#include <src/fsod.h>
+#include <dbus/dbus-glib.h>
+
+void pyfsod_register_classes (PyObject *d);
+%%
+modulename fsod                     
+%%
+import gobject.GObject as PyGObject_Type
+%%
+ignore-glob
+  *_get_type
+%%

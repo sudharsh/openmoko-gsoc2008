@@ -1,0 +1,58 @@
+;; -*- scheme -*-
+; object definitions ...
+
+(define-object Service
+  (in-module "fsod")
+  (parent "GObject")
+  (c-name "FSODService")
+  (gtype-id "FSOD_TYPE_SERVICE")
+)
+
+
+;; Enumerations and flags ...
+
+
+;; From fsod.h
+
+(define-function create_service
+  (c-name "fsod_service_create_service")
+  (return-type "none")
+  (parameters
+    '("DBusGConnection*" "connection")
+  )
+)
+
+(define-function get_service
+  (c-name "fsod_service_get_service")
+  (return-type "FSODService*")
+)
+
+(define-function request_name
+  (c-name "fsod_service_request_name")
+  (return-type "guint")
+  (parameters
+    '("DBusGConnection*" "connection")
+    '("const-char*" "name")
+  )
+)
+
+(define-method ListObjectsByInterface
+  (of-object "FSODService")
+  (c-name "fsod_service_ListObjectsByInterface")
+  (return-type "char**")
+  (parameters
+    '("const-char*" "iface")
+    '("int*" "result_length1")
+  )
+)
+
+(define-method get_connection
+  (of-object "FSODService")
+  (c-name "fsod_service_get_connection")
+  (return-type "DBusGConnection*")
+)
+
+(define-function fsod_service_get_type
+  (c-name "fsod_service_get_type")
+  (return-type "GType")
+)

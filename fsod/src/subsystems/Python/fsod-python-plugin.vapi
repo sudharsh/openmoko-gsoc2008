@@ -3,7 +3,7 @@ namespace FSOD {
 	[CCode (cheader_filename = "fsod-python-plugin.h")]
 	public class PythonPlugin : GLib.Object {
 		public GLib.List<string> dbus_object_paths;
-		public PythonPlugin(string module_name);
+		public PythonPlugin(string module_name, FSOD.Service service);
 	}	
 	
 	[CCode (cname = "fsod_init_python", cheader_filename = "fsod-python-plugin.h")]

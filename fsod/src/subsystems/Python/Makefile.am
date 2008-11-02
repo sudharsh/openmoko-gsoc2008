@@ -1,9 +1,12 @@
+SUBDIRS = \
+	bindings
 
 AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(GMODULE_CFLAGS) \
 	$(PYTHON_CFLAGS) \
+	$(PYGOBJECT_CFLAGS) \
 	-include $(CONFIG_HEADER) \
 	-ggdb
 
@@ -36,6 +39,7 @@ PythonManager_la_LIBADD = \
 	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
 	$(PYTHON_LIBS) \
+	bindings/libpyfsod.la \
 	$(GMODULE_LIBS)
 
 PythonManager_la_LDFLAGS      = -module -avoid-version
@@ -44,9 +48,11 @@ PythonManager_la_DEPENDENCIES = $(top_builddir)/config.h
 EXTRA_DIST = \
 	$(PythonManager_VALASOURCES) \
 	pythonmodules_DATA \
-	PythonManager.vala.stamp
+	PythonManager.vala.stamp 
+
 
 CLEANFILES = \
 	PythonManager.c \
 	PythonManager.h \
 	PythonManager.vala.stamp
+
