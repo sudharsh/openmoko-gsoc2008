@@ -27,7 +27,7 @@ using Subsystem;
 
 public class PythonManager : Subsystem.Manager {
 	
-	private const string modules_path = "/usr/lib/fsod/subsystems/Python/";
+	private string modules_path = Path.build_filename(Config.LIBDIR, "fsod/subsystems/Python");
 	private List<FSOD.PythonPlugin> plugins = new List<FSOD.PythonPlugin>();
 
 	public FSOD.Service service {

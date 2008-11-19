@@ -24,32 +24,42 @@ using FSOD;
 using DBus;
 
 namespace FSOD {
+
 	static void main(string[] args) {
+
+        if (Options.parse_args(ref args)) {
 		
-		MainLoop loop = new MainLoop (null, false);	
-		try {
-			DBus.Connection connection = DBus.Bus.get(DBus.BusType.SYSTEM);		
-			dynamic DBus.Object bus = connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
-															 "org.freedesktop.DBus");
-			uint result = FSOD.Service.request_name (connection, "frameworkd");				
-			if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
-				print("Starting fsod....\n");
-				FSOD.Service.create_service(connection);
-				if(!GLib.Module.supported()) {
+			MainLoop loop = new MainLoop (null, false);	
+			try {
+				DBus.Connection connection;
+				if (Options.session) {
+					connection = DBus.Bus.get(DBus.BusType.SESSION);		
+				} else {
+					connection = DBus.Bus.get(DBus.BusType.SYSTEM);		
+				}
+
+				dynamic DBus.Object bus = connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
+																 "org.freedesktop.DBus");
+				uint result = FSOD.Service.request_name (connection, "frameworkd");				
+				if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
+					print("Starting fsod....\n");
+					FSOD.Service.create_service(connection);
+					if(!GLib.Module.supported()) {
 					log("FSOD Service", LogLevelFlags.LEVEL_ERROR, 
-					"Modules are not supported in the current system");
-				}		
-				
-				loop.run();					
+						"Modules are not supported in the current system");
+					}		
+					
+					loop.run();					
 			}
-			else {
-				/* If odeviced is already running */
+				else {
+					/* If odeviced is already running */
 					print("fsod already running!\n");			       
-			}
+				}
 			
-		}
-		catch (GLib.Error error) {
-			stderr.printf("%s\n", error.message);
+			}
+			catch (GLib.Error error) {
+				stderr.printf("%s\n", error.message);
+			}
 		}
 	}
 	

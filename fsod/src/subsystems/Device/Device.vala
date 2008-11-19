@@ -43,15 +43,15 @@ public class Device: Subsystem.Manager {
 	
 	construct {
 		try {
-			Dir dir = Dir.open("/usr/lib/fsod/subsystems/Device", 0);
+			Dir dir = Dir.open(Path.build_filename(Config.LIBDIR, "fsod/subsystems/Device", 0));
 			
-			subsystem_conf.load_from_file("/usr/share/fsod/subsystems/Device.conf", KeyFileFlags.NONE);
+			subsystem_conf.load_from_file(Path.build_filename(Config.DATADIR, "fsod/subsystems/Device.conf"), KeyFileFlags.NONE);
 			subsystem_conf.set_list_separator(',');
 			this.version = subsystem_conf.get_string("Device", "version");
 
 			string plugin_name = dir.read_name();
 			while (plugin_name!=null) {
-				var path = "/usr/lib/fsod/subsystems/Device/" + plugin_name;
+				var path = Path.build_filename(Config.LIBDIR, "fsod/subsystems/Device", plugin_name);
 				if(plugin_name.has_suffix (".so")) {
 					Plugin plugin = new Plugin(plugin_name.split(".")[0], path, this.connection);
 					plugin.load_plugin();
@@ -124,7 +124,7 @@ public class Plugin: GLib.Object {
 
 	
 	construct {
-		var _conf_path  = "/usr/share/fsod/subsystems/Device" + "/" + this.name + ".plugin";
+		var _conf_path  = Path.build_filename(Config.DATADIR, "fsod/subsystems/Device",  this.name + ".plugin");
 		try {
 			this._conf.load_from_file(_conf_path, KeyFileFlags.NONE);
 			this._conf.set_list_separator(',');
@@ -197,7 +197,6 @@ public class Plugin: GLib.Object {
 		}
 	}
 }
-
  
 
 public Subsystem.Manager? InitDevice(FSOD.Service service) {

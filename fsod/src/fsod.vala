@@ -68,7 +68,7 @@ namespace FSOD {
 			Idle.add(this.idle);
 			Timeout.add_seconds(50, this.timeout);
 			try {
-				conf_file.load_from_file ("/etc/fsod.conf", KeyFileFlags.NONE);
+				conf_file.load_from_file (Path.build_filename(Config.SYSCONFDIR, "fsod.conf"), KeyFileFlags.NONE);
 				if (conf_file.has_group("fsod")) 
 					dev_name = conf_file.get_string ("fsod", "device_name");
 
@@ -76,7 +76,7 @@ namespace FSOD {
 				if (conf_file.has_key ("fsod", "enable_subsystems")) {
 					this.enableList = conf_file.get_string_list ("fsod", "enable_subsystems");
 					foreach (string subsystem in this.enableList) {
-						load("/usr/lib/fsod/subsystems/" + subsystem, subsystem);
+						load(Path.build_filename(Config.LIBDIR, "fsod/subsystems", subsystem), subsystem);
 					}
 				}
 				else
@@ -90,7 +90,7 @@ namespace FSOD {
  		
 		
 		private void probe_subsystems () {
-			var path = "/usr/lib/fsod/subsystems";
+			var path = Path.build_filename(Config.LIBDIR, "fsod/subsystems");
 			try {
 				Dir subsys_dir = Dir.open(path, 0);
 				string _subsys = subsys_dir.read_name();

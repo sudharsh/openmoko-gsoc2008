@@ -57,10 +57,9 @@ DBUS_SERVICES_DIR="$DATADIR/dbus-1/services"
 AC_SUBST(DBUS_SERVICES_DIR)
 AC_DEFINE_UNQUOTED(DBUS_SERVICES_DIR, "$DBUS_SERVICES_DIR", [Where services dir for dbus is])
 
-DBUS_SYSTEM_DIR="/etc/dbus-1/system.d"
+DBUS_SYSTEM_DIR="$sysconfdir/dbus-1/system.d"
 AC_SUBST(DBUS_SYSTEM_DIR)
 AC_DEFINE_UNQUOTED(DBUS_SYSTEM_DIR, "$DBUS_SYSTEM_DIR", [Where system.d dir is])
-
 
 dnl Python Plugin support, copied rather shamelessy from gedit
 AC_MSG_CHECKING([whether python support is requested])

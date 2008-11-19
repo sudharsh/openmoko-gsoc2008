@@ -5,6 +5,9 @@ AM_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	-include $(CONFIG_HEADER) \
 	-ggdb \
+	-DDATADIR=\"$(datadir)\"           \
+	-DSYSCONFDIR=\""$(sysconfdir)"\"   \
+	-DLIBDIR=\""$(libdir)"\"                      
 	$(NULL)
 
 BUILT_SOURCES = libfsod.vala.stamp
@@ -26,8 +29,15 @@ nodist_libfsod_la_SOURCES = \
 	$(libfsod_la_VALASOURCES:.vala=.h) \
 	$(NULL)
 
+VALA_FLAGS = \
+	--vapidir $(top_srcdir)/vapi \
+	--pkg dbus-glib-1 \
+	--pkg gmodule-2.0 \
+	--pkg gio-2.0 \
+	--pkg config
+
 libfsod.vala.stamp: $(libfsod_la_VALASOURCES)
-	$(VALAC) -C --library $(top_srcdir)/vapi/fsod --basedir $(top_srcdir) --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0 $^
+	$(VALAC) -C --library $(top_srcdir)/vapi/fsod --basedir $(top_srcdir) $(VALA_FLAGS) $^
 	touch $@
 
 libfsod_la_LIBADD = \

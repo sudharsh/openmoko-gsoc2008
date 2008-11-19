@@ -8,6 +8,9 @@ AM_CPPFLAGS = \
 	$(PYTHON_CFLAGS) \
 	$(PYGOBJECT_CFLAGS) \
 	-include $(CONFIG_HEADER) \
+	-DDATADIR=\"$(datadir)\"           \
+	-DSYSCONFDIR=\""$(sysconfdir)"\"   \
+	-DLIBDIR=\""$(libdir)"\"                      
 	-ggdb
 
 
@@ -28,10 +31,17 @@ PythonManager_la_SOURCES = \
 
 BUILT_SOURCES = PythonManager.vala.stamp
 
+VALA_FLAGS = \
+	--vapidir $(top_srcdir)/vapi \
+   	--pkg fsod \
+   	--pkg dbus-glib-1 \
+   	--pkg gmodule-2.0 \
+	--pkg gio-2.0 \
+	--pkg config \
+	--vapidir ./ --pkg fsod-python-plugin
 
 PythonManager.vala.stamp: $(PythonManager_VALASOURCES)
-	$(VALAC) -C --basedir $(top_srcdir) --vapidir $(top_srcdir)/vapi --pkg fsod --pkg dbus-glib-1 --pkg gmodule-2.0 --vapidir ./ --pkg fsod-python-plugin --pkg gio-2.0  \
-	$^
+	$(VALAC) -C --basedir $(top_srcdir)  $(VALA_FLAGS) $^
 	touch $@
 
 

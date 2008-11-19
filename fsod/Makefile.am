@@ -23,15 +23,15 @@ BUILT_SOURCES = src/fsod.vala.stamp
 ##-----------------------##
 bin_PROGRAMS = fsod
 
-fsodconfdir = /etc
+fsodconfdir = $(sysconfdir)
 fsodconf_DATA = etc/fsod.conf
 
 dbussystemdir = $(DBUS_SYSTEM_DIR)
 dbussystem_DATA = etc/dbus-1/system.d/fsod.conf
 
-
 fsod_VALASOURCES = \
-	src/main.vala
+	src/main.vala \
+	src/options.vala
 
 fsod_SOURCES = \
 	$(fsod_VALASOURCES:.vala=.c) \

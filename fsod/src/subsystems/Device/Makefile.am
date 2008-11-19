@@ -4,6 +4,9 @@ AM_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	$(GMODULE_CFLAGS) \
 	-include $(CONFIG_HEADER) \
+	-DDATADIR=\"$(datadir)\"           \
+	-DSYSCONFDIR=\""$(sysconfdir)"\"   \
+	-DLIBDIR=\""$(libdir)"\"                      
 	-ggdb
 
 
@@ -22,10 +25,16 @@ Device_la_SOURCES = \
 
 BUILT_SOURCES = Device.vala.stamp
 
+VALA_FLAGS = \
+	--vapidir $(top_srcdir)/vapi \
+   	--pkg fsod \
+   	--pkg dbus-glib-1 \
+   	--pkg gmodule-2.0 \
+	--pkg gio-2.0 \
+	--pkg config
 
 Device.vala.stamp: $(Device_VALASOURCES)
-	$(VALAC) -C --basedir $(top_srcdir) --library  $(top_srcdir)/vapi/Device --vapidir $(top_srcdir)/vapi --pkg fsod --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
-	$^
+	$(VALAC) -C --basedir $(top_srcdir) --library  $(top_srcdir)/vapi/Device $(VALA_FLAGS) $^
 	touch $@
 
 

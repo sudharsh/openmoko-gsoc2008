@@ -1,1 +1,14 @@
 fsod is a C/Vala implementation of frameworkd
+
+================================================
+Building and running on x86 for development
+
+ - autoreconf -i
+ - ./configure --prefix=`pwd`/install
+ - make install
+ - ./fsod -s
+
+Other notes:
+ - command line options: ./fsod --help
+
+
