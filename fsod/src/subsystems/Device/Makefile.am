@@ -64,4 +64,6 @@ SUBDIRS = \
 	accelerometer \
 	rtc \
 	led \
-	display
+	display \
+	info
+

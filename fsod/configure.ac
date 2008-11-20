@@ -142,6 +142,7 @@ AC_OUTPUT([
 	src/subsystems/Device/rtc/Makefile
 	src/subsystems/Device/led/Makefile
 	src/subsystems/Device/display/Makefile
+	src/subsystems/Device/info/Makefile
 	src/subsystems/Python/Makefile
 	src/subsystems/Python/bindings/Makefile
 	src/Makefile	
