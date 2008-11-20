@@ -115,7 +115,7 @@ public class Power: GLib.Object {
 		try {
 			Dir dir = Dir.open (this.node, 0);
 			while ((_leaf = dir.read_name()) != null) {
-				if (FileUtils.test (this.node + "/" + _leaf, FileTest.IS_REGULAR))
+				if (FileUtils.test (this.node + "/" + _leaf, FileTest.IS_REGULAR) && _leaf != "uevent")
 					info_table.insert (_leaf, ODeviced.read_string (this.node + "/" + _leaf).strip());
 			}
 		}
