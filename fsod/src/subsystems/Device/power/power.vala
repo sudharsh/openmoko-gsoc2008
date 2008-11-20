@@ -36,6 +36,7 @@ public class Power: GLib.Object {
 	private uint _id;
 	private string name = new string();
 	private int curr_capacity;
+	private bool ispresent;
 
 	public signal void power_status(string status);
 	public signal void capacity(int charge);
@@ -83,14 +84,14 @@ public class Power: GLib.Object {
 		this._id = Timeout.add_seconds(30, poll_energy);
 		try {
 			var dev = ODeviced.get_device();
-			int netlink_fd = PowerHelpers.get_netlink_fd();			
-			
+			int netlink_fd = PowerHelpers.get_netlink_fd();						
 			IOChannel channel = new IOChannel.unix_new(netlink_fd);
 			PowerHelpers.start_watch (channel, this);
 
 			this.name = ODeviced.compute_name (this.dbus_path);
 			this._curr_status = GetPowerStatus();
 			this.curr_capacity = GetCapacity();
+			this.ispresent = FileUtils.test (this.node + "/present", FileTest.EXISTS);
 
 			if (!FileUtils.test (this.node + "/capacity", FileTest.EXISTS))
 				this.max_energy = ODeviced.read_integer (this.node + "/energy_full");
@@ -106,15 +107,24 @@ public class Power: GLib.Object {
 	}
 
 
-	public int GetMaxEnergy() {
-		return this.max_energy;
+	public HashTable<string, string> GetInfo() {
+		string _leaf;
+		HashTable<string, string> info_table = new HashTable<string, string>((HashFunc)str_hash,
+																			 (EqualFunc)str_equal);
+		/* Just read all the files in the sysfs path and return it as a{ss} */
+		try {
+			Dir dir = Dir.open (this.node, 0);
+			while ((_leaf = dir.read_name()) != null) {
+				if (FileUtils.test (this.node + "/" + _leaf, FileTest.IS_REGULAR))
+					info_table.insert (_leaf, ODeviced.read_string (this.node + "/" + _leaf).strip());
+			}
+		}
+		catch (GLib.Error error) {
+			message (error.message);
+		}
+		return info_table;
 	}
-
-
-	public int GetEnergyFullDesign() {
-		return ODeviced.read_integer(this.node + "/energy_full_design");
-	}
-
+				
 
 	public string GetPowerStatus() {
 		return ODeviced.read_string(this.node + "/status");
@@ -126,23 +136,8 @@ public class Power: GLib.Object {
 	}
 
 
-	public string GetType() {
-		return ODeviced.read_string(this.node + "/type");
-	}
-
-
-	public string GetModel() {
-		return ODeviced.read_string(this.node + "/model_name");
-	}
-
-
-	public string GetManufacturer() {
-		return ODeviced.read_string(this.node + "/manufacturer");
-	}
-
-
-	public string GetTechnology() {
-		return ODeviced.read_string(this.node + "/technology");
+	public bool IsPresent() {
+		return this.ispresent;
 	}
 
 
