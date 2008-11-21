@@ -40,22 +40,24 @@ public class Info : GLib.Object {
 		this.plugin = plugin;
 	}
 	
-	/* FIXME: FSO specs return a{sv} and not a{ss} */
-   	public HashTable<string, string>? GetCpuInfo() {
+	public HashTable<string, Value?> GetCpuInfo() {
 
 		File node_file = File.new_for_path(cpuinfo);
 		DataInputStream stream;
 		string line = new string();
-		HashTable<string, string> _ret = new HashTable<string, string> ((HashFunc)str_hash,
+		HashTable<string, Value?> _ret = new HashTable<string, Value?> ((HashFunc)str_hash,
 																		(EqualFunc)str_equal);
 		string[] _list = new string[2];		
 		
 		stream = new DataInputStream(node_file.read(null));
 		
 		while ((line = stream.read_line(null, null)) != null) {
+			Value val = Value(typeof(string));
 			_list = line.split(":");
-			if ((_list[1] != null) && (_list[0] != null)) 
-				_ret.insert (_list[0].strip(), _list[1].strip());
+			if ((_list[1] != null) && (_list[0] != null)) { 
+				val.set_string(_list[1].strip());
+				_ret.insert (_list[0].strip(), val);
+			}
 		}
 		
 		return _ret;

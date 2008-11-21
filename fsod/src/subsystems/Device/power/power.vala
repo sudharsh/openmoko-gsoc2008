@@ -107,16 +107,18 @@ public class Power: GLib.Object {
 	}
 
 
-	public HashTable<string, string> GetInfo() {
+	public HashTable<string, Value?> GetInfo() {
 		string _leaf;
-		HashTable<string, string> info_table = new HashTable<string, string>((HashFunc)str_hash,
+		HashTable<string, Value?> info_table = new HashTable<string, Value?>((HashFunc)str_hash,
 																			 (EqualFunc)str_equal);
 		/* Just read all the files in the sysfs path and return it as a{ss} */
 		try {
 			Dir dir = Dir.open (this.node, 0);
 			while ((_leaf = dir.read_name()) != null) {
+				Value val = Value(typeof(string));
+				val.set_static_string(ODeviced.read_string (this.node + "/" + _leaf).strip());
 				if (FileUtils.test (this.node + "/" + _leaf, FileTest.IS_REGULAR) && _leaf != "uevent")
-					info_table.insert (_leaf, ODeviced.read_string (this.node + "/" + _leaf).strip());
+					info_table.insert (_leaf, val);
 			}
 		}
 		catch (GLib.Error error) {
