@@ -29,27 +29,15 @@
 #include "power.h"
 #include "power-helpers.h"
 
-/* Return FD for kernel netlink socket */
-int power_helpers_get_netlink_fd() {	
-	int sockfd;		
-	struct sockaddr_nl nl;
-
-	nl.nl_family = AF_NETLINK;
-	nl.nl_pid = getpid();
-	nl.nl_groups = 0xffffffff;
-
-	sockfd = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_KOBJECT_UEVENT);
-	if (sockfd == -1) 
-		perror ("Socket");
-
-	bind (sockfd, (struct sockaddr *)&nl, sizeof(nl));
-	return sockfd;
-}
-
+/* Flag to check if the fd is already open */
+static gboolean already_open = FALSE;		
 
 static gboolean process_uevent (GIOChannel *source, GIOCondition *condition, Power *self) {
 	gchar *_status = power_GetPowerStatus(self);
 	const gchar *curr_status = power_get_curr_status(self);
+	if (!curr_status)
+		return FALSE;
+
 	int sockfd = g_io_channel_unix_get_fd (source);
 	char buf[1024];
 
@@ -64,6 +52,26 @@ static gboolean process_uevent (GIOChannel *source, GIOCondition *condition, Pow
 }
 
 
-void power_helpers_start_watch (GIOChannel *channel, Power *self) {
-	g_io_add_watch (channel, G_IO_IN, (GIOFunc)process_uevent, self);
+void power_helpers_start_watch (Power *self) {
+	
+	struct sockaddr_nl nl;
+	gint sockfd;
+	GIOChannel *channel;
+
+	nl.nl_family = AF_NETLINK;
+	nl.nl_pid = getpid();
+	nl.nl_groups = 0xffffffff;
+
+	if (!already_open) 
+		sockfd = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_KOBJECT_UEVENT);
+	
+	if (sockfd == -1) 
+		perror ("Socket");
+ 
+	if (!already_open) {
+		bind (sockfd, (struct sockaddr *)&nl, sizeof(nl));
+		channel = g_io_channel_unix_new (sockfd);		
+		g_io_add_watch (channel, G_IO_IN, (GIOFunc)process_uevent, self);
+		already_open = TRUE;
+	}
 }

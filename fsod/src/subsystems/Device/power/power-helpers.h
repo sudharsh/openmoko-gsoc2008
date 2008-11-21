@@ -22,5 +22,4 @@
 #include <glib.h>
 #include "power.h"
 
-int power_helpers_get_netlink_fd();
-void power_helpers_start_watch (GIOChannel *channel, Power *self);
+void power_helpers_start_watch (Power *self);

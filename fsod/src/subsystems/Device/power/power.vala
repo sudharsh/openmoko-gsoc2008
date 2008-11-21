@@ -42,7 +42,7 @@ public class Power: GLib.Object {
 	public signal void capacity(int charge);
 
 	private void emit_signal(int current_capacity) {
-		log ("Device.Info", LogLevelFlags.LEVEL_INFO, "Capacity changed");
+		log ("Device.Power", LogLevelFlags.LEVEL_INFO, "Capacity changed");
 		this.curr_capacity = current_capacity;
 	}
 
@@ -84,12 +84,11 @@ public class Power: GLib.Object {
 		this._id = Timeout.add_seconds(30, poll_energy);
 		try {
 			var dev = ODeviced.get_device();
-			int netlink_fd = PowerHelpers.get_netlink_fd();						
-			IOChannel channel = new IOChannel.unix_new(netlink_fd);
-			PowerHelpers.start_watch (channel, this);
-
 			this.name = ODeviced.compute_name (this.dbus_path);
 			this._curr_status = GetPowerStatus();
+			if (this._curr_status != null)
+				PowerHelpers.start_watch (this);
+
 			this.curr_capacity = GetCapacity();
 			this.ispresent = FileUtils.test (this.node + "/present", FileTest.EXISTS);
 
@@ -154,7 +153,7 @@ public class Power: GLib.Object {
 
 	private bool poll_energy() {
 		var _curr = GetCapacity();
-		if (_curr == -1) { 
+		if (_curr == -1 || ODeviced.read_string(this.node + "/type") == "Mains") { 
 			Source.remove(_id);
 			return false;
 		}

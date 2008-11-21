@@ -99,6 +99,10 @@ namespace ODeviced {
 	
 
 	public static string? read_string(string node) {
+
+		if (!FileUtils.test (node, FileTest.EXISTS))
+			return null;
+
 		File node_file = File.new_for_path(node);
 		DataInputStream stream;
 		string line;
