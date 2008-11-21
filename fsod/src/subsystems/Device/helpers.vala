@@ -44,17 +44,14 @@ namespace ODeviced {
 				var dbus_path = plugin.conf.get_string(plugin.name, "dbus_object_path");
 			
 				Dir dir = Dir.open(dev_node, 0);
-				string node = dir.read_name();
-				var i = 0;
-				while(node!=null) {
+				string node;
+				while((node = dir.read_name()) != null) {
 					string cleansed_node = ODeviced.cleanup_dbus_path (node);
 					var obj = GLib.Object.new(klass, "node", dev_node + "/" + node,
 											  "dbus_path", dbus_path + "/" + cleansed_node,
 						                      "plugin", plugin);
 					plugin.dbus_object_paths.append(dbus_path + "/" + cleansed_node);
 					objList.append(obj);
-					node = dir.read_name();
-					
 				}
 			}
 			catch (GLib.FileError e) {
@@ -112,7 +109,7 @@ namespace ODeviced {
 		}
 
 		catch (GLib.Error e) {
-			message (e.message);
+			log ("Device.Helpers", LogLevelFlags.LEVEL_WARNING, e.message);
 			return null;
 		}
 

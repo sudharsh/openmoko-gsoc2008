@@ -67,7 +67,7 @@ public class Display: GLib.Object {
 		}
 		catch (GLib.Error error) {
 			this.fb_fd = -1;
-			warning (error.message);
+			log ("Device.Display", LogLevelFlags.LEVEL_WARNING, error.message);
 		}
 	}
 		

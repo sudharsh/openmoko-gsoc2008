@@ -84,7 +84,7 @@ public class IdleNotifier: GLib.Object {
 			tag = Timeout.add_seconds (2, this.onIdle);
 		}
 		catch (GLib.KeyFileError error) {
-			log ("Device:IdleNotifier", LogLevelFlags.LEVEL_WARNING, error.message);
+			log ("Device.IdleNotifier", LogLevelFlags.LEVEL_WARNING, error.message);
 		}
 			
 	}
@@ -143,8 +143,8 @@ public class IdleNotifier: GLib.Object {
 
 	public void SetState (string _state) {
 		if (this._current_state == _state) 
-			message ("Already in %s, ignoring..", _state);
-		
+			log ("Device.IdleNotifier", LogLevelFlags.LEVEL_WARNING, "Already in %s state", _state);
+					
 		if (this.tag > 0)
 			Source.remove(this.tag);
 			
@@ -168,7 +168,7 @@ public class IdleNotifier: GLib.Object {
 			onSuspend();
 			break;
 		default:
-			message ("No such state exists");
+			log ("Device.IdleNotifier", LogLevelFlags.LEVEL_WARNING, "No such state exists");
 			break;
 		}
 	}

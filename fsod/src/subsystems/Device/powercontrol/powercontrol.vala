@@ -78,7 +78,7 @@ public abstract class GenericPowerControl: GLib.Object {
 	}
 
 	public void Reset() {
-		message ("Not implemented yet");
+		log ("Device.PowerControl", LogLevelFlags.LEVEL_WARNING, "Not implemented yet");
 	}
 		
 }
@@ -105,7 +105,12 @@ public class Bluetooth: GenericPowerControl {
 	construct {
 		var device = ODeviced.get_device();
 		this.name = "Bluetooth";
-		this._bluetooth_node = plugin.conf.get_string (device, "bluetooth_node");
+		try {
+			this._bluetooth_node = plugin.conf.get_string (device, "bluetooth_node");
+		}
+		catch (GLib.KeyFileError error) {
+			log("Device.PowerControl", LogLevelFlags.LEVEL_WARNING, error.message);
+		}		
 		this.powernode = "/sys/class/platform/" + this._bluetooth_node + "/power_on";
 		this.resetnode = "/sys/class/platform/" + this._bluetooth_node + "/reset";
 	}
@@ -134,7 +139,12 @@ public class GSM: GenericPowerControl {
 	construct {
 		var device = ODeviced.get_device();
 		this.name = "GSM";
-		this._gsm_node = plugin.conf.get_string (device, "gsm_node");
+		try {
+			this._gsm_node = plugin.conf.get_string (device, "gsm_node");
+		}
+		catch (GLib.KeyFileError error) {
+			log("Device.PowerControl", LogLevelFlags.LEVEL_WARNING, error.message);
+		}		   
 		this.powernode = "/sys/class/platform/" + this._gsm_node + "/power_on";
 		this.resetnode = "/sys/class/platform/" + this._gsm_node + "/reset";
 	}
@@ -198,7 +208,12 @@ public class GPS: GenericPowerControl {
 	construct {
 		var device = ODeviced.get_device();
 		this.name = "GPS";
-		this._gps_node = plugin.conf.get_string (device, "gps_node");
+		try {
+			this._gps_node = plugin.conf.get_string (device, "gps_node");
+		}
+		catch (GLib.KeyFileError error) {
+			log("Device.PowerControl", LogLevelFlags.LEVEL_WARNING, error.message);
+		}		
 		this.powernode = "/sys/class/platform/" + this._gps_node + "/pwron";
 		this.resetnode = "";
 	}
@@ -227,7 +242,12 @@ public class Wifi: GenericPowerControl {
 
 	construct {
 		string device = ODeviced.get_device();
-		this.default_iface = plugin.conf.get_string (device, "default_iface");
+		try {
+			this.default_iface = plugin.conf.get_string (device, "default_iface");
+		}
+		catch (GLib.KeyFileError error) {
+			log("Device.PowerControl", LogLevelFlags.LEVEL_WARNING, error.message);
+		}		
 		this.name = "WiFi";
 	}
 		
@@ -260,7 +280,7 @@ namespace powercontrol {
 			enable = plugin.conf.get_string_list (device, "enable");
 		}
 		catch (GLib.KeyFileError error) {
-			log("Device:powercontrol", LogLevelFlags.LEVEL_WARNING, error.message);
+			log("Device.PowerControl", LogLevelFlags.LEVEL_WARNING, error.message);
 		}
 					
 		/* FIXME: refactor this */
@@ -273,7 +293,7 @@ namespace powercontrol {
 					success = false;
 				plugin.connection.register_object (wifi_obj.dbus_path, (GLib.Object)wifi_obj);
 				plugin.dbus_object_paths.append (wifi_obj.dbus_path);
-				print ("\tPowerControl: INFO: Registered %s\n", klass);
+				log ("Device.PowerControl", LogLevelFlags.LEVEL_INFO, "Registered %s", klass);
 				break;
 
 			case "Bluetooth":
@@ -282,7 +302,7 @@ namespace powercontrol {
 					success = false;
 				plugin.connection.register_object (blt_obj.dbus_path, (GLib.Object)blt_obj);
 				plugin.dbus_object_paths.append (blt_obj.dbus_path);
-				print ("\tPowerControl: INFO: Registered %s\n", klass);	
+				log ("Device.PowerControl", LogLevelFlags.LEVEL_INFO, "Registered %s", klass);
 				break;
 
 			case "GSM":
@@ -291,7 +311,7 @@ namespace powercontrol {
 					success = false;
 				plugin.connection.register_object (gsm_obj.dbus_path, (GLib.Object)gsm_obj);
 				plugin.dbus_object_paths.append (gsm_obj.dbus_path);
-				print ("\tPowerControl: INFO: Registered %s\n", klass);	
+				log ("Device.PowerControl", LogLevelFlags.LEVEL_INFO, "Registered %s", klass);
 				break;
 
 			case "GPS":
@@ -300,7 +320,7 @@ namespace powercontrol {
 					success = false;
 				plugin.connection.register_object (gps_obj.dbus_path, (GLib.Object)gps_obj);
 				plugin.dbus_object_paths.append (gps_obj.dbus_path);
-				print ("\tPowerControl: INFO: Registered %s\n", klass);	
+				log ("Device.PowerControl", LogLevelFlags.LEVEL_INFO, "Registered %s", klass);
 				break;
 
 			case "UsbHost":
@@ -309,11 +329,11 @@ namespace powercontrol {
 					success = false;
 				plugin.connection.register_object (usbhost_obj.dbus_path, (GLib.Object)usbhost_obj);
 				plugin.dbus_object_paths.append (usbhost_obj.dbus_path);
-				print ("\tPowerControl: INFO: Registered %s\n", klass);	
+				log ("Device.PowerControl", LogLevelFlags.LEVEL_INFO, "Registered %s", klass);
 				break;
 
 			default:
-				print ("\tNo definition for %s\n", klass);
+				log ("Device.PowerControl", LogLevelFlags.LEVEL_INFO, "No definition for %s", klass);
 				break;
 			}
 		}		

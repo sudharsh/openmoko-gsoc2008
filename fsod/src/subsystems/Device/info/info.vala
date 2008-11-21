@@ -40,26 +40,29 @@ public class Info : GLib.Object {
 		this.plugin = plugin;
 	}
 	
-	public HashTable<string, Value?> GetCpuInfo() {
+	public HashTable<string, string> GetCpuInfo() {
 
 		File node_file = File.new_for_path(cpuinfo);
 		DataInputStream stream;
 		string line = new string();
-		HashTable<string, Value?> _ret = new HashTable<string, Value?> ((HashFunc)str_hash,
+		HashTable<string, string> _ret = new HashTable<string, string> ((HashFunc)str_hash,
 																		(EqualFunc)str_equal);
-		string[] _list = new string[2];		
-		
 		stream = new DataInputStream(node_file.read(null));
-		
-		while ((line = stream.read_line(null, null)) != null) {
-			Value val = Value(typeof(string));
-			_list = line.split(":");
-			if ((_list[1] != null) && (_list[0] != null)) { 
-				val.set_string(_list[1].strip());
-				_ret.insert (_list[0].strip(), val);
+		try {
+			line = stream.read_line(null, null);
+			while ((line = stream.read_line(null, null)) != null) {
+				if (line == "\n" || line == "")
+					continue;
+				
+				string[] _list = line.split(":");
+				if ((_list[1] != "") && (_list[0] != "")) {
+					_ret.insert (_list[0].strip(), _list[1].strip());
+				}
 			}
 		}
-		
+		catch (GLib.Error error) {
+			log ("Device.Info", LogLevelFlags.LEVEL_WARNING, error.message);
+		}
 		return _ret;
 	}
 

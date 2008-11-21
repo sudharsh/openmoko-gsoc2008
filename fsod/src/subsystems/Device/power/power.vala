@@ -42,7 +42,7 @@ public class Power: GLib.Object {
 	public signal void capacity(int charge);
 
 	private void emit_signal(int current_capacity) {
-		message ("\tCapacity changed");
+		log ("Device.Info", LogLevelFlags.LEVEL_INFO, "Capacity changed");
 		this.curr_capacity = current_capacity;
 	}
 
@@ -97,7 +97,7 @@ public class Power: GLib.Object {
 				this.max_energy = ODeviced.read_integer (this.node + "/energy_full");
 		}
 		catch (GLib.KeyFileError error) {
-			critical(error.message);
+			log ("Device.Power", LogLevelFlags.LEVEL_WARNING, error.message);
 		}
 	}
 
@@ -107,25 +107,22 @@ public class Power: GLib.Object {
 	}
 
 
-	public HashTable<string, Value?> GetInfo() {
+	public HashTable<string, string> GetInfo() {
 		string _leaf;
-		HashTable<string, Value?> info_table = new HashTable<string, Value?>((HashFunc)str_hash,
+		HashTable<string, string> info_table = new HashTable<string, string>((HashFunc)str_hash,
 																			 (EqualFunc)str_equal);
 		/* Just read all the files in the sysfs path and return it as a{ss} */
 		try {
 			Dir dir = Dir.open (this.node, 0);
 			while ((_leaf = dir.read_name()) != null) {
-				Value val = Value(typeof(string));
-				if (FileUtils.test (this.node + "/" + _leaf, FileTest.IS_REGULAR) && _leaf != "uevent") {
-					val.set_static_string(ODeviced.read_string (this.node + "/" + _leaf).strip());
-					info_table.insert (_leaf, val);
-				}
+				if(FileUtils.test (this.node + "/" + _leaf, FileTest.IS_REGULAR) && _leaf != "uevent") 
+					info_table.insert (_leaf, ODeviced.read_string (this.node + "/" + _leaf).strip());
 			}
 		}
 		catch (GLib.Error error) {
-			message (error.message);
+			log ("Device.Power", LogLevelFlags.LEVEL_WARNING, error.message);
 		}
-		return info_table;
+		return info_table;;
 	}
 				
 
@@ -162,7 +159,7 @@ public class Power: GLib.Object {
 			return false;
 		}
 
-		message("Current capacity, %d", _curr);
+		log ("Device.Power", LogLevelFlags.LEVEL_INFO, "Current capacity, %d", _curr);
 		if(_curr != this.curr_capacity) {
 			this.emit_signal(_curr);
 		}

@@ -49,20 +49,19 @@ public class Device: Subsystem.Manager {
 			subsystem_conf.set_list_separator(',');
 			this.version = subsystem_conf.get_string("Device", "version");
 
-			string plugin_name = dir.read_name();
-			while (plugin_name!=null) {
+			string plugin_name;
+			while ( (plugin_name = dir.read_name()) != null) {
 				var path = Path.build_filename(Config.LIBDIR, "fsod/subsystems/Device", plugin_name);
 				if(plugin_name.has_suffix (".so")) {
 					Plugin plugin = new Plugin(plugin_name.split(".")[0], path, this.connection);
 					plugin.load_plugin();
 					this.plugins.append(plugin);
 				}
-				plugin_name = dir.read_name();
 			}			
 			
 		}
 		catch (GLib.Error error) {
-			message (error.message);
+			log ("Device", LogLevelFlags.LEVEL_WARNING, error.message);;
 		}
 	}
 
@@ -131,7 +130,8 @@ public class Plugin: GLib.Object {
 			this._dbus_iface = this._conf.get_string (this.name, "dbus_interface");
 		}
 		catch (GLib.Error error) {
-			critical("Plugin configuration file for %s malformed/not found : %s", this.name, error.message);
+			log("Device", LogLevelFlags.LEVEL_WARNING, 
+				"Plugin configuration file for %s malformed/not found : %s", this.name, error.message);
 		}
 	}
 
@@ -208,7 +208,3 @@ public Subsystem.Manager? InitDevice(FSOD.Service service) {
 	}
 	return null;
 }
-			
-					
-				
-				

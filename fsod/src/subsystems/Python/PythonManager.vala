@@ -44,10 +44,9 @@ public class PythonManager : Subsystem.Manager {
 		FSOD.init_python();
 		try {
 			Dir dir = Dir.open(modules_path, 0);
-			var module_name = dir.read_name();
-			while (module_name != null) {
+			var module_name;
+			while ((module_name = dir.read_name()) != null) {
 				if (module_name.has_suffix(".py")) {
-					message (module_name);
 					FSOD.PythonPlugin plugin = new FSOD.PythonPlugin(module_name.split(".")[0], service);
 					if (plugin == null) {
 						continue;
@@ -55,7 +54,6 @@ public class PythonManager : Subsystem.Manager {
 					plugins.append(plugin);
 				}
 
-				module_name = dir.read_name();
 			}
 			
 		}

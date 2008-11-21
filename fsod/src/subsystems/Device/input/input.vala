@@ -82,17 +82,18 @@ public class Input: GLib.Object {
 			
 		}
 		catch (GLib.KeyFileError error) {
-			log ("Device:Input", LogLevelFlags.LEVEL_WARNING, error.message);
+			log ("Device.Input", LogLevelFlags.LEVEL_WARNING, error.message);
 		}
 
 	}
 
 	
 	private void compute_watches () {
-		this.watchfor = plugin.conf.get_string_list(this.device, "watchfor");
+		try {
+			this.watchfor = plugin.conf.get_string_list(this.device, "watchfor");
 		
-		foreach (string key in watchfor) {
-			try {
+			foreach (string key in watchfor) {
+			
 				string[] settings = plugin.conf.get_string_list (device, key);
 				this._watches.insert (settings[0].to_int(), settings[1]);
 				if(settings[3] == "true") {
@@ -100,10 +101,11 @@ public class Input: GLib.Object {
 					this._reportheld.append(settings[1]);
 				}
 			}
-			catch (GLib.Error error) {
-				message (error.message);
-			}
 		}
+		catch (GLib.KeyFileError error) {
+			log ("Device.Input", LogLevelFlags.LEVEL_WARNING, error.message);
+		}
+		
 	}
 
 }

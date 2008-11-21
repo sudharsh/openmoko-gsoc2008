@@ -49,15 +49,22 @@ public class Accelerometer: Object {
 
 	construct {
 		this.device = ODeviced.get_device();
-		this.sample_rates = plugin.conf.get_integer_list (device, "allowed_sample_rates");
-		this.sample_rate_node = plugin.conf.get_string (device, "sysfs_node");
-		this.dev_node = plugin.conf.get_string_list (device, "dev_node");
-
-		foreach (string node in this.dev_node) {
-			IOChannel channel = new IOChannel.file ("/dev/input/" + node, "r");
-			this.channels.append (channel);
+		try {
+			this.sample_rates = plugin.conf.get_integer_list (device, "allowed_sample_rates");
+			this.sample_rate_node = plugin.conf.get_string (device, "sysfs_node");
+			this.dev_node = plugin.conf.get_string_list (device, "dev_node");
+			
+			foreach (string node in this.dev_node) {
+				IOChannel channel = new IOChannel.file ("/dev/input/" + node, "r");
+				this.channels.append (channel);
+			}
 		}
-		
+		catch (GLib.KeyFileError error) {
+			log("Device.Accelerometer", LogLevelFlags.LEVEL_WARNING, error.message);
+		}
+		catch (GLib.FileError error) {
+			log("Device.Accelerometer", LogLevelFlags.LEVEL_WARNING, error.message);
+		}		
 	}
 
 

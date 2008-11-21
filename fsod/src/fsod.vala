@@ -84,7 +84,7 @@ namespace FSOD {
 			}
 				
 			catch (GLib.Error error) {
-				print( "FSOD Service - %s\n", error.message);
+				log ("FSOD Service", LogLevelFlags.LEVEL_WARNING, error.message);
 			}
 		}
  		
@@ -92,16 +92,14 @@ namespace FSOD {
 		private void probe_subsystems () {
 			var path = Path.build_filename(Config.LIBDIR, "fsod/subsystems");
 			try {
+				string _subsys;
 				Dir subsys_dir = Dir.open(path, 0);
-				string _subsys = subsys_dir.read_name();
-				while(_subsys != null) {
-					if(_subsys.has_suffix(".so"))
-						load(path + "/" +_subsys, _subsys.split(".")[0]);
-					_subsys = subsys_dir.read_name();
+				while((_subsys = subsys_dir.read_name()) != null && _subsys.has_suffix(".so")) {
+					load(path + "/" +_subsys, _subsys.split(".")[0]);
 				}
 			}
 			catch (GLib.Error error) {
-				message (error.message);
+				log ("FSOD Service", LogLevelFlags.LEVEL_WARNING, error.message);
 			}
 		}
 

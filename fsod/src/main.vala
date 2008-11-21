@@ -50,10 +50,10 @@ namespace FSOD {
 					}		
 					
 					loop.run();					
-				}
+			}
 				else {
 					/* If odeviced is already running */
-					print("Error starting fsod. Check if fsod is already running\n");			       
+					print("fsod already running!\n");			       
 				}
 			
 			}

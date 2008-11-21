@@ -6,9 +6,7 @@ Building and running on x86 for development
  - autoreconf -i
  - ./configure --prefix=`pwd`/install
  - make install
- - ./fsod -s 
-
-Requires vala 0.5.1 and above to build
+ - ./fsod -s
 
 Other notes:
  - command line options: ./fsod --help
