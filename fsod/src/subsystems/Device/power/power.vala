@@ -116,9 +116,10 @@ public class Power: GLib.Object {
 			Dir dir = Dir.open (this.node, 0);
 			while ((_leaf = dir.read_name()) != null) {
 				Value val = Value(typeof(string));
-				val.set_static_string(ODeviced.read_string (this.node + "/" + _leaf).strip());
-				if (FileUtils.test (this.node + "/" + _leaf, FileTest.IS_REGULAR) && _leaf != "uevent")
+				if (FileUtils.test (this.node + "/" + _leaf, FileTest.IS_REGULAR) && _leaf != "uevent") {
+					val.set_static_string(ODeviced.read_string (this.node + "/" + _leaf).strip());
 					info_table.insert (_leaf, val);
+				}
 			}
 		}
 		catch (GLib.Error error) {
