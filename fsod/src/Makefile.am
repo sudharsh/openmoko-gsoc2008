@@ -21,6 +21,7 @@ noinst_LTLIBRARIES	= libfsod.la
 libfsod_la_VALASOURCES = \
 	fsod.vala \
 	subsystem.vala \
+	resource.vala \
 	$(NULL)
 
 
