@@ -1,0 +1,6 @@
+*~
+*.so
+*.la
+*.pyc
+*.pyo
+*.vala.stamp
