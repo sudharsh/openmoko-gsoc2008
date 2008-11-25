@@ -75,7 +75,7 @@ static gboolean process_event () {
 				hk.tv_sec = event->time.tv_sec;
 				hk.code = event->code;
 				g_print ("\tInput: %d\n", hk.tv_sec);
-				input_obj->tag = g_timeout_add_seconds (1, (GSourceFunc)held_key_timeout, &hk);
+				input_obj->tag = g_timeout_add (1000, (GSourceFunc)held_key_timeout, &hk);
 			}
 			else {
 				g_print ("\treportheld set to something other than true\n");

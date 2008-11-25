@@ -2,6 +2,18 @@
 
 [CCode (cprefix = "FSOD", lower_case_cprefix = "fsod_")]
 namespace FSOD {
+	[CCode (cheader_filename = "src/resource.h")]
+	public abstract class Resource : GLib.Object {
+		public void Disable ();
+		public void Enable ();
+		public void Resume ();
+		public void Suspend ();
+		public abstract void _disable ();
+		public abstract void _enable ();
+		public abstract void _resume ();
+		public abstract void _suspend ();
+		public Resource (string resource_name);
+	}
 	[CCode (cheader_filename = "src/fsod.h")]
 	public class Service : GLib.Object {
 		protected static string dev_name;
