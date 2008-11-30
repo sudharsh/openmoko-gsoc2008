@@ -13,8 +13,32 @@ AM_CPPFLAGS = \
 
 
 pythonmodulesdir = $(libdir)/fsod/subsystems/Python
-pythonmodules_DATA = test.py
 
+# opimddir = $(pythonmodulesdir)/opimd
+# opimd_DATA = \
+# 	opimd/__init__.py \
+# 	opimd/backend_manager.py \
+# 	opimd/csv-contacts.txt \
+# 	opimd/domain_manager.py \
+# 	opimd/helpers.py \
+# 	opimd/opimd.py \
+# 	opimd/pimb_csv_contacts.py \
+# 	opimd/pimb_sim_contacts_fso.py \
+# 	opimd/pimb_sim_messages_fso.py \
+# 	opimd/pimd_contacts.py \
+# 	opimd/pimd_messages.py 
+
+onetworkddir = $(pythonmodulesdir)/onetworkd
+onetworkd_DATA = \
+	onetworkd/dhcp.py \
+	onetworkd/helpers.py \
+	onetworkd/__init__.py \
+	onetworkd/network.py \
+	onetworkd/sharing.py 
+
+otimeddir = $(pythonmodulesdir)/otimed
+otimed_DATA = \
+	otimed/__init__.py
 
 pkgdir = $(libdir)/fsod/subsystems
 pkg_LTLIBRARIES	= PythonManager.la
@@ -54,7 +78,8 @@ PythonManager_la_DEPENDENCIES = $(top_builddir)/config.h
 
 EXTRA_DIST = \
 	$(PythonManager_VALASOURCES) \
-	pythonmodules_DATA \
+	onetworkd_DATA \
+	otimed_DATA \
 	PythonManager.vala.stamp 
 
 

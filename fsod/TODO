@@ -1,0 +1,2 @@
+1.) Cleanup python-manager and think of a way to add python DBus object *information* to fso_objects
+2.) Theres a little leak when get_device() is invoked in subsystems/Device/helpers.vala. Fix that

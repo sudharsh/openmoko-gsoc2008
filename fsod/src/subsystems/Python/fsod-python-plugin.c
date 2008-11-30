@@ -41,7 +41,6 @@ gboolean fsod_init_python() {
 	
 	g_log ("Python", G_LOG_LEVEL_INFO, "Trying to initialize the python plugin system");
 	Py_InitializeEx(0);
-	PySys_SetArgv (1, argv);
 
 	if (PyErr_Occurred) {
 		PyErr_Print();
@@ -151,7 +150,7 @@ static GObject * fsod_python_plugin_constructor (GType type,
 	PyList_Insert (path, 0, module_path);
 	Py_DECREF (module_path);
 	
-	g_message ("\tTrying to import %s", self->priv->module_name);
+	g_log ("PythonManager", G_LOG_LEVEL_INFO, "Trying to import %s", self->priv->module_name);
 	self->priv->module = PyImport_ImportModule(self->priv->module_name);
 	if (self->priv->module == NULL) {
 		g_log ("PythonManager", G_LOG_LEVEL_WARNING, "Couldn't import %s", self->priv->module_name);

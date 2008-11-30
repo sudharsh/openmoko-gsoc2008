@@ -40,6 +40,7 @@ namespace FSOD {
 		private Module library;
 		private string[] enableList;
 
+		[DBus (visible = false)];
 		public DBus.Connection connection {
 			get;
 			construct;
@@ -56,12 +57,14 @@ namespace FSOD {
 				instance = new Service(connection);
 		}
 
-		public static Service? get_service() {
-			if (instance != null)
-				return instance;
-			return null;
-		}					
-
+		/* FIXME: Do we really need this
+ 		public static Service? get_service() {
+ 			if (instance != null)
+ 				return instance;
+ 			return null;
+ 		}
+		*/
+								
 		construct {
 			this.connection.register_object ("/org/freesmartphone/Framework", this);
 			conf_file.set_list_separator (',');
