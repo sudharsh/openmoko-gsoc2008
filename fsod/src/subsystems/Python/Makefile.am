@@ -1,5 +1,3 @@
-SUBDIRS = \
-	bindings
 
 AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
@@ -49,7 +47,6 @@ PythonManager_la_LIBADD = \
 	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
 	$(PYTHON_LIBS) \
-	bindings/libpyfsod.la \
 	$(GMODULE_LIBS)
 
 PythonManager_la_LDFLAGS      = -module -avoid-version

@@ -99,12 +99,6 @@ if test "x$have_python" != "xno"; then
 	AC_SUBST(FSOD_PYTHON_PLUGINS_PATH)	
 	echo "FSOD python scripts location ${FSOD_PYTHON_PLUGINS_PATH}"
 	AC_DEFINE_UNQUOTED(FSOD_PYTHON_PLUGINS_PATH, "$FSOD_PYTHON_PLUGINS_PATH", [Where fsod python scripts are located])
-
-	AC_PATH_PROG(PYGOBJECT_CODEGEN, pygobject-codegen-2.0, no)
-	PKG_CHECK_MODULES(PYGOBJECT, pygobject-2.0)
-	PYGOBJECT_DEFSDIR=`$PKG_CONFIG --variable=defsdir pygobject-2.0`
-	AC_SUBST(PYGOBJECT_DEFSDIR)
-	AC_SUBST(PYGOBJECT_CFLAGS)
 fi	
 
 if test "x$have_python" != "xyes"; then
@@ -144,6 +138,5 @@ AC_OUTPUT([
 	src/subsystems/Device/display/Makefile
 	src/subsystems/Device/info/Makefile
 	src/subsystems/Python/Makefile
-	src/subsystems/Python/bindings/Makefile
 	src/Makefile	
 	])

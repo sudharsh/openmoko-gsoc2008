@@ -23,7 +23,6 @@
 
 #include "fsod-python-plugin.h"
 #include <src/fsod.h>
-#include <pygobject.h>
 #include <dbus/dbus-glib.h>
 
 #ifdef HAVE_CONFIG_H
@@ -32,30 +31,18 @@
 
 static GObjectClass *parent_class;
 
-void pyfsod_register_classes (PyObject *d);
-extern PyMethodDef pyfsod_functions[];
-
 /* Just initialize the interpreter, nothing much for now */
 gboolean fsod_init_python() {
 
-	PyObject *fsod = NULL, *mdict = NULL, *items = NULL;
-	char *argv[] = { "fsod", NULL };
-	char *bleh;
 	if (Py_IsInitialized()) {
 		g_log ("Python", G_LOG_LEVEL_INFO, "Interpreter already initialized");
 		return TRUE;
 	}
 	
-	
 	g_log ("Python", G_LOG_LEVEL_INFO, "Trying to initialize the python plugin system");
 	Py_InitializeEx(0);
 	PySys_SetArgv (1, argv);
-	init_pygobject();
-	fsod = Py_InitModule("fsod", pyfsod_functions);
-	
-	mdict = PyModule_GetDict(fsod);
-	
-	pyfsod_register_classes (mdict);
+
 	if (PyErr_Occurred) {
 		PyErr_Print();
 		//return FALSE;
@@ -146,17 +133,16 @@ static GObject * fsod_python_plugin_constructor (GType type,
 	FSODPythonPluginClass *klass;
 	GObjectClass *parentclass;
 	FSODPythonPlugin *self;
-	DBusGConnection *d_conn;
+	
 	
 	PyObject *path = NULL, *module_path = NULL;
 	PyObject *dict = NULL, *func = NULL;
-	PyObject *args = NULL, *conn = NULL;
+	PyObject *args = NULL;
 			
 	klass = g_type_class_peek (FSOD_TYPE_PYTHON_PLUGIN);
 	parentclass = G_OBJECT_CLASS (g_type_class_peek_parent(klass));
 	object = parentclass->constructor(type, n_construct_properties, construct_properties);
 	self = FSOD_PYTHON_PLUGIN (object);
-	d_conn = fsod_service_get_connection(self->priv->service);
 	/* Try to load the python module priv->module_name */
 	path = PySys_GetObject ("path");
 
@@ -180,13 +166,8 @@ static GObject * fsod_python_plugin_constructor (GType type,
 		       self->priv->module_name);
 		goto pyerr_occurred;
 	}
-	//pygobject_init (2, 11, 5);
-	conn = pygobject_new (self->priv->service);
-	//conn = PyCObject_FromVoidPtr((void *)fsod_service_get_connection(self->priv->service), NULL);
-
-   	args = PyTuple_New(1);
-	PyTuple_SetItem (args, 0, conn);
-	PyObject_CallObject (func, args);
+	
+	PyObject_CallObject (func, NULL);
 
  pyerr_occurred:
 	if(PyErr_Occurred()) {

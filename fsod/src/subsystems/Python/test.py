@@ -64,10 +64,8 @@ class Time(dbus.service.Object):
         return True
 
 
-def factory(service):
+def factory():
     print "The Hovercraft is full of eels"
-    print dir(service)
-    print dir(fsod)
     bus = dbus.SystemBus()
     bus.request_name("org.freesmartphone.otimed")
     time_obj = Time(bus)

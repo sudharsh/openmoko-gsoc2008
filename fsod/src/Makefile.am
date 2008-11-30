@@ -47,11 +47,6 @@ libfsod_la_LIBADD = \
 	$(GMODULE_LIBS) \
 	$(NULL)
 
-#if ENABLE_PYTHON
-#libfsod_la_LIBADD += subsystems/Python/bindings/libpyfsod.la \
-#	$(PYTHON_LIBS)
-#
-#endif
 
 libfsod_la_LDFLAGS      =  -export-dynamic -no-undefined -export-symbols-regex "^[[^_]].*"
 libfsod_la_DEPENDENCIES = $(top_builddir)/config.h
