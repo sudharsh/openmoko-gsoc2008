@@ -23,8 +23,8 @@ import gobject
 
 import fsod
 
-#from dbus.mainloop.glib import DBusGMainLoop
-#DBusGMainLoop(set_as_default =True)
+from dbus.mainloop.glib import DBusGMainLoop
+DBusGMainLoop(set_as_default =True)
 
 # #import logging
 # #logger = logging.getLogger('otimed')
@@ -48,13 +48,13 @@ class Time(dbus.service.Object):
            Convert seconds since Epoch to a time tuple expressing local time.   
            When `seconds` is not passed in, convert the current time instead.
         """ 
-        logger.debug("GetLocalTime")
+        #logger.debug("GetLocalTime")
         return time.localtime(seconds)
         
     @dbus.service.signal('org.freesmartphone.Time', signature='iiiiiiiii')
     def Minute(self, year, mon, day, hour, min, sec, wday, yday, isdst):
         """signal used to notify a minute change in the local time"""
-        logger.debug("Minute %d:%d", hour, min)
+        #logger.debug("Minute %d:%d", hour, min)
         
     def time_changed(self):
         local_time = time.localtime()
@@ -66,15 +66,11 @@ class Time(dbus.service.Object):
 
 def factory(service):
     print "The Hovercraft is full of eels"
-    # Something like this
-    #bus = connection.get_bus() # or something. the connection object is a gobject instance, so its not as straightforward as this
-    #time_obj = Time(bus)
     print dir(service)
     print dir(fsod)
-    busname = dbus.service.BusName("org.freesmartphone.otimed", dbus.SystemBus())
-    bus = busname.get_bus()
+    bus = dbus.SystemBus()
+    bus.request_name("org.freesmartphone.otimed")
     time_obj = Time(bus)
-    # the fsod-python-module struct would maintain a list of DBus objects
-    #return [time_obj]
+    return [time_obj]
 
 
