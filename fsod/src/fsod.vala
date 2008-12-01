@@ -40,7 +40,7 @@ namespace FSOD {
 		private Module library;
 		private string[] enableList;
 
-		[DBus (visible = false)];
+		[DBus (visible = false)]
 		public DBus.Connection connection {
 			get;
 			construct;
