@@ -16,13 +16,13 @@ namespace FSOD {
 	}
 	[CCode (cheader_filename = "src/fsod.h")]
 	public class Service : GLib.Object {
-		protected static string dev_name;
 		public GLib.HashTable<string,Subsystem.Manager> fso_objects;
 		public string[]? ListObjectsByInterface (string iface);
 		public static void create_service (DBus.Connection connection);
-		public static FSOD.Service? get_service ();
+		public static FSOD.Service get_service ();
 		public static uint request_name (DBus.Connection connection, string name);
 		public DBus.Connection connection { get; construct; }
+		public string device { get; }
 	}
 }
 [CCode (cprefix = "Subsystem", lower_case_cprefix = "subsystem_")]

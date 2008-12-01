@@ -173,6 +173,12 @@ public class IdleNotifier: GLib.Object {
 		}
 	}
 
+	public HashTable<string, int> GetTimeouts() {
+		return this.timeouts;
+	}
+
+	
+
 }
 
 

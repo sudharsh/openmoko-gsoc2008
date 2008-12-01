@@ -36,7 +36,11 @@ namespace FSOD {
 																											(EqualFunc)str_equal);
 
 		private delegate Subsystem.Manager FactoryFunc(Service service);
-		protected static string dev_name = new string();
+		private string _device = new string();
+		public string device {
+			get { return _device; }
+		}
+
 		private Module library;
 		private string[] enableList;
 
@@ -46,7 +50,7 @@ namespace FSOD {
 			construct;
 		}
 
-		private static Service instance = null;
+		private static Service instance;
 
 		private Service (DBus.Connection connection) {
 			this.connection = connection;
@@ -57,13 +61,11 @@ namespace FSOD {
 				instance = new Service(connection);
 		}
 
-		/* FIXME: Do we really need this
- 		public static Service? get_service() {
- 			if (instance != null)
- 				return instance;
- 			return null;
+		/* FIXME: Do we really need this */
+ 		public static Service get_service() {
+ 			return instance;
  		}
-		*/
+		
 								
 		construct {
 			this.connection.register_object ("/org/freesmartphone/Framework", this);
@@ -73,7 +75,7 @@ namespace FSOD {
 			try {
 				conf_file.load_from_file (Path.build_filename(Config.SYSCONFDIR, "fsod.conf"), KeyFileFlags.NONE);
 				if (conf_file.has_group("fsod")) 
-					dev_name = conf_file.get_string ("fsod", "device_name");
+					this._device = conf_file.get_string ("fsod", "device_name");
 
 				/* Try to load all subsystems if there is no enable_subsystems key */
 				if (conf_file.has_key ("fsod", "enable_subsystems")) {

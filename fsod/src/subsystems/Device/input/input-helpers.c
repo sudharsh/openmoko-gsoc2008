@@ -43,10 +43,9 @@ gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
 	if (read (fd, event, sizeof(struct input_event)) < 0)
 		perror ("read");
 
-	if (event->type!=EV_SYN) { /* Don't process sync events */
+	if (event->type!=EV_SYN)  /* Don't process sync events */
 		g_queue_push_tail (input_obj->event_q, event);
-		return TRUE;
-	}
+		
 	g_free (event);
 	return TRUE;
 }
@@ -90,6 +89,7 @@ static gboolean process_event () {
 			
 			g_signal_emit_by_name (input_obj, "event", event_source, "released", hk.held_secs);
 		}
+		g_free(event);
 	}
 	
 	return FALSE;

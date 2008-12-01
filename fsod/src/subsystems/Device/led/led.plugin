@@ -3,5 +3,7 @@ dbus_interface=org.freesmartphone.Device.LED
 dbus_object_path=/org/freesmartphone/Device/LED
 device_class=leds
 
+[FreeRunner]
+
 
 

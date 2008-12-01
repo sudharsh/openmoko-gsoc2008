@@ -47,7 +47,6 @@ dnl Some variables
 AS_AC_EXPAND(DATADIR, $datadir)
 AS_AC_EXPAND(LIBDIR, $libdir)
 
-
 dnl dbus
 DBUS_GLIB_BIN="`$PKG_CONFIG --variable=exec_prefix dbus-glib-1`/bin"
 AC_ARG_WITH(dbusbindir,[  --with-dbusbindir=DIR  dbus tools in DIR], [DBUS_GLIB_BIN="$withval"])

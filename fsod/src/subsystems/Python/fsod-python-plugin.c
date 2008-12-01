@@ -1,4 +1,3 @@
-\
  /* 
  * fsod-python-plugin.c
  * Written by Sudharshan "Sup3rkiddo" S <sudharsh@gmail.com>

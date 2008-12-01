@@ -23,10 +23,22 @@ using DBus;
 using FSOD;
 using Device;
 
+
 namespace ODeviced {
 
 	public static string get_device () {
-		return FSOD.Service.dev_name;
+		KeyFile conf_file = new KeyFile();
+		conf_file.set_list_separator (',');
+		string _device = new string();
+		try {
+			conf_file.load_from_file (Path.build_filename(Config.SYSCONFDIR, "fsod.conf"), KeyFileFlags.NONE);
+			if (conf_file.has_group("fsod")) 
+				_device = conf_file.get_string ("fsod", "device_name");
+		}
+		catch (GLib.Error error) {
+			log ("FSOD Service", LogLevelFlags.LEVEL_WARNING, error.message);
+		}
+		return _device;
 	}
 
 
@@ -114,7 +126,6 @@ namespace ODeviced {
 
 		catch (GLib.Error e) {
 			log ("Device.Helpers", LogLevelFlags.LEVEL_WARNING, e.message);
-			return null;
 		}
 
 		return line;
@@ -137,6 +148,13 @@ namespace ODeviced {
 		node_file.printf ("%s", data);		
 		return true;
 	}
+
+
+	/* Sync config value */
+	/*public static bool sync_config (string plugin, string key, string value) {
+	  string path = Path.build_filename(Config.DATADIR, "fsod/subsystems/Device", plugin)*/
+	
+
 		
 }
 
