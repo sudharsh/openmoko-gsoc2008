@@ -67,7 +67,7 @@ public class Device: Subsystem.Manager {
 
 
 	public override string[] ListObjectsByInterface(string iface) {
-		string[] ret;
+		string[] ret = null;
 		foreach (Plugin plugin in this.plugins) {
 			if (plugin.dbus_iface == iface) {
 				uint length = plugin.dbus_object_paths.length();

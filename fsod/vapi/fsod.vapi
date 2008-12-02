@@ -13,6 +13,7 @@ namespace FSOD {
 		public abstract void _resume ();
 		public abstract void _suspend ();
 		public Resource (string resource_name);
+		protected string resource_name { get; set; }
 	}
 	[CCode (cheader_filename = "src/fsod.h")]
 	public class Service : GLib.Object {

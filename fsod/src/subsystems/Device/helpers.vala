@@ -45,7 +45,7 @@ namespace ODeviced {
 	public static List? compute_objects(Plugin plugin, GLib.Type klass) {
 	
 		List<GLib.Object> objList = new List<GLib.Object>();
-		string dev_class;
+		string dev_class = "";
 		string dev_node;
 
 		if(plugin.conf.has_group(plugin.name)) {
@@ -101,7 +101,7 @@ namespace ODeviced {
 
 	/* I know =(, Ideally these should have been a single function */
 	public static int read_integer(string node) {
-		int val;
+		int val = 0;
 		FileStream node_file = FileStream.open(node, "r");
 		if(node_file == null) 
 			return -1;
@@ -117,7 +117,7 @@ namespace ODeviced {
 
 		File node_file = File.new_for_path(node);
 		DataInputStream stream;
-		string line;
+		string line = "";
 
 		try {
 			stream = new DataInputStream(node_file.read(null));
@@ -148,14 +148,7 @@ namespace ODeviced {
 		node_file.printf ("%s", data);		
 		return true;
 	}
-
-
-	/* Sync config value */
-	/*public static bool sync_config (string plugin, string key, string value) {
-	  string path = Path.build_filename(Config.DATADIR, "fsod/subsystems/Device", plugin)*/
-	
-
-		
+   	
 }
 
 

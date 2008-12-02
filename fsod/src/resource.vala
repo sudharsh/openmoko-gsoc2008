@@ -30,9 +30,8 @@ public abstract class FSOD.Resource : GLib.Object {
 		SUSPEND,
 		RESUME
 	}
-
 	private int current_status;
-	private string resource_name;
+	protected string resource_name{get;set;}
 
 	[DBus (visible = false)]
 	public abstract void _enable();

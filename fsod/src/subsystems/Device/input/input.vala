@@ -49,8 +49,7 @@ public class Input: GLib.Object {
 	}
 
 	private string[] watchfor;
-	private List<string> ignoreList = new List<string> ();
-
+	
 	public signal void @event(string name, string action, int seconds);
 
 	[DBus (visible = false)]
