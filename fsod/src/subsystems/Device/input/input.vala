@@ -66,7 +66,7 @@ public class Input: GLib.Object {
    	construct {
 		
 		try {
-			this.device = "Freerunner";
+			this.device = ODeviced.get_device();
 			compute_watches ();
 		   
 			string[] input_nodes = plugin.conf.get_string_list (this.device, "input_nodes");
