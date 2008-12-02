@@ -27,6 +27,11 @@ using FSOD;
 using Device;
 
 
+errordomain InvalidState {
+	INVALID_STATE;
+}
+
+
 [DBus (name = "org.freesmartphone.Device.IdleNotifier") ]
 public class IdleNotifier: GLib.Object {
 
@@ -46,6 +51,7 @@ public class IdleNotifier: GLib.Object {
 
 	private string device = new string();
 	private string[] watches;
+	private List<string> states = new List<string> ();
 		   
 	private HashTable<string, int> timeouts = new HashTable<string, int>((HashFunc)str_hash, (EqualFunc)str_equal);
 
@@ -73,6 +79,7 @@ public class IdleNotifier: GLib.Object {
 		this.timeouts.insert ("lock", plugin.conf.get_integer (this.device, "lock"));
 		this.timeouts.insert ("awake", plugin.conf.get_integer (this.device, "awake"));
 		this.timeouts.insert ("busy", plugin.conf.get_integer (this.device, "busy"));
+		this.states = this.timeouts.get_keys();
 		try {
 			this.watches  = plugin.conf.get_string_list (device, "watchfor");
 			foreach (string node in this.watches) {
@@ -136,6 +143,15 @@ public class IdleNotifier: GLib.Object {
 	}
 
 	
+	private bool lookup_state (string key) {
+		foreach (string str in this.states) {
+			if (key == str)
+				return true;
+		}
+		return false;
+	}
+
+	
 	/* DBus methods */
 	public string GetState () {
 		return this._current_state;
@@ -169,7 +185,7 @@ public class IdleNotifier: GLib.Object {
 			break;
 		default:
 			log ("Device.IdleNotifier", LogLevelFlags.LEVEL_WARNING, "No such state exists");
-			break;
+			throw new InvalidState.INVALID_STATE ("org.freesmartphone.IdleNotifier.InvalidState");
 		}
 	}
 
@@ -177,7 +193,28 @@ public class IdleNotifier: GLib.Object {
 		return this.timeouts;
 	}
 
-	
+	public void SetTimeout(string _state, int timeout) throws InvalidState {
+		
+		if (!this.lookup_state(_state)) {
+			log ("Device.IdleNotifier", LogLevelFlags.LEVEL_WARNING, "No such state exists");
+			throw new InvalidState.INVALID_STATE ("org.freesmartphone.IdleNotifier.InvalidState");
+		}
+		
+		this.timeouts.insert(_state, timeout);
+		try {
+			string _keyfile = "";
+			size_t out_size = 0;
+			plugin.conf.set_integer (this.device, _state, timeout);
+			log ("Device.IdleNotifier", LogLevelFlags.LEVEL_INFO, "Timeout for %s set to %d successfully", 
+				 _state, timeout);
+			_keyfile = plugin.conf.to_data(out out_size);
+			ODeviced.write_string (Path.build_filename(Config.DATADIR, "fsod/subsystems/Device/idlenotifier.plugin"), _keyfile);
+		}
+
+		catch (GLib.KeyFileError error) {
+			log ("Device.IdleNotifier", LogLevelFlags.LEVEL_WARNING, error.message);
+		}
+	}
 
 }
 

@@ -3,6 +3,9 @@ AM_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	$(GMODULE_CFLAGS) \
 	-include $(CONFIG_HEADER) \
+	-DDATADIR=\"$(datadir)\"           \
+	-DSYSCONFDIR=\""$(sysconfdir)"\"   \
+	-DLIBDIR=\""$(libdir)"\"	   \                   
 	-ggdb
 
 
@@ -23,7 +26,7 @@ BUILT_SOURCES = idlenotifier.vala.stamp
 
 
 idlenotifier.vala.stamp: $(idlenotifier_VALASOURCES)
-	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg fsod --vapidir ../ --pkg Device --vapidir ./ --pkg idlenotifier-helpers --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
+	$(VALAC) --ccode --vapidir $(top_srcdir)/vapi --pkg fsod --pkg config --vapidir ../ --pkg Device --vapidir ./ --pkg idlenotifier-helpers --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0  \
 	$^
 	touch $@
 

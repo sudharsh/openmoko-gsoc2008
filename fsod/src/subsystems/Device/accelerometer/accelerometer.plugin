@@ -7,5 +7,4 @@ dbus_object_path=/org/freesmartphone/Device/Accelerometer
 dev_node=event3
 allowed_sample_rates=100,400
 sysfs_node=/sys/devices/platform/spi_s3c24xx_gpio.1/spi0.1/sample_rate
-
  

@@ -275,7 +275,7 @@ namespace powercontrol {
 
 		bool success = true;
 		string device = ODeviced.get_device();
-		string[] enable;
+		string[] enable = null;
 		try {
 			enable = plugin.conf.get_string_list (device, "enable");
 		}
