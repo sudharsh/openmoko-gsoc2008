@@ -36,22 +36,27 @@ static gboolean process_event ();
 
 
 gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
+
 	struct input_event *event;
+	struct GQueue *event_q = g_queue_new();
 	event = g_new (struct input_event, 1);
 	int fd = g_io_channel_unix_get_fd (channel);	
-	g_idle_add_full (100, (GSourceFunc)process_event, NULL, NULL);
+
 	if (read (fd, event, sizeof(struct input_event)) < 0)
 		perror ("read");
 
-	if (event->type!=EV_SYN)  /* Don't process sync events */
+	if (event->type!=EV_SYN)  {/* Don't process sync events */
 		g_queue_push_tail (input_obj->event_q, event);
-		
+		g_idle_add_full (100, (GSourceFunc)process_event, (gpointer)event_q, NULL);
+		return TRUE;
+	}
+			
 	g_free (event);
 	return TRUE;
 }
 
 	
-static gboolean process_event () {
+static gboolean process_event (gpointer event_q) {
 
 	static struct held_key_payload hk;
 	GHashTable *watches = input_get_watches (input_obj);
@@ -60,7 +65,7 @@ static gboolean process_event () {
 
 	struct input_event *event;
        	
-       	while ( event = (struct input_event *)g_queue_pop_head (input_obj->event_q) )	{
+       	while ( event = (struct input_event *)g_queue_pop_head ((GQueue *)event_q) )	{
 		g_print ("Input: event, value:%d code:%u type:%u\n", event->value, event->code, event->type);
 		event_source = g_hash_table_lookup (watches, event->code);
 		if (!event_source) {
@@ -91,7 +96,8 @@ static gboolean process_event () {
 		}
 		g_free(event);
 	}
-	
+	if (g_queue_is_empty(event_q))
+		g_queue_free(event_q);
 	return FALSE;
 }
 
