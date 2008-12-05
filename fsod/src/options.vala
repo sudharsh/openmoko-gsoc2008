@@ -39,7 +39,7 @@ public class FSOD.Options : Object
         { "run_from_build_dir", 'r', 0, OptionArg.NONE, ref run_from_build_dir, "Run from build directory, all transient files created there", null},
         { "session", 's', 0, OptionArg.NONE, ref session, "use dbus SESSION bus instead of SYSTEM bus (for development)", null},
         { "verbose", 'v', 0, OptionArg.NONE, ref verbose, "verbose", null},
-		{ "log-file",'O', 0, OptionArg.FILENAME, ref log_file, "Write log to file", "Filename of the logfile (use '-' for stdout"},
+		{ "log-file",'O', 0, OptionArg.FILENAME, ref log_file, "Write log to file", "Filename of the logfile (use '-' for stdout"},x
 		{ "log-domains",'D', 0, OptionArg.STRING_ARRAY, ref log_domains, "Set domains for logging","Name of the Domains to log. Depends on loaded modules."},
 		{ "log-levels", 'L', 0, OptionArg.STRING_ARRAY, ref log_levels, "Set levels for logging", "Possible values: ERROR,CRITICAL,WARNIN,INFO,DEBUG (default: all)"},
 		{ null }
