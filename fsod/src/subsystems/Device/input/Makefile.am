@@ -2,6 +2,7 @@ AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(GMODULE_CFLAGS) \
+	$(NL_CFLAGS) \
 	-include $(CONFIG_HEADER) \
 	-ggdb
 

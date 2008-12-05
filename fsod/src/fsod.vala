@@ -26,13 +26,11 @@ using FSOD;
 
 namespace FSOD {
 
-	[DBus (name = "org.freesmartphone.Objects")]
+	[DBus (name = "org.freesmartphone.Framework")]
 	public class Service : GLib.Object {
 	
-		private KeyFile conf_file = new KeyFile();
-
 		/* hashmap of the objects */
-		public HashTable<string, Subsystem.Manager> fso_objects  = new HashTable<string, Subsystem.Manager>((HashFunc)str_hash,
+		public HashTable<string, Subsystem.Manager> fso_objects = new HashTable<string, Subsystem.Manager>((HashFunc)str_hash,
 																											(EqualFunc)str_equal);
 
 		private delegate Subsystem.Manager FactoryFunc(Service service);
@@ -69,17 +67,17 @@ namespace FSOD {
 								
 		construct {
 			this.connection.register_object ("/org/freesmartphone/Framework", this);
-			conf_file.set_list_separator (',');
 			Idle.add(this.idle);
 			Timeout.add_seconds(50, this.timeout);
+
 			try {
-				conf_file.load_from_file (Path.build_filename(Config.SYSCONFDIR, "fsod.conf"), KeyFileFlags.NONE);
-				if (conf_file.has_group("fsod")) 
-					this._device = conf_file.get_string ("fsod", "device_name");
+				KeyFile _conf_file = FSOD.get_fsod_conf();
+				if (_conf_file.has_group("fsod")) 
+					this._device = _conf_file.get_string ("fsod", "device_name");
 
 				/* Try to load all subsystems if there is no enable_subsystems key */
-				if (conf_file.has_key ("fsod", "enable_subsystems")) {
-					this.enableList = conf_file.get_string_list ("fsod", "enable_subsystems");
+				if (_conf_file.has_key ("fsod", "enable_subsystems")) {
+					this.enableList = _conf_file.get_string_list ("fsod", "enable_subsystems");
 					foreach (string subsystem in this.enableList) {
 						load(Path.build_filename(Config.LIBDIR, "fsod/subsystems", subsystem), subsystem);
 					}
@@ -138,7 +136,8 @@ namespace FSOD {
 			}
 			return manager.ListObjectsByInterface (iface);
 		}
-	
+
+		
 
 		/* Private methods ... */
 		private bool load(string path, string name) {
@@ -146,7 +145,7 @@ namespace FSOD {
 			library = Module.open (path, ModuleFlags.BIND_LAZY);
 			if (this.library == null) {
 				log ("FSOD Service", LogLevelFlags.LEVEL_WARNING, 
-					 "Module.open returned null when loading %s: %s", name,Module.error());
+					 "Module.open returned null when loading %s: %s", name, Module.error());
 				return false;
 			}
 			var _init = null;

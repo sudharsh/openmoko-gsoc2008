@@ -12,6 +12,9 @@ AM_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	$(GMODULE_CFLAGS) \
 	-include $(CONFIG_HEADER) \
+	-DDATADIR=\"$(datadir)\"           \
+	-DSYSCONFDIR=\""$(sysconfdir)"\"   \
+	-DLIBDIR=\""$(libdir)"\"	\
 	-ggdb \
 	$(NULL)
 
@@ -31,7 +34,13 @@ dbussystem_DATA = etc/dbus-1/system.d/fsod.conf
 
 fsod_VALASOURCES = \
 	src/main.vala \
-	src/options.vala
+	src/options.vala \
+	src/logger.vala \
+	src/fsod.vala \
+	src/subsystem.vala \
+	src/resource.vala \
+	$(NULL)
+
 
 fsod_SOURCES = \
 	$(fsod_VALASOURCES:.vala=.c) \
@@ -40,7 +49,7 @@ fsod_SOURCES = \
 
 
 src/fsod.vala.stamp: $(fsod_VALASOURCES)
-	$(VALAC) -C --basedir $(top_srcdir) --vapidir $(top_srcdir)/vapi --pkg fsod --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0 $^
+	$(VALAC) -C --basedir $(top_srcdir) --vapidir $(top_srcdir)/vapi --library fsod --pkg config --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0 $^
 	touch $@
 
 
@@ -48,7 +57,6 @@ fsod_LDADD = \
 	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
 	$(GMODULE_LIBS) \
-	src/libfsod.la \
 	$(NULL)
 
 fsod_LDFLAGS = -export-dynamic -no-undefined -export-symbols-regex "^[[^_]].*"
@@ -60,8 +68,6 @@ EXTRA_DIST = \
 	intltool-update.in \
 	intltool-merge.in \
 	$(fsod_VALASOURCES) \
-	$(libfsod_la_VALASOURCES) \
-	src/libfsod.vala.stamp \
 	src/fsod.vala.stamp \
 	fsodconf_DATA \
 	dbussystem_DATA \

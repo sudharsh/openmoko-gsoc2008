@@ -5,7 +5,7 @@ AM_CPPFLAGS = \
 	-include $(CONFIG_HEADER) \
 	-DDATADIR=\"$(datadir)\"           \
 	-DSYSCONFDIR=\""$(sysconfdir)"\"   \
-	-DLIBDIR=\""$(libdir)"\"	   \                   
+	-DLIBDIR=\""$(libdir)"\"	   \
 	-ggdb
 
 

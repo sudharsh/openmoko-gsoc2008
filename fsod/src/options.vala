@@ -27,14 +27,25 @@ public class FSOD.Options : Object
     public static bool run_from_build_dir = false;
     public static bool session = false;
     public static bool verbose = false;
-
-    private const OptionEntry[] entries = {
+    public static string log_file = null;
+	
+	[NoArrayLength]
+	public static string[] log_domains;
+	
+	[NoArrayLength]
+	public static string[] log_levels;
+    
+	private const OptionEntry[] entries = {
         { "run_from_build_dir", 'r', 0, OptionArg.NONE, ref run_from_build_dir, "Run from build directory, all transient files created there", null},
         { "session", 's', 0, OptionArg.NONE, ref session, "use dbus SESSION bus instead of SYSTEM bus (for development)", null},
-        { "verbose", 'v', 0, OptionArg.NONE, ref session, "verbose", null},
-        { null }
+        { "verbose", 'v', 0, OptionArg.NONE, ref verbose, "verbose", null},
+		{ "log-file",'O', 0, OptionArg.FILENAME, ref log_file, "Write log to file", "Filename of the logfile (use '-' for stdout"},x
+		{ "log-domains",'D', 0, OptionArg.STRING_ARRAY, ref log_domains, "Set domains for logging","Name of the Domains to log. Depends on loaded modules."},
+		{ "log-levels", 'L', 0, OptionArg.STRING_ARRAY, ref log_levels, "Set levels for logging", "Possible values: ERROR,CRITICAL,WARNIN,INFO,DEBUG (default: all)"},
+		{ null }
     };
-
+	
+	
     public static bool parse_args(ref weak string[] args) 
     {
         /* handle command line options */
@@ -47,7 +58,7 @@ public class FSOD.Options : Object
             print ("Error while parsing commandline arguments: %s\n", err.message);
 			return false;
         }
-
+		
 		return true;
     }
 }

@@ -26,9 +26,11 @@ using DBus;
 namespace FSOD {
 
 	static void main(string[] args) {
-
-        if (Options.parse_args(ref args)) {
 		
+		if (Options.parse_args(ref args)) {
+			
+			Logger logger_instance = new Logger();
+			GLib.Log.set_default_handler(logger_instance.log);
 			MainLoop loop = new MainLoop (null, false);	
 			try {
 				DBus.Connection connection;
@@ -58,7 +60,26 @@ namespace FSOD {
 			catch (GLib.Error error) {
 				stderr.printf("%s\n", error.message);
 			}
+		
+		
 		}
+	}
+
+		
+	
+
+	public static KeyFile get_fsod_conf() {		
+
+		KeyFile conf_file = new KeyFile();
+		conf_file.set_list_separator (',');
+		try {
+			conf_file.load_from_file (Path.build_filename(Config.SYSCONFDIR, "fsod.conf"), KeyFileFlags.NONE);
+		}
+		catch (GLib.Error error) {
+			GLib.message (error.message);
+			
+		}
+		return conf_file;
 	}
 	
 }
