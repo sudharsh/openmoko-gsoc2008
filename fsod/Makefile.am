@@ -1,6 +1,8 @@
 NULL = 
 AUTOMAKE_OPTIONS = subdir-objects
 
+BUILT_SOURCES = src/fsod.vala.stamp
+
 SUBDIRS = \
 	po \
 	src \
@@ -18,8 +20,6 @@ AM_CPPFLAGS = \
 	-ggdb \
 	$(NULL)
 
-BUILT_SOURCES = src/fsod.vala.stamp
-
 
 ##-----------------------##
 # fsod - main executable  #
@@ -29,7 +29,7 @@ bin_PROGRAMS = fsod
 fsodconfdir = $(sysconfdir)
 fsodconf_DATA = etc/fsod.conf
 
-dbussystemdir = $(DBUS_SYSTEM_DIR)
+dbussystemdir = /etc/dbus-1/system.d
 dbussystem_DATA = etc/dbus-1/system.d/fsod.conf
 
 fsod_VALASOURCES = \
@@ -49,7 +49,7 @@ fsod_SOURCES = \
 
 
 src/fsod.vala.stamp: $(fsod_VALASOURCES)
-	$(VALAC) -C --basedir $(top_srcdir) --vapidir $(top_srcdir)/vapi --library fsod --pkg config --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0 $^
+	$(VALAC) -C --basedir $(top_srcdir) --vapidir $(top_srcdir)/vapi --library $(top_srcdir)/vapi/fsod --pkg config --pkg dbus-glib-1 --pkg gmodule-2.0 --pkg gio-2.0 $^
 	touch $@
 
 

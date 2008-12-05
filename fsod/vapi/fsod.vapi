@@ -2,6 +2,24 @@
 
 [CCode (cprefix = "FSOD", lower_case_cprefix = "fsod_")]
 namespace FSOD {
+	[CCode (cheader_filename = "src/logger.h")]
+	public class Logger : GLib.Object {
+		public void log (string? log_domain, GLib.LogLevelFlags flags, string message);
+		public Logger ();
+	}
+	[CCode (cheader_filename = "src/options.h")]
+	public class Options : GLib.Object {
+		[NoArrayLength]
+		public static string[] log_domains;
+		public static string log_file;
+		[NoArrayLength]
+		public static string[] log_levels;
+		public static bool run_from_build_dir;
+		public static bool session;
+		public static bool verbose;
+		public Options ();
+		public static bool parse_args (ref weak string[] args);
+	}
 	[CCode (cheader_filename = "src/resource.h")]
 	public abstract class Resource : GLib.Object {
 		public void Disable ();
@@ -21,10 +39,14 @@ namespace FSOD {
 		public string[]? ListObjectsByInterface (string iface);
 		public static void create_service (DBus.Connection connection);
 		public static FSOD.Service get_service ();
-		public static uint request_name (DBus.Connection connection, string name);
+		public uint request_name (string name);
 		public DBus.Connection connection { get; construct; }
 		public string device { get; }
 	}
+	[CCode (cheader_filename = "src/main.h")]
+	public static GLib.KeyFile get_fsod_conf ();
+	[CCode (cheader_filename = "src/main.h")]
+	public static void main (string[] args);
 }
 [CCode (cprefix = "Subsystem", lower_case_cprefix = "subsystem_")]
 namespace Subsystem {

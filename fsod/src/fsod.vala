@@ -107,11 +107,8 @@ namespace FSOD {
 		}
 
 		
-		/* Make this static, kinda dumb but vala generates the same code for bus.RequestName in main.vala
-		   So giving rise to a multiple definition error for the generated code. Use this from main.vala as 
-		   well */
 		[DBus (visible = false)]
-		public static uint request_name (DBus.Connection connection, string name) {
+		public uint request_name (string name) {
 			uint result;
 			try {
 				dynamic DBus.Object bus = connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
@@ -176,7 +173,7 @@ namespace FSOD {
 
 
 		private bool idle() { 
-			log ("FSOD Service", LogLevelFlags.LEVEL_INFO, "idle");
+			log ("FSOD Service", LogLevelFlags.LEVEL_INFO, "------- All Done. Entered MainLoop -------");
 			return false;
 		}	
 	  

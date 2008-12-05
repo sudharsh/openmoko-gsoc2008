@@ -25,7 +25,7 @@ using DBus;
 
 namespace FSOD {
 
-	static void main(string[] args) {
+	public static void main(string[] args) {
 		
 		if (Options.parse_args(ref args)) {
 			
@@ -40,7 +40,12 @@ namespace FSOD {
 					connection = DBus.Bus.get(DBus.BusType.SYSTEM);		
 				}
 
-				uint result = FSOD.Service.request_name (connection, "frameworkd");				
+				//uint result = FSOD.Service.request_name (connection, "frameworkd");				
+				dynamic DBus.Object bus = connection.get_object ("org.freedesktop.DBus", "/org/freedesktop/DBus",
+																	 "org.freedesktop.DBus");
+				uint result = bus.RequestName ("org.freesmartphone.frameworkd", (uint) 0);
+
+
 				if (result == DBus.RequestNameReply.PRIMARY_OWNER) {
 					print("Starting fsod....\n");
 					FSOD.Service.create_service(connection);
