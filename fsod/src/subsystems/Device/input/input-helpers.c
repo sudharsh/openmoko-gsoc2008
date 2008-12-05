@@ -30,22 +30,32 @@
 #include "input-helpers.h"
 
 
+#define LOG_DOMAIN "Device.Input"
+
+
 static gboolean held_key_timeout (struct held_key_payload *hk);
 static gboolean list_has (GList *list, gchar *data);
 static gboolean process_event ();
 
+/* We'd need to extract held_secs in the next loop */
+static struct held_key_payload hk;
 
 gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
+
 	struct input_event *event;
 	event = g_new (struct input_event, 1);
 	int fd = g_io_channel_unix_get_fd (channel);	
+
+	/* Process input events in the next mainloop iteration */
 	g_idle_add_full (100, (GSourceFunc)process_event, NULL, NULL);
 	if (read (fd, event, sizeof(struct input_event)) < 0)
 		perror ("read");
 
-	if (event->type!=EV_SYN)  /* Don't process sync events */
+	if (event->type!=EV_SYN)  {/* Don't process sync events */
 		g_queue_push_tail (input_obj->event_q, event);
-		
+		return TRUE;
+	}
+	
 	g_free (event);
 	return TRUE;
 }
@@ -53,43 +63,49 @@ gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
 	
 static gboolean process_event () {
 
-	static struct held_key_payload hk;
 	GHashTable *watches = input_get_watches (input_obj);
 	GList *reportheld = input_get_reportheld (input_obj);
 	gchar *event_source;
 
-	struct input_event *event;
+	struct input_event *event = NULL;
        	
-       	while ( event = (struct input_event *)g_queue_pop_head (input_obj->event_q) )	{
-		g_print ("Input: event, value:%d code:%u type:%u\n", event->value, event->code, event->type);
+       	while ( event = g_queue_pop_head (input_obj->event_q) )	{
+		
+		g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+		       "Event, value:%d code:%u type:%u", event->value, event->code, event->type);
 		event_source = g_hash_table_lookup (watches, event->code);
 		if (!event_source) {
-			g_print ("\tNo watch added for event code %u\n", event->code);
+			g_log ("Device.Input", G_LOG_LEVEL_DEBUG,
+			       "No watch added for event code %u", event->code);
 			continue;
 		}
 		
 		if (event->value == 0x01) { /* Press */
-			g_print ("\tInput: INFO: Got a keypress from %s\n", event_source);
+			g_log (LOG_DOMAIN, G_LOG_LEVEL_INFO, 
+			       "Got a keypress from %s", event_source);
+
 			if (list_has(reportheld, (char *)event_source)) {
 				hk.tv_sec = event->time.tv_sec;
 				hk.code = event->code;
-				g_print ("\tInput: %d\n", hk.tv_sec);
+				hk.held_secs = 0;
+				/* g_print ("Input: %d\n", hk.tv_sec); */
 				input_obj->tag = g_timeout_add (1000, (GSourceFunc)held_key_timeout, &hk);
 			}
 			else {
-				g_print ("\treportheld set to something other than true\n");
+				g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+				       "Reportheld for %s not requested", event_source);
 				g_source_remove(input_obj->tag);
 			}
 			g_signal_emit_by_name (input_obj, "event", event_source, "pressed", 0);
 		}
 		else if (event->value == 0x00) { /* Release */
-			g_print ("\tInput: INFO: Released %s Key\n", event_source);
+			g_log (LOG_DOMAIN, G_LOG_LEVEL_INFO,
+			       "Released %s Key\n", event_source);
 			if (input_obj->tag)  
 				g_source_remove (input_obj->tag);
-			
-			g_signal_emit_by_name (input_obj, "event", event_source, "released", hk.held_secs);
+
+			g_signal_emit_by_name (input_obj, "event", event_source, "released", hk.held_secs); 
 		}
-		g_free(event);
 	}
 	
 	return FALSE;
@@ -120,4 +136,3 @@ static gboolean held_key_timeout (struct held_key_payload *hk) {
 	g_signal_emit_by_name (input_obj, "event", event_source, "held", hk->held_secs);
        	return TRUE; /* Call me again */
 }
-
