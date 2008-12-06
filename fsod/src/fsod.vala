@@ -158,7 +158,7 @@ namespace FSOD {
 			Subsystem.Manager subsystem = factory_func(this);
 			if (subsystem != null) {
 				log ("FSOD Service", LogLevelFlags.LEVEL_INFO,
-					 "%s loaded", path);
+					 "completed loading %s%s", path, ".so");
 				this.fso_objects.insert (name, subsystem);
 				return true;
 			}
@@ -167,6 +167,7 @@ namespace FSOD {
 				 "Couldn't load %s", name);
 			return false;
 		}
+
 
 
 		private bool timeout() {
