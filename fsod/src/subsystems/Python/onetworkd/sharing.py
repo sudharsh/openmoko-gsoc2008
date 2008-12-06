@@ -49,6 +49,7 @@ class ConnectionSharing( dbus.service.Object ):
 #============================================================================#
     def __init__( self, bus ):
         self.path = DBUS_OBJECT_PATH
+        self.interface = DBUS_INTERFACE_NETWORK
         dbus.service.Object.__init__( self, bus, self.path )
         self.bus = bus
 

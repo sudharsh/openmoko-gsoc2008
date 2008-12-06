@@ -28,6 +28,8 @@
 #include <src/fsod.h>
 #include <dbus/dbus-glib.h>
 
+#include "PythonManager.h"
+
 G_BEGIN_DECLS
 
 
@@ -57,6 +59,8 @@ typedef struct _FSODPythonPluginPrivate FSODPythonPluginPrivate;
 struct _FSODPythonPlugin {
 	GObject parent;
 	FSODPythonPluginPrivate *priv;
+	gchar *dbus_iface;
+	GList *object_paths;
 };
 
 struct _FSODPythonPluginClass {

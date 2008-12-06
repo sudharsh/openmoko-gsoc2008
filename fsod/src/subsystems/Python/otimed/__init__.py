@@ -66,7 +66,6 @@ def factory():
     print "The Hovercraft is full of eels"
     bus = dbus.SystemBus()
     bus.request_name("org.freesmartphone.otimed")
-    time_obj = Time(bus)
-    return [time_obj]
+    return [Time(bus)]
 
 

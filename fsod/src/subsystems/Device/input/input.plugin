@@ -10,5 +10,5 @@ charger = 356,CHARGER,key,false
 headset = 2,HEADSET,switch,false
 
 watchfor = aux,charger,power,headset
-# Accelerometers
+
 input_nodes = event0,event4

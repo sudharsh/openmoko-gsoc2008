@@ -29,7 +29,10 @@ public class PythonManager : Subsystem.Manager {
 	
 	private string modules_path = Path.build_filename(Config.LIBDIR, "fsod/subsystems/Python");
 	private List<FSOD.PythonPlugin> plugins = new List<FSOD.PythonPlugin>();
-
+	
+	public static HashTable<string, List<string>> ifaces = new HashTable<string, List<string>> ((HashFunc)str_hash,
+																					(EqualFunc)str_equal);
+	
 	public FSOD.Service service {
 		get;
 		construct;
@@ -73,7 +76,14 @@ public class PythonManager : Subsystem.Manager {
 	}
 	
 	public override string[] ListObjectsByInterface(string iface) {
-		string[] ret = { "Not", "Implemented", "Yet" };
+		
+		weak List<string> object_paths = ifaces.lookup(iface);
+		string[] ret = new string[object_paths.length()];
+
+		int i = 0;
+		foreach (string _path in object_paths) {
+			ret[i++] = _path;
+		}
 		return ret;
 	}
 

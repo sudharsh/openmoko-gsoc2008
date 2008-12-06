@@ -36,27 +36,32 @@ static GObjectClass *parent_class;
 gboolean fsod_init_python() {
 
 	if (Py_IsInitialized()) {
-		g_log ("Python", G_LOG_LEVEL_INFO, "Interpreter already initialized");
+		g_log (LOG_DOMAIN, G_LOG_LEVEL_INFO, "Interpreter already initialized");
 		return TRUE;
 	}
 	
-	g_log ("Python", G_LOG_LEVEL_INFO, "Trying to initialize the python plugin system");
+	g_log (LOG_DOMAIN, G_LOG_LEVEL_INFO, "Trying to initialize the python plugin system");
 	Py_InitializeEx(0);
 
 	if (PyErr_Occurred) {
 		PyErr_Print();
-		return FALSE;
+		PyErr_Clear();
+		//return FALSE;
 	}
 	
 	return TRUE;
 }
 
 void fsod_finalize_python() {
+
 	while (PyGC_Collect ())
 			;	
+
 	g_log ("Python", G_LOG_LEVEL_INFO, "Finalizing Python interpreter");
 	Py_Finalize ();
 }
+
+
 
 
 /*---------------------------------------------------------------*
@@ -73,9 +78,13 @@ enum {
 struct _FSODPythonPluginPrivate {
 	gchar *module_name;
 	FSODService *service;
-	PyObject *module; /* Reference to the python module that has been loaded */
+	PyObject *module;  /* Reference to the python module that has been loaded */
 	PyObject *objects; /* The list of initialized DBus objects */
 };
+
+
+/* Private methods */
+static void fsod_python_plugin_extract_ifaces (FSODPythonPlugin *self);
 
 
 /* Call this to initialize a new PythonPlugin object */
@@ -169,7 +178,7 @@ static GObject * fsod_python_plugin_constructor (GType type,
 
 
 
-/* Call the factory function in the loaded module */
+/* Public Method: Call the factory function in the loaded module */
 gboolean fsod_python_plugin_call_factory (FSODPythonPlugin *self) {
 	g_return_val_if_fail (FSOD_IS_PYTHON_PLUGIN(self), FALSE);
 	
@@ -194,7 +203,7 @@ gboolean fsod_python_plugin_call_factory (FSODPythonPlugin *self) {
 	}
 	
 	self->priv->objects = PyObject_CallObject (factory_func, NULL);
-	if (self->priv->objects == NULL || !PyList_Check(self->priv->objects)) {
+	if (self->priv->objects == NULL || !(PyList_Check(self->priv->objects))) {
 		g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_WARNING,
 		       "%s Factory returned succesfully, but the return value was not a list",
 		       self->priv->module_name);
@@ -208,12 +217,67 @@ gboolean fsod_python_plugin_call_factory (FSODPythonPlugin *self) {
 	g_log (LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	       "module %s loaded successfully", self->priv->module_name);
 
-	sync_objects();
+	fsod_python_plugin_extract_ifaces (self);
 	return TRUE;
  	
 }
 
 
+/* Private Method: extract interface string from the object PyList and the corresponding object paths */
+static void fsod_python_plugin_extract_ifaces (FSODPythonPlugin *self) {
+	g_return_if_fail (FSOD_IS_PYTHON_PLUGIN(self));
+
+	PyObject *attr_dict = NULL;
+	PyObject *_iface_str = NULL;
+	PyObject *_dbus_path = NULL; 
+	PyObject *_dbus_obj = NULL;
+
+	gchar *iface = NULL;
+	gchar *dbus_path = NULL;
+
+       	GList *_paths = NULL;
+
+	Py_ssize_t list_len = PyList_Size (self->priv->objects);
+	Py_ssize_t i;
+
+	for (i=0; i<list_len; i++) {
+		_dbus_obj = PyList_GetItem(self->priv->objects, i);
+		_iface_str = PyObject_GetAttrString (_dbus_obj, "interface");
+
+		if (!_iface_str) {
+			g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_WARNING,
+			       "No 'interface' attribute in %s. "
+			       "This isn't fatal but this will not support ListObjectsByInterface introspection",
+			       self->priv->module_name);
+			return;
+		}
+		
+		/* This is really redundant, iface isnt gonna change. But we will be screwed
+		 if the same module exports multiple objects at multiple interfaces
+		 See kernel26.py under the odeviced subsystem of frameworkd */
+		iface = PyString_AsString(_iface_str);
+	
+
+		_dbus_path = PyObject_GetAttrString (_dbus_obj, "path");
+		if (!_dbus_path) {
+			g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_WARNING,
+			       "No 'path' attribute in %s. "
+			       "This isn't fatal but this will not support ListObjectsByInterface introspection",
+			       self->priv->module_name);
+			return;
+		}
+		dbus_path = PyString_AsString(_dbus_path);
+		
+		_paths = g_list_append (_paths, dbus_path);		
+
+		/* FIXME: Is there any chance of a leak here? */
+		g_hash_table_insert(python_manager_ifaces, iface, _paths);
+		
+	}
+	
+}
+		
+	
 
 /* Properties follow */
 static char* fsod_python_plugin_getmodule_name (FSODPythonPlugin *self) {
