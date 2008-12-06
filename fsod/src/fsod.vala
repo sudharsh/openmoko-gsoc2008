@@ -127,11 +127,14 @@ namespace FSOD {
 
 		/* No array of dbus object paths in vala yet. Just return them as a string array */
 		public string[]? ListObjectsByInterface (string iface) {
-			Subsystem.Manager manager = this.fso_objects.lookup (iface.split(".")[2]);
-			if (manager == null) {
-				return null;
+
+			List<weak Subsystem.Manager> managers = this.fso_objects.get_values();
+			foreach (Subsystem.Manager _subsystem in managers) {
+				string[] obj_list = _subsystem.ListObjectsByInterface(iface);
+				if (strv_length (obj_list) > 0)
+					return obj_list;
 			}
-			return manager.ListObjectsByInterface (iface);
+			return null;
 		}
 
 		
