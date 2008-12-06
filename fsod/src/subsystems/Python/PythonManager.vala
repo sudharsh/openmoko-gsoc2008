@@ -41,25 +41,29 @@ public class PythonManager : Subsystem.Manager {
 
 	construct {
 		/* Initialize the python interpreter and such */
-		FSOD.init_python();
-		try {
-			Dir dir = Dir.open(modules_path, 0);
-			string module_name;
-			while ((module_name = dir.read_name()) != null) {
-				if (!module_name.has_suffix(".pyc")) {
-					FSOD.PythonPlugin plugin = new FSOD.PythonPlugin(module_name.split(".")[0], service);
-					if (plugin == null) {
-						continue;
+		if(FSOD.init_python()) {
+			try {
+				Dir dir = Dir.open(modules_path, 0);
+				string module_name;
+				while ((module_name = dir.read_name()) != null) {
+					if (!module_name.has_suffix(".pyc")) {
+						FSOD.PythonPlugin plugin = new FSOD.PythonPlugin(module_name.split(".")[0], service);
+						if (plugin == null) {
+							continue;
+						}
+						if (plugin.call_factory())
+							plugins.append(plugin);
 					}
-					if (plugin.call_factory())
-						plugins.append(plugin);
+					
 				}
-
+				
 			}
-			
+			catch (GLib.Error error) {
+				log ("PythonManager", LogLevelFlags.LEVEL_WARNING, error.message);
+			}
 		}
-		catch (GLib.Error error) {
-			log ("PythonManager", LogLevelFlags.LEVEL_WARNING, error.message);
+		else {
+			log ("PythonManager", LogLevelFlags.LEVEL_WARNING, "Couldn't initialize python interpreter");
 		}
 						
 	}

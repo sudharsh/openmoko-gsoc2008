@@ -30,6 +30,8 @@
 
 static GObjectClass *parent_class;
 
+#define LOG_DOMAIN "PythonManager"
+
 /* Just initialize the interpreter, nothing much for now */
 gboolean fsod_init_python() {
 
@@ -43,7 +45,7 @@ gboolean fsod_init_python() {
 
 	if (PyErr_Occurred) {
 		PyErr_Print();
-		//return FALSE;
+		return FALSE;
 	}
 	
 	return TRUE;
@@ -56,7 +58,10 @@ void fsod_finalize_python() {
 	Py_Finalize ();
 }
 
-/* PythonPlugin Class GObject code follow */
+
+/*---------------------------------------------------------------*
+ * PythonPlugin Class GObject code follow                        *
+ *---------------------------------------------------------------*/
 #define FSOD_PYTHON_PLUGIN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), FSOD_TYPE_PYTHON_PLUGIN, FSODPythonPluginPrivate))
 enum {
 	FSOD_PYTHON_PLUGIN_DUMMY,
@@ -151,10 +156,10 @@ static GObject * fsod_python_plugin_constructor (GType type,
 	PyList_Insert (path, 0, module_path);
 	Py_DECREF (module_path);
 	
-	g_log ("PythonManager", G_LOG_LEVEL_DEBUG, "Trying to import %s", self->priv->module_name);
+	g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Trying to import %s", self->priv->module_name);
 	self->priv->module = PyImport_ImportModule(self->priv->module_name);
 	if (self->priv->module == NULL) {
-		g_log ("PythonManager", G_LOG_LEVEL_WARNING, "Couldn't import %s", self->priv->module_name);
+		g_log (LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Couldn't import %s", self->priv->module_name);
 		CHECK_PYERR;
 	}
 	
@@ -178,7 +183,7 @@ gboolean fsod_python_plugin_call_factory (FSODPythonPlugin *self) {
 	factory_func = PyDict_GetItemString (attr_dict, "factory");
 				
 	if (factory_func == NULL || !(PyCallable_Check(factory_func))) {
-		g_log ("PythonManager", G_LOG_LEVEL_DEBUG|G_LOG_LEVEL_WARNING,
+		g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG|G_LOG_LEVEL_WARNING,
 		       "Factory function not callable. Possible name conflict in %s",
 		       self->priv->module_name);
 		Py_DECREF (self->priv->module);
@@ -190,7 +195,7 @@ gboolean fsod_python_plugin_call_factory (FSODPythonPlugin *self) {
 	
 	self->priv->objects = PyObject_CallObject (factory_func, NULL);
 	if (self->priv->objects == NULL || !PyList_Check(self->priv->objects)) {
-		g_log ("PythonManager", G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_WARNING,
+		g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_WARNING,
 		       "%s Factory returned succesfully, but the return value was not a list",
 		       self->priv->module_name);
 
@@ -200,8 +205,10 @@ gboolean fsod_python_plugin_call_factory (FSODPythonPlugin *self) {
 		return FALSE;
 	}
 	
-	g_log ("PythonManager", G_LOG_LEVEL_INFO,
+	g_log (LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	       "module %s loaded successfully", self->priv->module_name);
+
+	sync_objects();
 	return TRUE;
  	
 }
