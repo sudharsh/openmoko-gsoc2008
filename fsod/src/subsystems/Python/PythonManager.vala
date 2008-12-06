@@ -30,7 +30,7 @@ public class PythonManager : Subsystem.Manager {
 	private string modules_path = Path.build_filename(Config.LIBDIR, "fsod/subsystems/Python");
 	private List<FSOD.PythonPlugin> plugins = new List<FSOD.PythonPlugin>();
 	
-	public static HashTable<string, List<string>> ifaces = new HashTable<string, List<string>> ((HashFunc)str_hash,
+	public static HashTable<string, weak List<string>> ifaces = new HashTable<string, weak List<string>> ((HashFunc)str_hash,
 																					(EqualFunc)str_equal);
 	
 	public FSOD.Service service {
@@ -54,8 +54,9 @@ public class PythonManager : Subsystem.Manager {
 						if (plugin == null) {
 							continue;
 						}
-						if (plugin.call_factory())
-							plugins.append(plugin);
+						if (!plugin.call_factory())
+							continue;
+						plugins.append(plugin);
 					}
 					
 				}
@@ -82,7 +83,8 @@ public class PythonManager : Subsystem.Manager {
 
 		int i = 0;
 		foreach (string _path in object_paths) {
-			ret[i++] = _path;
+			ret[i] = _path;
+			i++;
 		}
 		return ret;
 	}

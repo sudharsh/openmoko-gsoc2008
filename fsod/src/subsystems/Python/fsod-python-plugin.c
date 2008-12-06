@@ -57,10 +57,9 @@ void fsod_finalize_python() {
 	while (PyGC_Collect ())
 			;	
 
-	g_log ("Python", G_LOG_LEVEL_INFO, "Finalizing Python interpreter");
+	g_log (LOG_DOMAIN, G_LOG_LEVEL_INFO, "Finalizing Python interpreter");
 	Py_Finalize ();
 }
-
 
 
 
@@ -185,6 +184,7 @@ gboolean fsod_python_plugin_call_factory (FSODPythonPlugin *self) {
 	PyObject *attr_dict;    /* Attribute dictionary of the module */
 	PyObject *factory_func; /* PyObject corresponding to the factory function */
 
+	g_print ("%s\n", self->priv->module_name);
 
 	/* Get the attributes of the imported module and get the 'factory' attribute
 	   And then check if its callable, failing which log the error and getout */
@@ -195,29 +195,21 @@ gboolean fsod_python_plugin_call_factory (FSODPythonPlugin *self) {
 		g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG|G_LOG_LEVEL_WARNING,
 		       "Factory function not callable. Possible name conflict in %s",
 		       self->priv->module_name);
-		Py_DECREF (self->priv->module);
-		Py_DECREF (attr_dict);
-		Py_DECREF (factory_func);
-		CHECK_PYERR;
 		return FALSE;
 	}
 	
 	self->priv->objects = PyObject_CallObject (factory_func, NULL);
 	if (self->priv->objects == NULL || !(PyList_Check(self->priv->objects))) {
 		g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_WARNING,
-		       "%s Factory returned succesfully, but the return value was not a list",
+		       "Factory returned succesfully, but the return value was not a list",
 		       self->priv->module_name);
-
-		Py_DECREF (attr_dict);
-		Py_DECREF (factory_func);
-		Py_DECREF (self->priv->module);
 		return FALSE;
 	}
 	
+	fsod_python_plugin_extract_ifaces (self);
+
 	g_log (LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	       "module %s loaded successfully", self->priv->module_name);
-
-	fsod_python_plugin_extract_ifaces (self);
 	return TRUE;
  	
 }
@@ -245,11 +237,9 @@ static void fsod_python_plugin_extract_ifaces (FSODPythonPlugin *self) {
 		_iface_str = PyObject_GetAttrString (_dbus_obj, "interface");
 
 		if (!_iface_str) {
-			g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_WARNING,
-			       "No 'interface' attribute in %s. "
-			       "This isn't fatal but this will not support ListObjectsByInterface introspection",
-			       self->priv->module_name);
-			return;
+			g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG|G_LOG_LEVEL_WARNING,
+			       "No 'interface' attribute found. Not fatal but ListObjectsByInterface may not work properly");
+			continue; /* Move on with the next object in the list */
 		}
 		
 		/* This is really redundant, iface isnt gonna change. But we will be screwed
@@ -260,17 +250,15 @@ static void fsod_python_plugin_extract_ifaces (FSODPythonPlugin *self) {
 
 		_dbus_path = PyObject_GetAttrString (_dbus_obj, "path");
 		if (!_dbus_path) {
-			g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_WARNING,
-			       "No 'path' attribute in %s. "
-			       "This isn't fatal but this will not support ListObjectsByInterface introspection",
-			       self->priv->module_name);
-			return;
+			g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG|G_LOG_LEVEL_WARNING,
+			       "No 'path' attribute. Not fatal but ListObjectsByInterface may not work properly");
+			continue;
 		}
 		dbus_path = PyString_AsString(_dbus_path);
 		
 		_paths = g_list_append (_paths, dbus_path);		
 
-		/* FIXME: Is there any chance of a leak here? */
+		/* FIXME: Is there any chance of a leak here? _paths gets overwritten */
 		g_hash_table_insert(python_manager_ifaces, iface, _paths);
 		
 	}

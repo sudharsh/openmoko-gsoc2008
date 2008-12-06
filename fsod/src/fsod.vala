@@ -131,7 +131,7 @@ namespace FSOD {
 			List<weak Subsystem.Manager> managers = this.fso_objects.get_values();
 			foreach (Subsystem.Manager _subsystem in managers) {
 				string[] obj_list = _subsystem.ListObjectsByInterface(iface);
-				if (strv_length (obj_list) > 0)
+				if (obj_list != null)
 					return obj_list;
 			}
 			return null;

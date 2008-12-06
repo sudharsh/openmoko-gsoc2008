@@ -26,6 +26,7 @@
 #include <Python.h>
 #include <glib-object.h>
 #include <src/fsod.h>
+#include <src/logger.h>
 #include <dbus/dbus-glib.h>
 
 #include "PythonManager.h"
