@@ -68,7 +68,8 @@ enum {
 struct _FSODPythonPluginPrivate {
 	gchar *module_name;
 	FSODService *service;
-	PyObject *module;
+	PyObject *module; /* Reference to the python module that has been loaded */
+	PyObject *objects; /* The list of initialized DBus objects */
 };
 
 
@@ -111,6 +112,10 @@ static void fsod_python_plugin_init (FSODPythonPlugin *object) {
 static void fsod_python_plugin_finalize (GObject *object) {
 	if(((FSODPythonPlugin *)object)->priv->module)
 		Py_DECREF(((FSODPythonPlugin *)object)->priv->module);
+
+	if (((FSODPythonPlugin *)object)->priv->objects)
+		Py_DECREF(((FSODPythonPlugin *)object)->priv->objects);
+
 	g_object_unref (((FSODPythonPlugin *)object)->priv->service);
 	G_OBJECT_CLASS (parent_class)->finalize (object);
 }
@@ -122,26 +127,23 @@ static void fsod_python_plugin_instance_init (FSODPythonPlugin *self) {
 }
 
 
-/* Load the modules here, the constructor parameter is the path to the python module */	
+/* The constructor parameter is the path to the python module. Import the python module here */	
 static GObject * fsod_python_plugin_constructor (GType type,
 						 guint n_construct_properties,
 						 GObjectConstructParam * construct_properties)
 {
 	GObject *object;
 	FSODPythonPluginClass *klass;
-	GObjectClass *parentclass;
 	FSODPythonPlugin *self;
-	
-	
-	PyObject *path = NULL, *module_path = NULL;
-	PyObject *dict = NULL, *func = NULL;
-	PyObject *args = NULL;
-			
+	GObjectClass *parentclass;
+		
 	klass = g_type_class_peek (FSOD_TYPE_PYTHON_PLUGIN);
 	parentclass = G_OBJECT_CLASS (g_type_class_peek_parent(klass));
 	object = parentclass->constructor(type, n_construct_properties, construct_properties);
-	self = FSOD_PYTHON_PLUGIN (object);
-	/* Try to load the python module priv->module_name */
+	self = FSOD_PYTHON_PLUGIN(object);
+	
+	PyObject *path = NULL, *module_path = NULL;
+			
 	path = PySys_GetObject ("path");
 
 	/* Add $libdir/fsod/subsystems/Python to python path variable */
@@ -149,32 +151,61 @@ static GObject * fsod_python_plugin_constructor (GType type,
 	PyList_Insert (path, 0, module_path);
 	Py_DECREF (module_path);
 	
-	g_log ("PythonManager", G_LOG_LEVEL_INFO, "Trying to import %s", self->priv->module_name);
+	g_log ("PythonManager", G_LOG_LEVEL_DEBUG, "Trying to import %s", self->priv->module_name);
 	self->priv->module = PyImport_ImportModule(self->priv->module_name);
 	if (self->priv->module == NULL) {
 		g_log ("PythonManager", G_LOG_LEVEL_WARNING, "Couldn't import %s", self->priv->module_name);
-		goto pyerr_occurred;
-	}
-		
-	dict = PyModule_GetDict (self->priv->module);
-	func = PyDict_GetItemString (dict, "factory");
-				
-	if (func==NULL || !(PyCallable_Check(func))) {
-		g_log ("PythonManager", G_LOG_LEVEL_WARNING, "Factory function not callable. Possible name conflict in %s",
-		       self->priv->module_name);
-		goto pyerr_occurred;
+		CHECK_PYERR;
 	}
 	
-	PyObject_CallObject (func, NULL);
+	return object;
 
- pyerr_occurred:
-	if(PyErr_Occurred()) {
-		PyErr_Print();
-		PyErr_Clear();
+}	
+
+
+
+/* Call the factory function in the loaded module */
+gboolean fsod_python_plugin_call_factory (FSODPythonPlugin *self) {
+	g_return_val_if_fail (FSOD_IS_PYTHON_PLUGIN(self), FALSE);
+	
+	PyObject *attr_dict;    /* Attribute dictionary of the module */
+	PyObject *factory_func; /* PyObject corresponding to the factory function */
+
+
+	/* Get the attributes of the imported module and get the 'factory' attribute
+	   And then check if its callable, failing which log the error and getout */
+	attr_dict = PyModule_GetDict (self->priv->module);
+	factory_func = PyDict_GetItemString (attr_dict, "factory");
+				
+	if (factory_func == NULL || !(PyCallable_Check(factory_func))) {
+		g_log ("PythonManager", G_LOG_LEVEL_DEBUG|G_LOG_LEVEL_WARNING,
+		       "Factory function not callable. Possible name conflict in %s",
+		       self->priv->module_name);
+		Py_DECREF (self->priv->module);
+		Py_DECREF (attr_dict);
+		Py_DECREF (factory_func);
+		CHECK_PYERR;
+		return FALSE;
 	}
+	
+	self->priv->objects = PyObject_CallObject (factory_func, NULL);
+	if (self->priv->objects == NULL || !PyList_Check(self->priv->objects)) {
+		g_log ("PythonManager", G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_WARNING,
+		       "%s Factory returned succesfully, but the return value was not a list",
+		       self->priv->module_name);
 
- 	return object;
+		Py_DECREF (attr_dict);
+		Py_DECREF (factory_func);
+		Py_DECREF (self->priv->module);
+		return FALSE;
+	}
+	
+	g_log ("PythonManager", G_LOG_LEVEL_INFO,
+	       "module %s loaded successfully", self->priv->module_name);
+	return TRUE;
+ 	
 }
+
 
 
 /* Properties follow */

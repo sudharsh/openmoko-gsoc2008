@@ -46,6 +46,12 @@ typedef struct _FSODPythonPluginPrivate FSODPythonPluginPrivate;
 #define FSOD_IS_PYTHON_PLUGIN_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), FSOD_TYPE_PYTHON_PLUGIN))
 #define FSOD_PYTHON_PLUGIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), FSOD_TYPE_PYTHON_PLUGIN, FSODPythonPluginClass))
 
+#define CHECK_PYERR if(PyErrOccured()) { \
+		PyErr_Print();		 \
+		PyErr_Clear();		 \
+	}
+
+
 
 /* FSOD.PythonPlugin class declarations */
 struct _FSODPythonPlugin {
@@ -58,10 +64,13 @@ struct _FSODPythonPluginClass {
 };
 
 
+/* Public methods */
 FSODPythonPlugin* fsod_python_plugin_new (const gchar *module_name, FSODService *service);
 GType fsod_python_plugin_get_type ();
+gboolean fsod_python_plugin_call_factory (FSODPythonPlugin *self);
 
-/* Merely initializes the python interpreter for us. Calling once should do */
+/* Static functions not related to any objects
+   Merely initializes and finalizes the python interpreter for us. Calling once should do */
 gboolean fsod_init_python();
 void fsod_finalize_python();
 

@@ -51,7 +51,8 @@ public class PythonManager : Subsystem.Manager {
 					if (plugin == null) {
 						continue;
 					}
-					plugins.append(plugin);
+					if (plugin.call_factory())
+						plugins.append(plugin);
 				}
 
 			}

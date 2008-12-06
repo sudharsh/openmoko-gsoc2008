@@ -4,6 +4,7 @@ namespace FSOD {
 	public class PythonPlugin : GLib.Object {
 		public GLib.List<string> dbus_object_paths;
 		public PythonPlugin(string module_name, FSOD.Service service);
+		public bool call_factory();
 	}	
 	
 	[CCode (cname = "fsod_init_python", cheader_filename = "fsod-python-plugin.h")]
