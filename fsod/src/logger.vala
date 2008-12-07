@@ -29,7 +29,6 @@ namespace FSOD {
 	public class Logger : GLib.Object   {
 
 		private FileStream log_stream;
-		private List<string> domain_list = new List<string> ();
 		private LogLevelFlags levels;
 
 		construct  {
@@ -48,7 +47,6 @@ namespace FSOD {
 				warning(e.message);
 			}
 
-
 			if (Options.log_file == "-") {
 				GLib.message ("Logging set to stdout\n");
 				this.log_stream = FileStream.fdopen (1, "w");
@@ -61,14 +59,6 @@ namespace FSOD {
 				GLib.message ("Logging set to stderr\n");
 				this.log_stream = FileStream.fdopen (2, "w");
 			}
-
-
-			if (Options.log_domains != null) {
-				foreach (string v in Options.log_domains){
-					domain_list.prepend (v);					
-				}
-			}
-
 
 			if (Options.log_levels != null) {
 				foreach (string _level in Options.log_levels) {
@@ -91,7 +81,6 @@ namespace FSOD {
 					case "DEBUG":
 						this.levels |= LogLevelFlags.LEVEL_DEBUG;
 						break;
-						
 					}
 
 				}
@@ -122,6 +111,7 @@ namespace FSOD {
 				this.log_stream.printf ("%s: %s\n", log_domain, message);
 				this.log_stream.flush();
 			}
+
 		}
 	
 	}
