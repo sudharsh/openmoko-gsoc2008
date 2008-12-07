@@ -99,7 +99,7 @@ static gboolean process_event () {
 			g_signal_emit_by_name (input_obj, "event", event_source, "pressed", 0);
 		}
 		else if (event->value == 0x00) { /* Release */
-			g_log (LOG_DOMAIN, G_LOG_LEVEL_INFO,
+			g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 			       "Released %s Key\n", event_source);
 			if (input_obj->tag)  
 				g_source_remove (input_obj->tag);

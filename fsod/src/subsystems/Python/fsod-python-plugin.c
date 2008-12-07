@@ -184,8 +184,6 @@ gboolean fsod_python_plugin_call_factory (FSODPythonPlugin *self) {
 	PyObject *attr_dict;    /* Attribute dictionary of the module */
 	PyObject *factory_func; /* PyObject corresponding to the factory function */
 
-	g_print ("%s\n", self->priv->module_name);
-
 	/* Get the attributes of the imported module and get the 'factory' attribute
 	   And then check if its callable, failing which log the error and getout */
 	attr_dict = PyModule_GetDict (self->priv->module);

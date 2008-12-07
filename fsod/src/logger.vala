@@ -32,17 +32,8 @@ namespace FSOD {
 		private List<string> domain_list = new List<string> ();
 		private LogLevelFlags levels;
 
-		/*public static void setup_logger() {
-			if (logger_instance == null) {
-				logger_instance = new Logger();
-				GLib.Log.set_default_handler((GLib.LogFunc)logger_instance.log);
-			}			
-			}*/
-
 		construct  {
-
 			log_stream = FileStream.fdopen (2, "w");
-			this.levels = GLib.LogLevelFlags.LEVEL_MASK;
 			KeyFile conf_file = FSOD.get_fsod_conf();
 						
 			try {
@@ -71,11 +62,13 @@ namespace FSOD {
 				this.log_stream = FileStream.fdopen (2, "w");
 			}
 
+
 			if (Options.log_domains != null) {
 				foreach (string v in Options.log_domains){
 					domain_list.prepend (v);					
 				}
 			}
+
 
 			if (Options.log_levels != null) {
 				foreach (string _level in Options.log_levels) {
@@ -98,9 +91,11 @@ namespace FSOD {
 					case "DEBUG":
 						this.levels |= LogLevelFlags.LEVEL_DEBUG;
 						break;
-							
+						
 					}
+
 				}
+
 			}
 			
 		}
@@ -116,16 +111,14 @@ namespace FSOD {
 				log_this = true;
 			}
 			
-			
 			foreach (string key in Options.log_domains) {
 				if (key == log_domain) {
 					log_this = true;
 					break;
 				}
 			}
-			
-			/* if (log_this && ((logger_instance.levels & flags) != 0)) { */
-			if (log_this) {
+
+			if (log_this && ((this.levels & flags) != 0)) {
 				this.log_stream.printf ("%s: %s\n", log_domain, message);
 				this.log_stream.flush();
 			}
