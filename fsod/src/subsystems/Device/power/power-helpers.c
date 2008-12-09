@@ -44,7 +44,7 @@ static gboolean process_uevent (GIOChannel *source, GIOCondition *condition, Pow
 	recv(sockfd, &buf, sizeof(buf), 0);
 	/* Sneaky little way of checking if 'power_supply' is present in `buf' */
 	if (g_strstr_len(buf, -1, "power_supply") && g_strcmp0(_status, curr_status)) { 
-		g_message ("Battery status changed to %s", _status);
+		g_log ("Device.Power", G_LOG_LEVEL_INFO, "Battery status changed to %s", _status);
 		g_signal_emit_by_name(self, "power_status", _status);
 		power_set_curr_status(self, _status);
 	}

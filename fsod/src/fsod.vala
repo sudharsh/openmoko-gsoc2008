@@ -35,6 +35,7 @@ namespace FSOD {
 
 		private delegate Subsystem.Manager FactoryFunc(Service service);
 		private string _device = new string();
+
 		public string device {
 			get { return _device; }
 		}

@@ -24,10 +24,22 @@ using ODeviced;
 using FSOD;
 using Device;
 
+
+errordomain UnsupportedTrigger {
+	UNSUPPORTED_TRIGGER;
+}
+	
+errordomain InvalidParameter {
+	INVALID_PARAMETER;
+}
+
+
 [DBus (name = "org.freesmartphone.Device.LED")]
 public class LED:GLib.Object {
 	
 	private string name = new string();
+	private string[] triggers = null;
+	private const string SYSFS_NET = "/sys/class/net/";
 
 	[DBus (visible=false)]
 	public string node {
@@ -59,18 +71,46 @@ public class LED:GLib.Object {
 		var dev = ODeviced.get_device();
 		this.name = ODeviced.compute_name(dbus_path);
 		this.dbus_path = ODeviced.cleanup_dbus_path (this.dbus_path);
+		this.triggers = ODeviced.read_string (this.node + "/trigger").split(" ");
 	}
 		
+
+	private bool _contains_trigger (string trigger) {
+		foreach (string key in this.triggers) {
+			if (key == trigger)
+				return true;
+		}
+		return false;
+	}
+
+
 
 	public void SetBrightness(int brightness) {
 		ODeviced.write_integer(this.node + "/brightness", brightness);
 	}
 
 
-	public void SetBlinking(int delay_on, int delay_off) {
+	public void SetBlinking(int delay_on, int delay_off) throws UnsupportedTrigger {
+		if (!this._contains_trigger("timer"))
+			throw new UnsupportedTrigger.UNSUPPORTED_TRIGGER ("timer trigger not present");
 		ODeviced.write_string(this.node + "/trigger", "timer");
 		ODeviced.write_integer(this.node + "/delay_on", delay_on);
 		ODeviced.write_integer(this.node + "/delay_off", delay_off);
+	}
+
+
+	public void SetNetworking (string net_iface, string mode) throws UnsupportedTrigger, InvalidParameter {
+		if (!this._contains_trigger("netdev"))
+			throw new UnsupportedTrigger.UNSUPPORTED_TRIGGER ("netdev trigger not present");
+
+		if (!FileUtils.test(SYSFS_NET + net_iface, FileTest.EXISTS))
+			throw new InvalidParameter.INVALID_PARAMETER ("Interface %s not known".printf(net_iface));
+		
+		if (!(mode == "link" || mode == "rx" || mode == "tx"))
+			throw new InvalidParameter.INVALID_PARAMETER ("Mode %s not allowed. Available modes are link, rx, and tx".printf(net_iface));
+		ODeviced.write_string(this.node + "/trigger", "netdev");
+		ODeviced.write_string(this.node + "/device_name", net_iface);
+		ODeviced.write_string(this.node + "/mode", mode);
 	}
 
 

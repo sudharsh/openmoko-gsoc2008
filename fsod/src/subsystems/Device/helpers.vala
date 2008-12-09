@@ -27,8 +27,7 @@ using Device;
 namespace ODeviced {
 
 	public static string get_device () {
-		KeyFile conf_file = new KeyFile();
-		conf_file.set_list_separator (',');
+		KeyFile conf_file = FSOD.get_fsod_conf();
 		string _device = new string();
 		try {
 			conf_file.load_from_file (Path.build_filename(Config.SYSCONFDIR, "fsod.conf"), KeyFileFlags.NONE);
