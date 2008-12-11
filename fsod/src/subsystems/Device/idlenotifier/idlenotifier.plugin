@@ -4,7 +4,7 @@ dbus_interface=org.freesmartphone.Device.IdleNotifier
 # FIXME: Set this at runtime?
 dbus_object_path=/org/freesmartphone/Device/IdleNotifier/0
 
-# Timouts in seconds, -1 to disable
+# Timouts in seconds, -1 to prevent them getting activated except programmatically
 [FreeRunner]
 idle = 10
 idle_dim = 20
@@ -14,7 +14,7 @@ suspend = 20
 awake = -1
 busy = -1
 suspend = 0
-watchfor=event0,event1 
+watchfor=event0,event4
 
 
 

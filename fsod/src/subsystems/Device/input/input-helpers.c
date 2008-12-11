@@ -37,8 +37,6 @@ static gboolean held_key_timeout (struct held_key_payload *hk);
 static gboolean list_has (GList *list, gchar *data);
 static gboolean process_event ();
 
-/* We'd need to extract held_secs in the next loop */
-static struct held_key_payload hk;
 
 gboolean on_activity (GIOChannel *channel, GIOCondition *condition) {
 
@@ -66,11 +64,15 @@ static gboolean process_event () {
 	GHashTable *watches = input_get_watches (input_obj);
 	GList *reportheld = input_get_reportheld (input_obj);
 	gchar *event_source;
+	GTimeVal currtime;
 
 	struct input_event *event = NULL;
-       	
+	/* We'd need to extract held_secs in the next loop */
+	static struct held_key_payload hk;
+        	
        	while ( event = g_queue_pop_head (input_obj->event_q) )	{
-		
+
+		g_get_current_time (&currtime);
 		g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		       "Event, value:%d code:%u type:%u", event->value, event->code, event->type);
 		event_source = g_hash_table_lookup (watches, event->code);
@@ -81,8 +83,8 @@ static gboolean process_event () {
 		}
 		
 		if (event->value == 0x01) { /* Press */
-			g_log (LOG_DOMAIN, G_LOG_LEVEL_INFO, 
-			       "Got a keypress from %s", event_source);
+			g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+			       "Got a keypress from %s on %ld", event_source, currtime.tv_sec);
 
 			if (list_has(reportheld, (char *)event_source)) {
 				hk.tv_sec = event->time.tv_sec;
@@ -100,7 +102,7 @@ static gboolean process_event () {
 		}
 		else if (event->value == 0x00) { /* Release */
 			g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-			       "Released %s Key\n", event_source);
+			       "Released %s key on %ld", event_source, currtime.tv_sec);
 			if (input_obj->tag)  
 				g_source_remove (input_obj->tag);
 
@@ -132,7 +134,8 @@ static gboolean held_key_timeout (struct held_key_payload *hk) {
 
 	g_get_current_time (&currtime);
 	hk->held_secs = currtime.tv_sec - hk->tv_sec;
-	g_print ("\t%ld %ld %ld\n", hk->held_secs, currtime.tv_sec, hk->tv_sec);
+	g_log (LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+	       "%s held for %ld seconds", event_source, hk->held_secs);
 	g_signal_emit_by_name (input_obj, "event", event_source, "held", hk->held_secs);
        	return TRUE; /* Call me again */
 }

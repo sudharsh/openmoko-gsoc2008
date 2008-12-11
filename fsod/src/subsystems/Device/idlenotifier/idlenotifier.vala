@@ -22,7 +22,6 @@
 
 using GLib;
 using ODeviced;
-using IdleHelpers;
 using FSOD;
 using Device;
 
@@ -44,11 +43,7 @@ public class IdleNotifier: GLib.Object {
 	}
 
 	private string _current_state = "awake";
-	[DBus (visible = false)]
-	public string current_state {
-		get { return _current_state; }
-  	}
-
+	
 	private string device = new string();
 	private string[] watches;
 	private List<string> states = new List<string> ();
@@ -86,7 +81,7 @@ public class IdleNotifier: GLib.Object {
 				var channel = new IOChannel.file ("/dev/input/" + node, "r");
 				/* See http://bugzilla.gnome.org/show_bug.cgi?id=546898 */
 				if(channel != null)
-					channel.add_watch (IOCondition.IN, (IOFunc)IdleHelpers.on_activity);
+					channel.add_watch (IOCondition.IN, this.on_activity);
 			}
 			tag = Timeout.add_seconds (2, this.onIdle);
 		}
@@ -94,6 +89,27 @@ public class IdleNotifier: GLib.Object {
 			log ("Device.IdleNotifier", LogLevelFlags.LEVEL_WARNING, error.message);
 		}
 			
+	}
+
+
+	private bool on_activity (IOChannel channel, IOCondition condition) {
+
+		try {
+			/* It seems that the channel should be processed and read.
+			   Otherwise, we land up in an infinite busy <-> idle transitions */
+			string dummy_buffer = null ;
+			size_t size = 0;
+			channel.read_line (out dummy_buffer, out size, null);
+			if (this._current_state != "busy") 
+				this.SetState ("busy");
+			
+		}
+
+		catch (GLib.IOChannelError error) {
+			log ("Device.IdleNotifier", LogLevelFlags.LEVEL_DEBUG, error.message);
+		}
+
+		return true; /* Call me again on the next event */
 	}
 
 	
