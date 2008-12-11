@@ -70,5 +70,3 @@ public abstract class FSOD.Resource : GLib.Object {
 	}
 	
 }
-
-	

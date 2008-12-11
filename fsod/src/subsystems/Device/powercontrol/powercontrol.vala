@@ -27,7 +27,7 @@ using FSOD;
 using Device;
 
 [DBus (name = "org.freesmartphone.Device.PowerControl")]
-public abstract class GenericPowerControl: GLib.Object {
+public abstract class GenericPowerControl: FSOD.Resource {
 	
 	[DBus (visible = false)]
 	public string name = new string();
@@ -50,6 +50,7 @@ public abstract class GenericPowerControl: GLib.Object {
 			return true;
 		return false;
 	}
+
 	
 	[DBus (visible = false)]
 	public virtual void set_power (bool enable) {
@@ -59,11 +60,33 @@ public abstract class GenericPowerControl: GLib.Object {
 			ODeviced.write_integer (this.powernode, 0);
 	}
 
+
 	[DBus (visible = false)]
 	public virtual void reset () {
 		ODeviced.write_integer (this.resetnode, 1);
 	}
+
+	[DBus (visible = false)]
+	public override void _enable() {
+		this.SetPower (true);
+	}
 		
+	[DBus (visible = false)]
+	public override void _disable() {
+		this.SetPower (false);
+	}
+
+	[DBus (visible = false)]
+	public override void _resume() {
+		this._enable();
+	}
+
+	[DBus (visible = false)]
+	public override void _suspend() {
+		this._disable();
+	}
+
+	
 	public string GetName () {
 		return this.name;
 	}
@@ -111,8 +134,8 @@ public class Bluetooth: GenericPowerControl {
 		catch (GLib.KeyFileError error) {
 			log("Device.PowerControl", LogLevelFlags.LEVEL_WARNING, error.message);
 		}		
-		this.powernode = "/sys/class/platform/" + this._bluetooth_node + "/power_on";
-		this.resetnode = "/sys/class/platform/" + this._bluetooth_node + "/reset";
+		this.powernode = "/sys/devices/platform/" + this._bluetooth_node + "/power_on";
+		this.resetnode = "/sys/devices/platform/" + this._bluetooth_node + "/reset";
 	}
 
 }
@@ -145,8 +168,8 @@ public class GSM: GenericPowerControl {
 		catch (GLib.KeyFileError error) {
 			log("Device.PowerControl", LogLevelFlags.LEVEL_WARNING, error.message);
 		}		   
-		this.powernode = "/sys/class/platform/" + this._gsm_node + "/power_on";
-		this.resetnode = "/sys/class/platform/" + this._gsm_node + "/reset";
+		this.powernode = "/sys/devices/platform/" + this._gsm_node + "/power_on";
+		this.resetnode = "/sys/devices/platform/" + this._gsm_node + "/reset";
 	}
 
 }
@@ -214,7 +237,7 @@ public class GPS: GenericPowerControl {
 		catch (GLib.KeyFileError error) {
 			log("Device.PowerControl", LogLevelFlags.LEVEL_WARNING, error.message);
 		}		
-		this.powernode = "/sys/class/platform/" + this._gps_node + "/pwron";
+		this.powernode = "/sys/devices/platform/" + this._gps_node + "/pwron";
 		this.resetnode = "";
 	}
 
